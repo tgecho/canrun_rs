@@ -3,7 +3,7 @@ use im::hashmap::HashMap;
 
 #[derive(PartialEq, Eq, Debug, Hash, Clone)]
 pub enum Cell<T: Eq + Clone> {
-    LVar(LVar),
+    Var(LVar),
     Value(T),
 }
 
@@ -27,7 +27,7 @@ impl<T: Eq + Clone> State<T> {
 
     pub fn resolve(&self, key: &Cell<T>) -> Cell<T> {
         match key {
-            Cell::LVar(lvar) => match self.values.get(lvar) {
+            Cell::Var(lvar) => match self.values.get(lvar) {
                 Some(val) => self.resolve(val),
                 None => key.clone(),
             },
@@ -36,7 +36,7 @@ impl<T: Eq + Clone> State<T> {
     }
 
     pub fn resolve_var(&self, key: LVar) -> Cell<T> {
-        self.resolve(&Cell::LVar(key))
+        self.resolve(&Cell::Var(key))
     }
 
     pub fn unify(&self, a: &Cell<T>, b: &Cell<T>) -> Option<State<T>> {
@@ -47,8 +47,8 @@ impl<T: Eq + Clone> State<T> {
             Some(self.clone())
         } else {
             match (a, b) {
-                (Cell::LVar(av), bv) => Some(self.assign(av, bv)),
-                (av, Cell::LVar(bv)) => Some(self.assign(bv, av)),
+                (Cell::Var(av), bv) => Some(self.assign(av, bv)),
+                (av, Cell::Var(bv)) => Some(self.assign(bv, av)),
                 _ => None,
             }
         }
@@ -87,7 +87,7 @@ mod tests {
     fn value_of_missing() {
         let state: State<u8> = State::new();
         let x = LVar::new();
-        assert_eq!(state.resolve_var(x), Cell::LVar(x));
+        assert_eq!(state.resolve_var(x), Cell::Var(x));
         assert_eq!(state.resolve(&Cell::Value(5)), Cell::Value(5));
     }
     #[test]
@@ -96,8 +96,8 @@ mod tests {
         let x = LVar::new();
         let y = LVar::new();
         let z = LVar::new();
-        let state = state.assign(x, Cell::LVar(y));
-        let state = state.assign(y, Cell::LVar(z));
+        let state = state.assign(x, Cell::Var(y));
+        let state = state.assign(y, Cell::Var(z));
         let state = state.assign(z, Cell::Value(5));
 
         assert_eq!(state.resolve_var(x), Cell::Value(5));
@@ -108,7 +108,7 @@ mod tests {
     fn unify_with_self() {
         let state: State<u8> = State::new();
         let x = LVar::new();
-        let unified = state.unify(&Cell::LVar(x), &Cell::LVar(x));
+        let unified = state.unify(&Cell::Var(x), &Cell::Var(x));
         assert_eq!(unified.unwrap(), state);
     }
     #[test]
@@ -118,8 +118,8 @@ mod tests {
         let y = LVar::new();
 
         assert_eq!(
-            state.unify(&Cell::LVar(x), &Cell::LVar(y)).unwrap(),
-            state.assign(x, Cell::LVar(y))
+            state.unify(&Cell::Var(x), &Cell::Var(y)).unwrap(),
+            state.assign(x, Cell::Var(y))
         );
     }
     #[test]
@@ -128,11 +128,11 @@ mod tests {
         let state: State<u8> = State::new();
 
         assert_eq!(
-            state.unify(&Cell::LVar(x), &Cell::Value(5)).unwrap(),
+            state.unify(&Cell::Var(x), &Cell::Value(5)).unwrap(),
             state.assign(x, Cell::Value(5))
         );
         assert_eq!(
-            state.unify(&Cell::Value(5), &Cell::LVar(x)).unwrap(),
+            state.unify(&Cell::Value(5), &Cell::Var(x)).unwrap(),
             state.assign(x, Cell::Value(5))
         );
     }
@@ -140,6 +140,6 @@ mod tests {
     fn unify_already_bound() {
         let x = LVar::new();
         let state: State<u8> = State::new().assign(x, Cell::Value(5));
-        assert_eq!(state.unify(&Cell::LVar(x), &Cell::Value(6)), None);
+        assert_eq!(state.unify(&Cell::Var(x), &Cell::Value(6)), None);
     }
 }
