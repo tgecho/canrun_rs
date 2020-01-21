@@ -1,5 +1,6 @@
 use crate::state::State;
 pub mod equal;
+pub mod with;
 pub trait Goal<T>
 where
     T: Eq + Clone,
