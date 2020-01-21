@@ -1,13 +1,10 @@
+use super::Goal;
 use crate::state::{Cell, State};
 
-pub trait Goal<T>
-where
-    T: Eq + Clone,
-{
-    fn run<'a>(self, state: &'a State<T>) -> Box<dyn Iterator<Item = State<T>> + 'a>;
+pub fn equal<T: Eq + Clone>(a: Cell<T>, b: Cell<T>) -> impl Goal<T> {
+    EqualGoal { a, b }
 }
-
-pub struct EqualGoal<T: Eq + Clone> {
+struct EqualGoal<T: Eq + Clone> {
     a: Cell<T>,
     b: Cell<T>,
 }
@@ -41,10 +38,6 @@ impl<'a, T: Eq + Clone> Iterator for EqualGoalIter<'a, T> {
             self.state.unify(&self.a, &self.b)
         }
     }
-}
-
-pub fn equal<T: Eq + Clone>(a: Cell<T>, b: Cell<T>) -> impl Goal<T> {
-    EqualGoal { a, b }
 }
 
 #[cfg(test)]
