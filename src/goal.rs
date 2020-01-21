@@ -1,11 +1,10 @@
 use crate::state::{Cell, State};
 
-// Box<dyn Iterator<Item = State<T>>>
 pub trait Goal<T>
 where
     T: Eq + Clone,
 {
-    fn run<'a>(self, state: &State<T>) -> Vec<State<T>>;
+    fn run<'a>(self, state: &'a State<T>) -> Box<dyn Iterator<Item = State<T>> + 'a>;
 }
 
 pub struct EqualGoal<T: Eq + Clone> {
@@ -14,10 +13,32 @@ pub struct EqualGoal<T: Eq + Clone> {
 }
 
 impl<T: Eq + Clone> Goal<T> for EqualGoal<T> {
-    fn run<'a>(self, state: &'a State<T>) -> Vec<State<T>> {
-        match state.unify(&self.a, &self.b) {
-            Some(state) => vec![state],
-            None => vec![],
+    fn run<'a>(self, state: &'a State<T>) -> Box<dyn Iterator<Item = State<T>> + 'a> {
+        Box::new(EqualGoalIter {
+            a: self.a,
+            b: self.b,
+            state,
+            consumed: false,
+        })
+    }
+}
+
+struct EqualGoalIter<'a, T: Eq + Clone> {
+    a: Cell<T>,
+    b: Cell<T>,
+    state: &'a State<T>,
+    consumed: bool,
+}
+
+impl<'a, T: Eq + Clone> Iterator for EqualGoalIter<'a, T> {
+    type Item = State<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.consumed {
+            None
+        } else {
+            self.consumed = true;
+            self.state.unify(&self.a, &self.b)
         }
     }
 }
@@ -36,7 +57,7 @@ mod tests {
         let state: State<u32> = State::new();
         let x = LVar::new();
         let goal = equal(Cell::Var(x), Cell::Value(5));
-        let result = goal.run(&state);
-        assert_eq!(result[0].resolve_var(x), Cell::Value(5));
+        let mut result = goal.run(&state);
+        assert_eq!(result.nth(0).unwrap().resolve_var(x), Cell::Value(5));
     }
 }
