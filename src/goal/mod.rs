@@ -1,4 +1,5 @@
 use crate::state::State;
+pub mod either;
 pub mod equal;
 pub mod with;
 pub trait Goal<T>
