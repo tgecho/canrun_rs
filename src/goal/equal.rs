@@ -4,6 +4,8 @@ use crate::state::{Cell, State};
 pub fn equal<T: Eq + Clone>(a: Cell<T>, b: Cell<T>) -> impl Goal<T> {
     EqualGoal { a, b }
 }
+
+#[derive(Clone)]
 struct EqualGoal<T: Eq + Clone> {
     a: Cell<T>,
     b: Cell<T>,

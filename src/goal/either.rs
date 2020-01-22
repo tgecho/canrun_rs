@@ -1,11 +1,11 @@
 use super::Goal;
-use crate::lvar::LVar;
 use crate::state::State;
 
 pub fn either<T: Eq + Clone, G: Goal<T>>(a: G, b: G) -> impl Goal<T> {
     EitherGoal { a, b }
 }
 
+#[derive(Clone)]
 struct EitherGoal<G> {
     a: G,
     b: G,
@@ -24,13 +24,12 @@ mod tests {
     use crate::lvar::LVar;
     use crate::state::{Cell, State};
     #[test]
-    fn basic_equal() {
+    fn basic_either() {
         let state: State<usize> = State::new();
         let x = LVar::new();
         let xv = Cell::Var(x);
         let goal = either(equal(xv.clone(), Cell::Value(5)), equal(xv, Cell::Value(6)));
         let mut results = goal.run(&state).map(|s| s.resolve_var(x));
-        // .collect::<Vec<Cell<usize>>>();
         assert_eq!(results.nth(0).unwrap(), Cell::Value(5));
         assert_eq!(results.nth(0).unwrap(), Cell::Value(6));
     }

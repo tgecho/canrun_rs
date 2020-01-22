@@ -6,6 +6,7 @@ pub fn with<T: Eq + Clone + 'static, G: Goal<T>>(func: fn(LVar) -> G) -> impl Go
     WithGoal { func }
 }
 
+#[derive(Clone)]
 struct WithGoal<G> {
     func: fn(LVar) -> G,
 }
@@ -24,7 +25,7 @@ mod tests {
     use crate::goal::Goal;
     use crate::state::{Cell, State};
     #[test]
-    fn basic_equal() {
+    fn basic_with() {
         let state: State<u32> = State::new();
         let goal = with(|x| equal(Cell::Var(x), Cell::Value(5)));
         let mut result = goal.run(&state);
