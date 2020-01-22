@@ -4,19 +4,19 @@ use std::iter::once;
 pub mod both;
 pub mod either;
 pub mod equal;
-pub mod with;
+pub mod lazy;
 
 pub use both::both;
 pub use either::either;
 pub use equal::equal;
-pub use with::with;
+pub use lazy::lazy;
 
 #[derive(Clone)]
 pub enum Goal<T: Eq + Clone + 'static> {
     Equal(equal::EqualGoal<T>),
     Both(both::BothGoal<T>),
     Either(either::EitherGoal<T>),
-    With(with::WithGoal<T>),
+    Lazy(lazy::LazyGoal<T>),
 }
 
 type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
@@ -31,7 +31,7 @@ impl<T: Eq + Clone + 'static> Goal<T> {
                     .flat_map(|(s, b)| b.run(&s)),
             ) as GoalIter<T>,
             Goal::Either(goal) => Box::new(goal.a.run(&state).chain(goal.b.run(&state))),
-            Goal::With(goal) => {
+            Goal::Lazy(goal) => {
                 let func = goal.0;
                 func().run(state)
             }
