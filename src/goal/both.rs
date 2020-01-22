@@ -1,28 +1,22 @@
 use super::Goal;
-use crate::state::State;
 
-pub fn both<'a, T: Eq + Clone, G: Goal<T> + 'a>(a: G, b: G) -> impl Goal<T> {
-    BothGoal { a, b }
+pub fn both<T: Eq + Clone>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
+    Goal::Both(BothGoal {
+        a: Box::new(a),
+        b: Box::new(b),
+    })
 }
 
 #[derive(Clone)]
-struct BothGoal<G> {
-    a: G,
-    b: G,
-}
-
-impl<T: Eq + Clone, G: Goal<T>> Goal<T> for BothGoal<G> {
-    fn run<'a>(self, state: &'a State<T>) -> Box<dyn Iterator<Item = State<T>> + 'a> {
-        let a_states = self.a.run(&state).collect::<Vec<State<T>>>();
-        let ab_states = a_states.iter().flat_map(|a| self.b.run(a));
-        Box::new(ab_states)
-    }
+pub struct BothGoal<T: Eq + Clone + 'static> {
+    pub a: Box<Goal<T>>,
+    pub b: Box<Goal<T>>,
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{both, Goal};
-    use crate::goal::equal::equal;
+    use super::both;
+    use crate::goal::equal;
     use crate::lvar::LVar;
     use crate::state::{Cell, State};
     #[test]

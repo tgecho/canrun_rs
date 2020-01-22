@@ -6,6 +6,7 @@ pub enum Cell<T: Eq + Clone> {
     Var(LVar),
     Value(T),
 }
+impl<T: Eq + Clone + Copy> Copy for Cell<T> {}
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct State<T: Eq + Clone> {

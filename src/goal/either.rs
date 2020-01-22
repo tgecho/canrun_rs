@@ -1,26 +1,22 @@
 use super::Goal;
-use crate::state::State;
 
-pub fn either<T: Eq + Clone, G: Goal<T>>(a: G, b: G) -> impl Goal<T> {
-    EitherGoal { a, b }
+pub fn either<T: Eq + Clone>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
+    Goal::Either(EitherGoal {
+        a: Box::new(a),
+        b: Box::new(b),
+    })
 }
 
 #[derive(Clone)]
-struct EitherGoal<G> {
-    a: G,
-    b: G,
-}
-
-impl<T: Eq + Clone, G: Goal<T>> Goal<T> for EitherGoal<G> {
-    fn run<'a>(self, state: &'a State<T>) -> Box<dyn Iterator<Item = State<T>> + 'a> {
-        Box::new(self.a.run(&state).chain(self.b.run(&state)))
-    }
+pub struct EitherGoal<T: Eq + Clone + 'static> {
+    pub a: Box<Goal<T>>,
+    pub b: Box<Goal<T>>,
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{either, Goal};
-    use crate::goal::equal::equal;
+    use super::either;
+    use crate::goal::equal;
     use crate::lvar::LVar;
     use crate::state::{Cell, State};
     #[test]

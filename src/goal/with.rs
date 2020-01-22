@@ -1,33 +1,36 @@
-use super::Goal;
-use crate::lvar::LVar;
-use crate::state::State;
+// #![feature(clone_closures, copy_closures)]
 
-pub fn with<T: Eq + Clone + 'static, G: Goal<T>>(func: fn(LVar) -> G) -> impl Goal<T> {
-    WithGoal { func }
+use super::Goal;
+
+type WithFn<T> = dyn Fn() -> Goal<T>;
+
+pub fn with<T: Eq + Clone> (func: WithFn<T>) -> Goal<T> {
+    Goal::With(WithGoal(func))
 }
+
 
 #[derive(Clone)]
-struct WithGoal<G> {
-    func: fn(LVar) -> G,
-}
-
-impl<T: Eq + Clone, G: Goal<T>> Goal<T> for WithGoal<G> {
-    fn run<'a>(self, state: &'a State<T>) -> Box<dyn Iterator<Item = State<T>> + 'a> {
-        let goal = self.func;
-        goal(LVar::new()).run(state)
-    }
-}
+pub struct WithGoal<T: Eq + Clone + 'static>(pub WithFn<T>);
 
 #[cfg(test)]
 mod tests {
     use super::with;
-    use crate::goal::equal::equal;
-    use crate::goal::Goal;
+    use crate::goal::{both, equal};
+    use crate::lvar::LVar;
     use crate::state::{Cell, State};
+
     #[test]
     fn basic_with() {
         let state: State<u32> = State::new();
-        let goal = with(|x| equal(Cell::Var(x), Cell::Value(5)));
+        let y = LVar::new();
+        let y2 = y.clone();
+        let f = || {
+            let x = Cell::Var(LVar::new());
+            let yy =Cell::Var(y);
+            // let yy = Cell::Var(LVar::new());
+            both(equal(x, Cell::Value(5)), equal(x, yy))
+        }
+        let goal = with(f);
         let mut result = goal.run(&state);
         // TODO: Use one of the fancier (as of yet unimplemented) goals to
         // inject a variable we can use to check this result
