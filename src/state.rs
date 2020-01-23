@@ -9,6 +9,12 @@ pub enum Cell<T: Eq + Clone> {
     List(Vec<Cell<T>>),
 }
 
+impl<T: Eq + Clone> From<LVar> for Cell<T> {
+    fn from(lvar: LVar) -> Self {
+        Cell::Var(lvar)
+    }
+}
+
 pub fn pair<T: Eq + Clone>(a: Cell<T>, b: Cell<T>) -> Cell<T> {
     Cell::Pair(Box::new((a, b)))
 }

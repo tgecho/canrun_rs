@@ -11,15 +11,15 @@ pub fn append<T: Eq + Clone>(
     either(
         both(equal(a.clone(), empty), equal(b.clone(), c.clone())),
         lazy(move || {
-            let first = Cell::Var(LVar::new());
-            let rest_of_a = Cell::Var(LVar::new());
-            let rest_of_c = Cell::Var(LVar::new());
+            let first = LVar::new();
+            let rest_of_a = LVar::new();
+            let rest_of_c = LVar::new();
             return both(
                 both(
-                    equal(a.clone(), pair(first.clone(), rest_of_a.clone())),
-                    equal(c.clone(), pair(first, rest_of_c.clone())),
+                    equal(a.clone(), pair(first.into(), rest_of_a.into())),
+                    equal(c.clone(), pair(first.into(), rest_of_c.into())),
                 ),
-                append(rest_of_a, b.clone(), rest_of_c),
+                append(rest_of_a.into(), b.clone(), rest_of_c.into()),
             );
         }),
     )
@@ -34,16 +34,16 @@ mod tests {
     #[test]
     fn basic_append() {
         let state: State<Option<&str>> = State::new();
-        let x = Cell::Var(LVar::new());
+        let x = LVar::new();
         let hi = pair(
             Cell::Value(Some("h")),
             pair(Cell::Value(Some("i")), Cell::Value(None)),
         );
         let h = pair(Cell::Value(Some("h")), Cell::Value(None));
         let i = pair(Cell::Value(Some("i")), Cell::Value(None));
-        let goal = append(h, x.clone(), hi);
+        let goal = append(h, x.into(), hi);
 
         let mut result1 = goal.clone().run(&state);
-        assert_eq!(result1.nth(0).unwrap().resolve(&x), i);
+        assert_eq!(result1.nth(0).unwrap().resolve_var(x), i);
     }
 }
