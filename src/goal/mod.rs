@@ -1,6 +1,7 @@
 use crate::state::State;
 use std::iter::once;
 
+pub mod append;
 pub mod both;
 pub mod either;
 pub mod equal;

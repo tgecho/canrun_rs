@@ -5,7 +5,12 @@ use im::hashmap::HashMap;
 pub enum Cell<T: Eq + Clone> {
     Var(LVar),
     Value(T),
+    Pair(Box<(Cell<T>, Cell<T>)>),
     List(Vec<Cell<T>>),
+}
+
+pub fn pair<T: Eq + Clone>(a: Cell<T>, b: Cell<T>) -> Cell<T> {
+    Cell::Pair(Box::new((a, b)))
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -33,6 +38,9 @@ impl<T: Eq + Clone> State<T> {
                 None => key.clone(),
             },
             Cell::Value(_) => key.clone(),
+            Cell::Pair(pair) => {
+                Cell::Pair(Box::new((self.resolve(&pair.0), self.resolve(&pair.1))))
+            }
             Cell::List(list) => {
                 let resolved = list.iter().map(|i| self.resolve(i));
                 Cell::List(resolved.collect())
@@ -54,6 +62,9 @@ impl<T: Eq + Clone> State<T> {
             match (a, b) {
                 (Cell::Var(av), bv) => Some(self.assign(av, bv)),
                 (av, Cell::Var(bv)) => Some(self.assign(bv, av)),
+                (Cell::Pair(a), Cell::Pair(b)) => self
+                    .unify(&a.0, &b.0)
+                    .and_then(|state| state.unify(&a.1, &b.1)),
                 (Cell::List(a), Cell::List(b)) => {
                     if a.len() == b.len() {
                         let initial = self.clone();
