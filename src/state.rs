@@ -5,6 +5,7 @@ use im::hashmap::HashMap;
 pub enum Cell<T: Eq + Clone> {
     Var(LVar),
     Value(T),
+    List(Vec<Cell<T>>),
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -32,6 +33,10 @@ impl<T: Eq + Clone> State<T> {
                 None => key.clone(),
             },
             Cell::Value(_) => key.clone(),
+            Cell::List(list) => {
+                let resolved = list.iter().map(|i| self.resolve(i));
+                Cell::List(resolved.collect())
+            }
         }
     }
 
@@ -49,6 +54,15 @@ impl<T: Eq + Clone> State<T> {
             match (a, b) {
                 (Cell::Var(av), bv) => Some(self.assign(av, bv)),
                 (av, Cell::Var(bv)) => Some(self.assign(bv, av)),
+                (Cell::List(a), Cell::List(b)) => {
+                    if a.len() == b.len() {
+                        let initial = self.clone();
+                        let mut pairs = a.iter().zip(b.iter());
+                        pairs.try_fold(initial, |s, (a, b)| s.unify(a, b))
+                    } else {
+                        None
+                    }
+                }
                 _ => None,
             }
         }
@@ -141,5 +155,16 @@ mod tests {
         let x = LVar::new();
         let state: State<u8> = State::new().assign(x, Cell::Value(5));
         assert_eq!(state.unify(&Cell::Var(x), &Cell::Value(6)), None);
+    }
+
+    #[test]
+    fn unify_list() {
+        let x = LVar::new();
+        let state: State<u8> = State::new();
+        let unified = state.unify(
+            &Cell::List(vec![Cell::Value(1), Cell::Var(x), Cell::Value(3)]),
+            &Cell::List(vec![Cell::Value(1), Cell::Value(2), Cell::Value(3)]),
+        );
+        assert_eq!(unified.unwrap().resolve_var(x), Cell::Value(2));
     }
 }

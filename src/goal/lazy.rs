@@ -27,7 +27,7 @@ mod tests {
             let x = Cell::Var(LVar::new());
             let yy = Cell::Var(y);
             // let yy = Cell::Var(LVar::new());
-            both(equal(x, Cell::Value(5)), equal(x, yy))
+            both(equal(x.clone(), Cell::Value(5)), equal(x, yy))
         });
 
         let mut result1 = goal.clone().run(&state);
