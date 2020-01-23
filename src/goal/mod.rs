@@ -24,7 +24,7 @@ pub enum Goal<T: Eq + Clone + 'static> {
 type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
 
 impl<T: Eq + Clone + 'static> Goal<T> {
-    fn run<'a>(self, state: &'a State<T>) -> GoalIter<T> {
+    pub fn run<'a>(self, state: &'a State<T>) -> GoalIter<T> {
         match self {
             Goal::Equal(goal) => Box::new(state.unify(&goal.a, &goal.b).into_iter()) as GoalIter<T>,
             Goal::Both(goal) => Box::new(
@@ -37,7 +37,7 @@ impl<T: Eq + Clone + 'static> Goal<T> {
         }
     }
 
-    fn run_in_each(self, mut states: GoalIter<T>) -> GoalIter<T> {
+    pub fn run_in_each(self, mut states: GoalIter<T>) -> GoalIter<T> {
         let first = states.next();
         match first {
             Some(state) => {
