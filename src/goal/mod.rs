@@ -1,5 +1,6 @@
 use crate::state::State;
-use std::iter::once;
+use itertools::Itertools;
+use std::iter::{empty, once};
 
 pub mod append;
 pub mod both;
@@ -31,11 +32,20 @@ impl<T: Eq + Clone + 'static> Goal<T> {
                     .zip(once(goal.b).cycle())
                     .flat_map(|(s, b)| b.run(&s)),
             ) as GoalIter<T>,
-            Goal::Either(goal) => Box::new(goal.a.run(&state).chain(goal.b.run(&state))),
-            Goal::Lazy(goal) => {
-                let func = goal.0;
-                func().run(state)
+            Goal::Either(goal) => Box::new(goal.a.run(&state).interleave(goal.b.run(&state))),
+            Goal::Lazy(goal) => (goal.0)().run(state),
+        }
+    }
+
+    fn run_in_each(self, mut states: GoalIter<T>) -> GoalIter<T> {
+        let first = states.next();
+        match first {
+            Some(state) => {
+                let head = self.clone().run(&state);
+                let tail = self.clone().run_in_each(states);
+                Box::new(head.interleave(tail))
             }
+            None => Box::new(empty()),
         }
     }
 }
