@@ -1,4 +1,6 @@
 use super::Goal;
+use super::{GoalIter, Pursue};
+use crate::State;
 use std::rc::Rc;
 
 pub fn lazy<T, F>(func: F) -> Goal<T>
@@ -11,6 +13,12 @@ where
 
 #[derive(Clone)]
 pub struct LazyGoal<T: Eq + Clone + 'static>(pub Rc<dyn Fn() -> Goal<T>>);
+
+impl<T: Eq + Clone + 'static> Pursue<T> for LazyGoal<T> {
+    fn run<'a>(self, state: &'a State<T>) -> GoalIter<T> {
+        (self.0)().run(state)
+    }
+}
 
 #[cfg(test)]
 mod tests {

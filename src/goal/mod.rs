@@ -1,6 +1,6 @@
 use crate::state::State;
 use itertools::Itertools;
-use std::iter::{empty, once};
+use std::iter::empty;
 
 pub mod append;
 pub mod both;
@@ -23,17 +23,17 @@ pub enum Goal<T: Eq + Clone + 'static> {
 
 type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
 
+pub trait Pursue<T: Eq + Clone> {
+    fn run<'a>(self, state: &'a State<T>) -> GoalIter<T>;
+}
+
 impl<T: Eq + Clone + 'static> Goal<T> {
     pub fn run<'a>(self, state: &'a State<T>) -> GoalIter<T> {
         match self {
-            Goal::Equal(goal) => Box::new(state.unify(&goal.a, &goal.b).into_iter()) as GoalIter<T>,
-            Goal::Both(goal) => Box::new(
-                (goal.a.run(&state))
-                    .zip(once(goal.b).cycle())
-                    .flat_map(|(s, b)| b.run(&s)),
-            ) as GoalIter<T>,
-            Goal::Either(goal) => Box::new(goal.a.run(&state).interleave(goal.b.run(&state))),
-            Goal::Lazy(goal) => (goal.0)().run(state),
+            Goal::Equal(goal) => goal.run(state),
+            Goal::Both(goal) => goal.run(state),
+            Goal::Either(goal) => goal.run(state),
+            Goal::Lazy(goal) => goal.run(state),
         }
     }
 
