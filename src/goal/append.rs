@@ -1,6 +1,6 @@
 use super::{both, either, equal, lazy, Goal};
-use crate::lvar::LVar;
-use crate::state::{pair, Cell};
+use crate::cell::pair::Pair;
+use crate::{Cell, LVar};
 
 pub fn append<T: Eq + Clone>(
     a: Cell<Option<T>>,
@@ -16,8 +16,8 @@ pub fn append<T: Eq + Clone>(
             let rest_of_c = LVar::new();
             return both(
                 both(
-                    equal(a.clone(), pair(first.into(), rest_of_a.into())),
-                    equal(c.clone(), pair(first.into(), rest_of_c.into())),
+                    equal(a.clone(), Pair::new(first.into(), rest_of_a.into())),
+                    equal(c.clone(), Pair::new(first.into(), rest_of_c.into())),
                 ),
                 append(rest_of_a.into(), b.clone(), rest_of_c.into()),
             );
@@ -28,19 +28,19 @@ pub fn append<T: Eq + Clone>(
 #[cfg(test)]
 mod tests {
     use super::append;
-    use crate::lvar::LVar;
-    use crate::state::{pair, Cell, State};
+    use crate::cell::pair::Pair;
+    use crate::{Cell, LVar, State};
 
     #[test]
     fn basic_append() {
         let state: State<Option<&str>> = State::new();
         let x = LVar::new();
-        let hi = pair(
+        let hi = Pair::new(
             Cell::Value(Some("h")),
-            pair(Cell::Value(Some("i")), Cell::Value(None)),
+            Pair::new(Cell::Value(Some("i")), Cell::Value(None)),
         );
-        let h = pair(Cell::Value(Some("h")), Cell::Value(None));
-        let i = pair(Cell::Value(Some("i")), Cell::Value(None));
+        let h = Pair::new(Cell::Value(Some("h")), Cell::Value(None));
+        let i = Pair::new(Cell::Value(Some("i")), Cell::Value(None));
         let goal = append(h, x.into(), hi);
 
         let mut result1 = goal.clone().run(&state);

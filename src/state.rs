@@ -1,23 +1,7 @@
-use crate::lvar::LVar;
+use crate::cell::lvar::LVar;
+use crate::cell::Cell;
+use crate::unify::Unify;
 use im::hashmap::HashMap;
-
-#[derive(PartialEq, Eq, Debug, Hash, Clone)]
-pub enum Cell<T: Eq + Clone> {
-    Var(LVar),
-    Value(T),
-    Pair(Box<(Cell<T>, Cell<T>)>),
-    List(Vec<Cell<T>>),
-}
-
-impl<T: Eq + Clone> From<LVar> for Cell<T> {
-    fn from(lvar: LVar) -> Self {
-        Cell::Var(lvar)
-    }
-}
-
-pub fn pair<T: Eq + Clone>(a: Cell<T>, b: Cell<T>) -> Cell<T> {
-    Cell::Pair(Box::new((a, b)))
-}
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct State<T: Eq + Clone> {
@@ -37,20 +21,16 @@ impl<T: Eq + Clone> State<T> {
         }
     }
 
-    pub fn resolve(&self, key: &Cell<T>) -> Cell<T> {
-        match key {
+    pub fn resolve(&self, cell: &Cell<T>) -> Cell<T> {
+        match cell {
             Cell::Var(lvar) => match self.values.get(lvar) {
                 Some(val) => self.resolve(val),
-                None => key.clone(),
+                None => cell.clone(),
             },
-            Cell::Value(_) => key.clone(),
-            Cell::Pair(pair) => {
-                Cell::Pair(Box::new((self.resolve(&pair.0), self.resolve(&pair.1))))
-            }
-            Cell::List(list) => {
-                let resolved = list.iter().map(|i| self.resolve(i));
-                Cell::List(resolved.collect())
-            }
+            Cell::Value(_) => cell.clone(),
+            Cell::Pair(p) => p.resolve_in(self),
+            Cell::Vec(v) => v.resolve_in(self),
+            Cell::Nil => Cell::Nil,
         }
     }
 
@@ -68,18 +48,8 @@ impl<T: Eq + Clone> State<T> {
             match (a, b) {
                 (Cell::Var(av), bv) => Some(self.assign(av, bv)),
                 (av, Cell::Var(bv)) => Some(self.assign(bv, av)),
-                (Cell::Pair(a), Cell::Pair(b)) => self
-                    .unify(&a.0, &b.0)
-                    .and_then(|state| state.unify(&a.1, &b.1)),
-                (Cell::List(a), Cell::List(b)) => {
-                    if a.len() == b.len() {
-                        let initial = self.clone();
-                        let mut pairs = a.iter().zip(b.iter());
-                        pairs.try_fold(initial, |s, (a, b)| s.unify(a, b))
-                    } else {
-                        None
-                    }
-                }
+                (Cell::Pair(a), Cell::Pair(b)) => a.unify_with(&b, self),
+                (Cell::Vec(a), Cell::Vec(b)) => a.unify_with(&b, self),
                 _ => None,
             }
         }
@@ -89,7 +59,7 @@ impl<T: Eq + Clone> State<T> {
 #[cfg(test)]
 mod tests {
     use super::{Cell, State};
-    use crate::lvar::LVar;
+    use crate::LVar;
     use im::HashMap;
 
     #[test]
@@ -179,8 +149,8 @@ mod tests {
         let x = LVar::new();
         let state: State<u8> = State::new();
         let unified = state.unify(
-            &Cell::List(vec![Cell::Value(1), Cell::Var(x), Cell::Value(3)]),
-            &Cell::List(vec![Cell::Value(1), Cell::Value(2), Cell::Value(3)]),
+            &Cell::Vec(vec![Cell::Value(1), Cell::Var(x), Cell::Value(3)]),
+            &Cell::Vec(vec![Cell::Value(1), Cell::Value(2), Cell::Value(3)]),
         );
         assert_eq!(unified.unwrap().resolve_var(x), Cell::Value(2));
     }

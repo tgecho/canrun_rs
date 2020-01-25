@@ -1,5 +1,5 @@
 use super::Goal;
-use crate::state::Cell;
+use crate::Cell;
 
 pub fn equal<T: Eq + Clone>(a: Cell<T>, b: Cell<T>) -> Goal<T> {
     Goal::Equal(EqualGoal { a, b })
@@ -14,8 +14,7 @@ pub struct EqualGoal<T: Eq + Clone> {
 #[cfg(test)]
 mod tests {
     use super::equal;
-    use crate::lvar::LVar;
-    use crate::state::{Cell, State};
+    use crate::{Cell, LVar, State};
     #[test]
     fn basic_equal() {
         let state: State<u32> = State::new();

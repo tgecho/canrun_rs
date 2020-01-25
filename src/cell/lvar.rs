@@ -35,7 +35,7 @@ impl LVar {
 
 #[cfg(test)]
 mod tests {
-    use crate::lvar::LVar;
+    use crate::cell::lvar::LVar;
     #[test]
     fn lvar_equality() {
         let x = LVar::new();

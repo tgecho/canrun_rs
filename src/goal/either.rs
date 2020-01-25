@@ -17,8 +17,7 @@ pub struct EitherGoal<T: Eq + Clone + 'static> {
 mod tests {
     use super::either;
     use crate::goal::equal;
-    use crate::lvar::LVar;
-    use crate::state::{Cell, State};
+    use crate::{Cell, LVar, State};
     #[test]
     fn basic_either() {
         let state: State<usize> = State::new();

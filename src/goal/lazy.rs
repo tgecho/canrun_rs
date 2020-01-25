@@ -16,8 +16,7 @@ pub struct LazyGoal<T: Eq + Clone + 'static>(pub Rc<dyn Fn() -> Goal<T>>);
 mod tests {
     use super::lazy;
     use crate::goal::{both, equal};
-    use crate::lvar::LVar;
-    use crate::state::{Cell, State};
+    use crate::{Cell, LVar, State};
 
     #[test]
     fn basic_lazy() {

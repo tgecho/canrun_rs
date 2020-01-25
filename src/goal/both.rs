@@ -17,8 +17,7 @@ pub struct BothGoal<T: Eq + Clone + 'static> {
 mod tests {
     use super::both;
     use crate::goal::equal;
-    use crate::lvar::LVar;
-    use crate::state::{Cell, State};
+    use crate::{Cell, LVar, State};
     #[test]
     fn basic_both() {
         let state: State<usize> = State::new();
