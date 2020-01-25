@@ -12,7 +12,7 @@ pub mod lazy;
 pub use both::both;
 pub use either::either;
 pub use equal::equal;
-pub use lazy::lazy;
+pub use lazy::{lazy, with1, with2, with3};
 
 #[derive(Clone)]
 pub enum Goal<T: Eq + Clone + 'static> {

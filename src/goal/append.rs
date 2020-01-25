@@ -1,21 +1,18 @@
-use super::{both, either, equal, lazy, Goal};
+use super::{both, either, equal, with3, Goal};
 use crate::cell::pair::Pair;
-use crate::{Cell, LVar};
+use crate::Cell;
 
 pub fn append<T: Eq + Clone>(a: Cell<T>, b: Cell<T>, c: Cell<T>) -> Goal<T> {
     either(
         both(equal(a.clone(), Cell::Nil), equal(b.clone(), c.clone())),
-        lazy(move || {
-            let first = LVar::new();
-            let rest_of_a = LVar::new();
-            let rest_of_c = LVar::new();
-            return both(
+        with3(move |first, rest_of_a, rest_of_c| {
+            both(
                 both(
                     equal(a.clone(), Pair::new(first.into(), rest_of_a.into())),
                     equal(c.clone(), Pair::new(first.into(), rest_of_c.into())),
                 ),
                 append(rest_of_a.into(), b.clone(), rest_of_c.into()),
-            );
+            )
         }),
     )
 }
