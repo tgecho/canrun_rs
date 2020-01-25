@@ -11,6 +11,7 @@ pub mod both;
 pub mod either;
 pub mod equal;
 pub mod lazy;
+pub mod not;
 
 pub use all::all;
 pub use any::any;
@@ -18,6 +19,7 @@ pub use both::both;
 pub use either::either;
 pub use equal::equal;
 pub use lazy::{lazy, with1, with2, with3};
+pub use not::not;
 
 #[derive(Clone)]
 pub enum Goal<T: Eq + Clone + 'static> {
@@ -27,6 +29,7 @@ pub enum Goal<T: Eq + Clone + 'static> {
     Both { a: Box<Goal<T>>, b: Box<Goal<T>> },
     Either { a: Box<Goal<T>>, b: Box<Goal<T>> },
     Lazy(Rc<dyn Fn() -> Goal<T>>),
+    Not(Box<Goal<T>>),
 }
 
 type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
@@ -39,7 +42,7 @@ impl<T: Eq + Clone + 'static> Goal<T> {
     pub fn run<'a>(self, state: &'a State<T>) -> GoalIter<T> {
         match self {
             Goal::Succeed => Box::new(once(state.clone())),
-            Goal::Fail => Box::new(empty()),
+            Goal::Fail => Box::new(empty()) as GoalIter<T>,
             Goal::Equal { a, b } => Box::new(state.unify(&a, &b).into_iter()),
             Goal::Both { a, b } => Box::new(
                 (a.run(&state))
@@ -48,6 +51,14 @@ impl<T: Eq + Clone + 'static> Goal<T> {
             ),
             Goal::Either { a, b } => Box::new(a.run(&state).interleave(b.run(&state))),
             Goal::Lazy(func) => func().run(state),
+            Goal::Not(goal) => {
+                let mut iter = goal.run(state);
+                if iter.next().is_some() {
+                    Box::new(empty()) as GoalIter<T>
+                } else {
+                    Box::new(once(state.clone())) as GoalIter<T>
+                }
+            }
         }
     }
 
@@ -73,6 +84,7 @@ impl<T: Eq + Clone + fmt::Debug> fmt::Debug for Goal<T> {
             Goal::Both { a, b } => write!(f, "Both {{ {:?}, {:?} }}", a, b),
             Goal::Either { a, b } => write!(f, "Either {{ {:?}, {:?} }}", a, b),
             Goal::Lazy(lazy) => write!(f, "Lazy(|| => {:?})", lazy()),
+            Goal::Not(goal) => write!(f, "Not({:?})", goal),
         }
     }
 }
