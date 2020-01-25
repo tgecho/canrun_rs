@@ -1,21 +1,8 @@
 use super::Goal;
-use super::{GoalIter, Pursue};
-use crate::{Cell, State};
+use crate::Cell;
 
 pub fn equal<T: Eq + Clone>(a: Cell<T>, b: Cell<T>) -> Goal<T> {
-    Goal::Equal(EqualGoal { a, b })
-}
-
-impl<T: Eq + Clone + 'static> Pursue<T> for EqualGoal<T> {
-    fn run<'a>(self, state: &'a State<T>) -> GoalIter<T> {
-        Box::new(state.unify(&self.a, &self.b).into_iter())
-    }
-}
-
-#[derive(Clone)]
-pub struct EqualGoal<T: Eq + Clone> {
-    pub a: Cell<T>,
-    pub b: Cell<T>,
+    Goal::Equal { a, b }
 }
 
 #[cfg(test)]

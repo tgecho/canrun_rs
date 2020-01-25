@@ -1,6 +1,7 @@
-use crate::state::State;
+use crate::{Cell, State};
 use itertools::Itertools;
-use std::iter::empty;
+use std::iter::{empty, once};
+use std::rc::Rc;
 
 pub mod append;
 pub mod both;
@@ -15,10 +16,10 @@ pub use lazy::lazy;
 
 #[derive(Clone)]
 pub enum Goal<T: Eq + Clone + 'static> {
-    Equal(equal::EqualGoal<T>),
-    Both(both::BothGoal<T>),
-    Either(either::EitherGoal<T>),
-    Lazy(lazy::LazyGoal<T>),
+    Equal { a: Cell<T>, b: Cell<T> },
+    Both { a: Box<Goal<T>>, b: Box<Goal<T>> },
+    Either { a: Box<Goal<T>>, b: Box<Goal<T>> },
+    Lazy(Rc<dyn Fn() -> Goal<T>>),
 }
 
 type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
@@ -30,10 +31,14 @@ pub trait Pursue<T: Eq + Clone> {
 impl<T: Eq + Clone + 'static> Goal<T> {
     pub fn run<'a>(self, state: &'a State<T>) -> GoalIter<T> {
         match self {
-            Goal::Equal(goal) => goal.run(state),
-            Goal::Both(goal) => goal.run(state),
-            Goal::Either(goal) => goal.run(state),
-            Goal::Lazy(goal) => goal.run(state),
+            Goal::Equal { a, b } => Box::new(state.unify(&a, &b).into_iter()),
+            Goal::Both { a, b } => Box::new(
+                (a.run(&state))
+                    .zip(once(b).cycle())
+                    .flat_map(|(s, b)| b.run(&s)),
+            ),
+            Goal::Either { a, b } => Box::new(a.run(&state).interleave(b.run(&state))),
+            Goal::Lazy(func) => func().run(state),
         }
     }
 

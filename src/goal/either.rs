@@ -1,24 +1,9 @@
 use super::Goal;
-use super::{GoalIter, Pursue};
-use crate::State;
-use itertools::Itertools;
 
 pub fn either<T: Eq + Clone>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
-    Goal::Either(EitherGoal {
+    Goal::Either {
         a: Box::new(a),
         b: Box::new(b),
-    })
-}
-
-#[derive(Clone)]
-pub struct EitherGoal<T: Eq + Clone + 'static> {
-    pub a: Box<Goal<T>>,
-    pub b: Box<Goal<T>>,
-}
-
-impl<T: Eq + Clone + 'static> Pursue<T> for EitherGoal<T> {
-    fn run<'a>(self, state: &'a State<T>) -> GoalIter<T> {
-        Box::new(self.a.run(&state).interleave(self.b.run(&state)))
     }
 }
 
