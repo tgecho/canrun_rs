@@ -25,14 +25,13 @@ mod tests {
         let goal = lazy(move || {
             let x = Cell::Var(LVar::new());
             let yy = Cell::Var(y);
-            // let yy = Cell::Var(LVar::new());
             both(equal(x.clone(), Cell::Value(5)), equal(x, yy))
         });
 
         let mut result1 = goal.clone().run(&state);
         assert_eq!(result1.nth(0).unwrap().resolve_var(y), Cell::Value(5));
 
-        // This shows that lazy a clone we can run the same goal again
+        // This shows that we can run the same lazy goal again
         let mut result2 = goal.run(&state);
         assert_eq!(result2.nth(0).unwrap().resolve_var(y), Cell::Value(5));
     }

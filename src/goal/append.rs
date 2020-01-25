@@ -2,14 +2,9 @@ use super::{both, either, equal, lazy, Goal};
 use crate::cell::pair::Pair;
 use crate::{Cell, LVar};
 
-pub fn append<T: Eq + Clone>(
-    a: Cell<Option<T>>,
-    b: Cell<Option<T>>,
-    c: Cell<Option<T>>,
-) -> Goal<Option<T>> {
-    let empty: Cell<Option<T>> = Cell::Value(None);
+pub fn append<T: Eq + Clone>(a: Cell<T>, b: Cell<T>, c: Cell<T>) -> Goal<T> {
     either(
-        both(equal(a.clone(), empty), equal(b.clone(), c.clone())),
+        both(equal(a.clone(), Cell::Nil), equal(b.clone(), c.clone())),
         lazy(move || {
             let first = LVar::new();
             let rest_of_a = LVar::new();
@@ -37,10 +32,10 @@ mod tests {
         let x = LVar::new();
         let hi = Pair::new(
             Cell::Value(Some("h")),
-            Pair::new(Cell::Value(Some("i")), Cell::Value(None)),
+            Pair::new(Cell::Value(Some("i")), Cell::Nil),
         );
-        let h = Pair::new(Cell::Value(Some("h")), Cell::Value(None));
-        let i = Pair::new(Cell::Value(Some("i")), Cell::Value(None));
+        let h = Pair::new(Cell::Value(Some("h")), Cell::Nil);
+        let i = Pair::new(Cell::Value(Some("i")), Cell::Nil);
         let goal = append(h, x.into(), hi);
 
         let mut result1 = goal.clone().run(&state);
