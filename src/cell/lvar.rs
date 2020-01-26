@@ -1,3 +1,4 @@
+use std::fmt;
 use std::hash::Hash;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -6,7 +7,7 @@ fn get_id() -> usize {
     COUNTER.fetch_add(1, Ordering::Relaxed)
 }
 
-#[derive(Eq, Debug, Clone, Copy, Hash)]
+#[derive(Eq, Clone, Copy, Hash)]
 pub struct LVar {
     id: usize,
     label: Option<&'static str>,
@@ -29,6 +30,15 @@ impl LVar {
         LVar {
             id: get_id(),
             label: Some(label),
+        }
+    }
+}
+
+impl fmt::Debug for LVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.label {
+            Some(label) => write!(f, "LVar({}/{})", self.id, label),
+            None => write!(f, "LVar({})", self.id),
         }
     }
 }
