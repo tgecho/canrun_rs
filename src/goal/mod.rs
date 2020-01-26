@@ -35,7 +35,7 @@ pub enum Goal<T: Eq + Clone + 'static> {
     Member {
         // TODO: should haystack be an iterator (or something convertable into one?)
         needle: Cell<T>,
-        haystack: Vec<Cell<T>>,
+        iter: Rc<dyn Fn() -> Box<dyn Iterator<Item = Cell<T>>>>,
     },
 }
 
@@ -58,13 +58,8 @@ impl<T: Eq + Clone> Goal<T> {
             ),
             Goal::Either { a, b } => Box::new(a.run(state.clone()).interleave(b.run(state))),
             Goal::Lazy(func) => func().run(state),
-            Goal::Member { needle, haystack } => {
-                let state = Rc::new(state);
-                Box::new(
-                    haystack
-                        .into_iter()
-                        .flat_map(move |c| state.unify(&needle, &c).into_iter()),
-                )
+            Goal::Member { needle, iter } => {
+                Box::new(iter().flat_map(move |c| state.unify(&needle, &c).into_iter()))
             }
             Goal::Not(goal) => {
                 let mut iter = goal.run(state.clone());
@@ -88,8 +83,14 @@ impl<T: Eq + Clone + fmt::Debug> fmt::Debug for Goal<T> {
             Goal::Either { a, b } => write!(f, "Either {{ {:?}, {:?} }}", a, b),
             Goal::Lazy(lazy) => write!(f, "Lazy(|| => {:?})", lazy()),
             Goal::Not(goal) => write!(f, "Not({:?})", goal),
-            Goal::Member { needle, haystack } => {
-                write!(f, "Member({:?} in {:?})", needle, haystack)
+            Goal::Member { needle, iter } => {
+                let items: Vec<_> = iter().take(6).map(|i| format!("{:?}", i)).collect();
+                let joined = if items.len() == 6 {
+                    format!("{}, ...", items.iter().take(5).join(", "))
+                } else {
+                    items.join(", ")
+                };
+                write!(f, "Member({:?} in [{}])", needle, joined)
             }
         }
     }
