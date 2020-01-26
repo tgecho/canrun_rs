@@ -27,42 +27,30 @@ pub enum Goal<T: Eq + Clone + 'static> {
 type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
 
 pub trait Pursue<T: Eq + Clone> {
-    fn run<'a>(self, state: &'a State<T>) -> GoalIter<T>;
+    fn run(self, state: State<T>) -> GoalIter<T>;
 }
 
-impl<T: Eq + Clone + 'static> Goal<T> {
-    pub fn run<'a>(self, state: &'a State<T>) -> GoalIter<T> {
+impl<T: Eq + Clone> Goal<T> {
+    pub fn run(self, state: State<T>) -> GoalIter<T> {
         match self {
             Goal::Succeed => Box::new(once(state.clone())),
-            Goal::Fail => Box::new(empty()) as GoalIter<T>,
+            Goal::Fail => Box::new(empty()),
             Goal::Equal { a, b } => Box::new(state.unify(&a, &b).into_iter()),
             Goal::Both { a, b } => Box::new(
-                (a.run(&state))
+                (a.run(state))
                     .zip(once(b).cycle())
-                    .flat_map(|(s, b)| b.run(&s)),
+                    .flat_map(|(s, b)| b.run(s)),
             ),
-            Goal::Either { a, b } => Box::new(a.run(&state).interleave(b.run(&state))),
+            Goal::Either { a, b } => Box::new(a.run(state.clone()).interleave(b.run(state))),
             Goal::Lazy(func) => func().run(state),
             Goal::Not(goal) => {
-                let mut iter = goal.run(state);
+                let mut iter = goal.run(state.clone());
                 if iter.next().is_some() {
-                    Box::new(empty()) as GoalIter<T>
+                    Box::new(empty())
                 } else {
-                    Box::new(once(state.clone())) as GoalIter<T>
+                    Box::new(once(state))
                 }
             }
-        }
-    }
-
-    pub fn run_in_each(self, mut states: GoalIter<T>) -> GoalIter<T> {
-        let first = states.next();
-        match first {
-            Some(state) => {
-                let head = self.clone().run(&state);
-                let tail = self.clone().run_in_each(states);
-                Box::new(head.interleave(tail))
-            }
-            None => Box::new(empty()),
         }
     }
 }

@@ -40,7 +40,6 @@ mod tests {
 
     #[test]
     fn basic_lazy() {
-        let state: State<u32> = State::new();
         let y = LVar::new();
         let goal = lazy(move || {
             let x = Cell::Var(LVar::new());
@@ -48,11 +47,11 @@ mod tests {
             both(equal(x.clone(), Cell::Value(5)), equal(x, yy))
         });
 
-        let mut result1 = goal.clone().run(&state);
+        let mut result1 = goal.clone().run(State::new());
         assert_eq!(result1.nth(0).unwrap().resolve_var(y), Cell::Value(5));
 
         // This shows that we can run the same lazy goal again
-        let mut result2 = goal.run(&state);
+        let mut result2 = goal.run(State::new());
         assert_eq!(result2.nth(0).unwrap().resolve_var(y), Cell::Value(5));
     }
 }

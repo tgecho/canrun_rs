@@ -35,7 +35,7 @@ mod tests {
         let i = Pair::new(Cell::Value(Some("i")), Cell::Nil);
         let goal = append(h, x.into(), hi);
 
-        let mut result1 = goal.clone().run(&state);
+        let mut result1 = goal.clone().run(state);
         assert_eq!(result1.nth(0).unwrap().resolve_var(x), i);
     }
 }

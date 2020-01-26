@@ -24,7 +24,7 @@ mod tests {
             equal(x.into(), Cell::Value(5)),
             equal(y.into(), Cell::Value(7)),
         ]);
-        let results: Vec<State<usize>> = goal.run(&state).collect();
+        let results: Vec<State<usize>> = goal.run(state).collect();
         assert_eq!(results[0].resolve_var(y), Cell::Value(7));
         assert_eq!(results[1].resolve_var(x), Cell::Value(5));
     }
@@ -32,6 +32,6 @@ mod tests {
     fn any_fail() {
         let state: State<usize> = State::new();
         let goal = any(vec![equal(Cell::Value(5), Cell::Value(6)), Goal::Fail]);
-        assert_eq!(goal.run(&state).nth(0), None);
+        assert_eq!(goal.run(state).nth(0), None);
     }
 }

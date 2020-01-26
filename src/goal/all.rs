@@ -24,7 +24,7 @@ mod tests {
             equal(y.into(), Cell::Value(7)),
             Goal::Succeed,
         ]);
-        let result = goal.run(&state).nth(0).unwrap();
+        let result = goal.run(state).nth(0).unwrap();
         assert_eq!(result.resolve_var(x), Cell::Value(5));
         assert_eq!(result.resolve_var(y), Cell::Value(7));
     }
@@ -36,6 +36,6 @@ mod tests {
             Goal::Succeed,
             Goal::Fail,
         ]);
-        assert_eq!(goal.run(&state).nth(0), None);
+        assert_eq!(goal.run(state).nth(0), None);
     }
 }

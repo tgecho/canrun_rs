@@ -18,7 +18,7 @@ mod tests {
         let y = LVar::new();
         let yv = Cell::Var(y);
         let goal = both(equal(xv.clone(), Cell::Value(5)), equal(yv, Cell::Value(7)));
-        let result = goal.run(&state).nth(0).unwrap();
+        let result = goal.run(state).nth(0).unwrap();
         assert_eq!(result.resolve_var(x), Cell::Value(5));
         assert_eq!(result.resolve_var(y), Cell::Value(7));
     }

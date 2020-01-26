@@ -14,7 +14,7 @@ mod tests {
         let state: State<u32> = State::new();
         let x = LVar::new();
         let goal = equal(Cell::Var(x), Cell::Value(5));
-        let mut result = goal.run(&state);
+        let mut result = goal.run(state);
         assert_eq!(result.nth(0).unwrap().resolve_var(x), Cell::Value(5));
     }
 }
