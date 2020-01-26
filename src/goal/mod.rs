@@ -11,17 +11,32 @@ pub mod both;
 pub mod either;
 pub mod equal;
 pub mod lazy;
+pub mod member;
 pub mod not;
 
 #[derive(Clone)]
 pub enum Goal<T: Eq + Clone + 'static> {
     Succeed,
     Fail,
-    Equal { a: Cell<T>, b: Cell<T> },
-    Both { a: Box<Goal<T>>, b: Box<Goal<T>> },
-    Either { a: Box<Goal<T>>, b: Box<Goal<T>> },
+    Equal {
+        a: Cell<T>,
+        b: Cell<T>,
+    },
+    Both {
+        a: Box<Goal<T>>,
+        b: Box<Goal<T>>,
+    },
+    Either {
+        a: Box<Goal<T>>,
+        b: Box<Goal<T>>,
+    },
     Lazy(Rc<dyn Fn() -> Goal<T>>),
     Not(Box<Goal<T>>),
+    Member {
+        // TODO: should haystack be an iterator (or something convertable into one?)
+        needle: Cell<T>,
+        haystack: Vec<Cell<T>>,
+    },
 }
 
 type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
@@ -43,6 +58,14 @@ impl<T: Eq + Clone> Goal<T> {
             ),
             Goal::Either { a, b } => Box::new(a.run(state.clone()).interleave(b.run(state))),
             Goal::Lazy(func) => func().run(state),
+            Goal::Member { needle, haystack } => {
+                let state = Rc::new(state);
+                Box::new(
+                    haystack
+                        .into_iter()
+                        .flat_map(move |c| state.unify(&needle, &c).into_iter()),
+                )
+            }
             Goal::Not(goal) => {
                 let mut iter = goal.run(state.clone());
                 if iter.next().is_some() {
@@ -65,6 +88,9 @@ impl<T: Eq + Clone + fmt::Debug> fmt::Debug for Goal<T> {
             Goal::Either { a, b } => write!(f, "Either {{ {:?}, {:?} }}", a, b),
             Goal::Lazy(lazy) => write!(f, "Lazy(|| => {:?})", lazy()),
             Goal::Not(goal) => write!(f, "Not({:?})", goal),
+            Goal::Member { needle, haystack } => {
+                write!(f, "Member({:?} in {:?})", needle, haystack)
+            }
         }
     }
 }
