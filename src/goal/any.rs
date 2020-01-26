@@ -13,9 +13,7 @@ pub fn any<T: Eq + Clone>(goals: Vec<Goal<T>>) -> Goal<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::any;
-    use crate::goal::{equal, Goal};
-    use crate::{Cell, LVar, State};
+    use crate::{any, equal, Cell, Goal, LVar, State};
     #[test]
     fn any_succeed() {
         let state: State<usize> = State::new();

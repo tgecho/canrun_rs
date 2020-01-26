@@ -13,14 +13,6 @@ pub mod equal;
 pub mod lazy;
 pub mod not;
 
-pub use all::all;
-pub use any::any;
-pub use both::both;
-pub use either::either;
-pub use equal::equal;
-pub use lazy::{lazy, with1, with2, with3};
-pub use not::not;
-
 #[derive(Clone)]
 pub enum Goal<T: Eq + Clone + 'static> {
     Succeed,

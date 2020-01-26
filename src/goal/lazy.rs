@@ -36,9 +36,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::lazy;
-    use crate::goal::{both, equal};
-    use crate::{Cell, LVar, State};
+    use crate::{both, equal, lazy, Cell, LVar, State};
 
     #[test]
     fn basic_lazy() {

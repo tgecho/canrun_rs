@@ -9,9 +9,7 @@ pub fn either<T: Eq + Clone>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::either;
-    use crate::goal::equal;
-    use crate::{Cell, LVar, State};
+    use crate::{either, equal, Cell, LVar, State};
     #[test]
     fn basic_either() {
         let state: State<usize> = State::new();

@@ -9,9 +9,7 @@ pub fn both<T: Eq + Clone>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::both;
-    use crate::goal::equal;
-    use crate::{Cell, LVar, State};
+    use crate::{both, equal, Cell, LVar, State};
     #[test]
     fn basic_both() {
         let state: State<usize> = State::new();

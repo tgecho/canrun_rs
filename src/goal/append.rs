@@ -1,6 +1,6 @@
-use super::{both, either, equal, with3, Goal};
 use crate::cell::pair::Pair;
 use crate::Cell;
+use crate::{both, either, equal, with3, Goal};
 
 pub fn append<T: Eq + Clone>(a: Cell<T>, b: Cell<T>, c: Cell<T>) -> Goal<T> {
     either(

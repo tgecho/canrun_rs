@@ -6,8 +6,7 @@ pub fn not<T: Eq + Clone>(goal: Goal<T>) -> Goal<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::{any, both, equal, not};
-    use crate::{Cell, LVar, State};
+    use crate::{any, both, equal, not, Cell, LVar, State};
     #[test]
     fn simple_not() {
         let state: State<u32> = State::new();
