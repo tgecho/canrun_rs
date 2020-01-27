@@ -4,11 +4,11 @@ use std::rc::Rc;
 
 pub fn member<T: Eq + Clone, I>(needle: Can<T>, haystack: I) -> Goal<T>
 where
-    I: 'static + Clone + Iterator<Item = Can<T>>,
+    I: 'static + Clone + IntoIterator<Item = Can<T>>,
 {
     Goal::Member {
         needle,
-        iter: Rc::new(move || Box::new(haystack.clone())),
+        iter: Rc::new(move || Box::new(haystack.clone().into_iter())),
     }
 }
 
@@ -19,10 +19,7 @@ mod tests {
     #[test]
     fn basic_member() {
         let x = LVar::new();
-        let goal = member(
-            Can::Var(x),
-            vec![Can::Val(1), Can::Val(2), Can::Val(3)].into_iter(),
-        );
+        let goal = member(Can::Var(x), vec![Can::Val(1), Can::Val(2), Can::Val(3)]);
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(x)).collect();
         assert_eq!(result, vec![Can::Val(1), Can::Val(2), Can::Val(3)]);
     }
@@ -31,10 +28,7 @@ mod tests {
         let x = LVar::new();
         let goal = both(
             equal(Can::Var(x), Can::Val(2)),
-            member(
-                Can::Var(x),
-                vec![Can::Val(1), Can::Val(2), Can::Val(3)].into_iter(),
-            ),
+            member(Can::Var(x), vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
         );
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(x)).collect();
         assert_eq!(result, vec![Can::Val(2)]);
@@ -56,8 +50,7 @@ mod tests {
                     vec![
                         rel(Can::Val(0), Can::Val(1), Can::Val(2)),
                         rel(Can::Val(3), Can::Val(4), Can::Val(5)),
-                    ]
-                    .into_iter(),
+                    ],
                 ),
             );
             let result: Vec<_> = goal
@@ -99,8 +92,7 @@ mod tests {
                 vec![
                     rel(Can::Val(0), Can::Val(1), Can::Val(2)),
                     rel(Can::Val(3), Can::Val(4), Can::Val(5)),
-                ]
-                .into_iter(),
+                ],
             ),
         );
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(y)).collect();
