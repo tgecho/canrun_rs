@@ -1,10 +1,10 @@
-use crate::cell::pair::Pair;
-use crate::Cell;
+use crate::can::pair::Pair;
+use crate::Can;
 use crate::{both, either, equal, with3, Goal};
 
-pub fn append<T: Eq + Clone>(a: Cell<T>, b: Cell<T>, c: Cell<T>) -> Goal<T> {
+pub fn append<T: Eq + Clone>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
     either(
-        both(equal(a.clone(), Cell::Nil), equal(b.clone(), c.clone())),
+        both(equal(a.clone(), Can::Nil), equal(b.clone(), c.clone())),
         with3(move |first, rest_of_a, rest_of_c| {
             both(
                 both(
@@ -20,19 +20,19 @@ pub fn append<T: Eq + Clone>(a: Cell<T>, b: Cell<T>, c: Cell<T>) -> Goal<T> {
 #[cfg(test)]
 mod tests {
     use super::append;
-    use crate::cell::pair::Pair;
-    use crate::{Cell, LVar, State};
+    use crate::can::pair::Pair;
+    use crate::{Can, LVar, State};
 
     #[test]
     fn basic_append() {
         let state: State<Option<&str>> = State::new();
         let x = LVar::new();
         let hi = Pair::new(
-            Cell::Value(Some("h")),
-            Pair::new(Cell::Value(Some("i")), Cell::Nil),
+            Can::Val(Some("h")),
+            Pair::new(Can::Val(Some("i")), Can::Nil),
         );
-        let h = Pair::new(Cell::Value(Some("h")), Cell::Nil);
-        let i = Pair::new(Cell::Value(Some("i")), Cell::Nil);
+        let h = Pair::new(Can::Val(Some("h")), Can::Nil);
+        let i = Pair::new(Can::Val(Some("i")), Can::Nil);
         let goal = append(h, x.into(), hi);
 
         let mut result1 = goal.clone().run(state);

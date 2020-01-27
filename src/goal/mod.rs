@@ -1,4 +1,4 @@
-use crate::{Cell, State};
+use crate::{Can, State};
 use itertools::Itertools;
 use std::fmt;
 use std::iter::{empty, once};
@@ -19,8 +19,8 @@ pub enum Goal<T: Eq + Clone + 'static> {
     Succeed,
     Fail,
     Equal {
-        a: Cell<T>,
-        b: Cell<T>,
+        a: Can<T>,
+        b: Can<T>,
     },
     Both {
         a: Box<Goal<T>>,
@@ -34,8 +34,8 @@ pub enum Goal<T: Eq + Clone + 'static> {
     Not(Box<Goal<T>>),
     Member {
         // TODO: should haystack be an iterator (or something convertable into one?)
-        needle: Cell<T>,
-        iter: Rc<dyn Fn() -> Box<dyn Iterator<Item = Cell<T>>>>,
+        needle: Can<T>,
+        iter: Rc<dyn Fn() -> Box<dyn Iterator<Item = Can<T>>>>,
     },
 }
 

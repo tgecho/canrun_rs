@@ -1,11 +1,11 @@
-use crate::cell::Cell;
+use crate::can::Can;
 use crate::state::State;
 use crate::unify::Unify;
 
-impl<T: Eq + Clone> Unify<T> for Vec<Cell<T>> {
-    fn resolve_in(&self, state: &State<T>) -> Cell<T> {
+impl<T: Eq + Clone> Unify<T> for Vec<Can<T>> {
+    fn resolve_in(&self, state: &State<T>) -> Can<T> {
         let resolved = self.iter().map(|i| state.resolve(i));
-        Cell::Vec(resolved.collect())
+        Can::Vec(resolved.collect())
     }
 
     fn unify_with(&self, other: &Self, state: &State<T>) -> Option<State<T>> {

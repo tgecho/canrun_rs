@@ -1,10 +1,10 @@
 use super::Goal;
-use crate::Cell;
+use crate::Can;
 use std::rc::Rc;
 
-pub fn member<T: Eq + Clone, I>(needle: Cell<T>, haystack: I) -> Goal<T>
+pub fn member<T: Eq + Clone, I>(needle: Can<T>, haystack: I) -> Goal<T>
 where
-    I: 'static + Clone + Iterator<Item = Cell<T>>,
+    I: 'static + Clone + Iterator<Item = Can<T>>,
 {
     Goal::Member {
         needle,
@@ -15,36 +15,36 @@ where
 #[cfg(test)]
 mod tests {
     use super::member;
-    use crate::{any, both, equal, Cell, LVar, Pair, State};
+    use crate::{any, both, equal, Can, LVar, Pair, State};
     #[test]
     fn basic_member() {
         let x = LVar::new();
         let goal = member(
-            Cell::Var(x),
-            vec![Cell::Value(1), Cell::Value(2), Cell::Value(3)].into_iter(),
+            Can::Var(x),
+            vec![Can::Val(1), Can::Val(2), Can::Val(3)].into_iter(),
         );
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(x)).collect();
-        assert_eq!(result, vec![Cell::Value(1), Cell::Value(2), Cell::Value(3)]);
+        assert_eq!(result, vec![Can::Val(1), Can::Val(2), Can::Val(3)]);
     }
     #[test]
     fn member_with_conditions() {
         let x = LVar::new();
         let goal = both(
-            equal(Cell::Var(x), Cell::Value(2)),
+            equal(Can::Var(x), Can::Val(2)),
             member(
-                Cell::Var(x),
-                vec![Cell::Value(1), Cell::Value(2), Cell::Value(3)].into_iter(),
+                Can::Var(x),
+                vec![Can::Val(1), Can::Val(2), Can::Val(3)].into_iter(),
             ),
         );
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(x)).collect();
-        assert_eq!(result, vec![Cell::Value(2)]);
+        assert_eq!(result, vec![Can::Val(2)]);
     }
     #[test]
     fn member_with_pairs() {
         let x = LVar::new();
         let y = LVar::new();
 
-        fn rel<T: Eq + Clone>(a: Cell<T>, b: Cell<T>, c: Cell<T>) -> Cell<T> {
+        fn rel<T: Eq + Clone>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
             Pair::new(a, Pair::new(b, c))
         }
 
@@ -54,8 +54,8 @@ mod tests {
                 member(
                     x.into(),
                     vec![
-                        rel(Cell::Value(0), Cell::Value(1), Cell::Value(2)),
-                        rel(Cell::Value(3), Cell::Value(4), Cell::Value(5)),
+                        rel(Can::Val(0), Can::Val(1), Can::Val(2)),
+                        rel(Can::Val(3), Can::Val(4), Can::Val(5)),
                     ]
                     .into_iter(),
                 ),
@@ -68,49 +68,43 @@ mod tests {
         };
 
         assert_eq!(
-            find(rel(y.into(), Cell::Value(1), Cell::Value(2))),
-            vec![(
-                Cell::Value(0),
-                rel(Cell::Value(0), Cell::Value(1), Cell::Value(2))
-            )]
+            find(rel(y.into(), Can::Val(1), Can::Val(2))),
+            vec![(Can::Val(0), rel(Can::Val(0), Can::Val(1), Can::Val(2)))]
         );
 
         assert_eq!(
-            find(rel(Cell::Value(0), y.into(), Cell::Value(2))),
-            vec![(
-                Cell::Value(1),
-                rel(Cell::Value(0), Cell::Value(1), Cell::Value(2))
-            )]
+            find(rel(Can::Val(0), y.into(), Can::Val(2))),
+            vec![(Can::Val(1), rel(Can::Val(0), Can::Val(1), Can::Val(2)))]
         );
 
-        assert_eq!(find(rel(Cell::Value(1), y.into(), Cell::Value(2))), vec![]);
+        assert_eq!(find(rel(Can::Val(1), y.into(), Can::Val(2))), vec![]);
     }
     #[test]
     fn member_with_pairs_complex() {
         let x = LVar::new();
         let y = LVar::new();
 
-        fn rel<T: Eq + Clone>(a: Cell<T>, b: Cell<T>, c: Cell<T>) -> Cell<T> {
+        fn rel<T: Eq + Clone>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
             Pair::new(a, Pair::new(b, c))
         }
 
         let goal = both(
             any(vec![
-                equal(x.into(), rel(Cell::Value(0), y.into(), Cell::Value(2))),
-                equal(x.into(), rel(y.into(), Cell::Value(1), Cell::Value(2))),
-                equal(x.into(), rel(Cell::Value(3), Cell::Value(4), y.into())),
+                equal(x.into(), rel(Can::Val(0), y.into(), Can::Val(2))),
+                equal(x.into(), rel(y.into(), Can::Val(1), Can::Val(2))),
+                equal(x.into(), rel(Can::Val(3), Can::Val(4), y.into())),
             ]),
             member(
                 x.into(),
                 vec![
-                    rel(Cell::Value(0), Cell::Value(1), Cell::Value(2)),
-                    rel(Cell::Value(3), Cell::Value(4), Cell::Value(5)),
+                    rel(Can::Val(0), Can::Val(1), Can::Val(2)),
+                    rel(Can::Val(3), Can::Val(4), Can::Val(5)),
                 ]
                 .into_iter(),
             ),
         );
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(y)).collect();
 
-        assert_eq!(result, vec![Cell::Value(5), Cell::Value(0), Cell::Value(1)]);
+        assert_eq!(result, vec![Can::Val(5), Can::Val(0), Can::Val(1)]);
     }
 }

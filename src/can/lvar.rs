@@ -45,7 +45,7 @@ impl fmt::Debug for LVar {
 
 #[cfg(test)]
 mod tests {
-    use crate::cell::lvar::LVar;
+    use crate::can::lvar::LVar;
     #[test]
     fn lvar_equality() {
         let x = LVar::new();

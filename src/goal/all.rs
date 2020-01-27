@@ -13,26 +13,26 @@ pub fn all<T: Eq + Clone>(goals: Vec<Goal<T>>) -> Goal<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{all, equal, Cell, Goal, LVar, State};
+    use crate::{all, equal, Can, Goal, LVar, State};
     #[test]
     fn all_succeed() {
         let state: State<usize> = State::new();
         let x = LVar::new();
         let y = LVar::new();
         let goal = all(vec![
-            equal(x.into(), Cell::Value(5)),
-            equal(y.into(), Cell::Value(7)),
+            equal(x.into(), Can::Val(5)),
+            equal(y.into(), Can::Val(7)),
             Goal::Succeed,
         ]);
         let result = goal.run(state).nth(0).unwrap();
-        assert_eq!(result.resolve_var(x), Cell::Value(5));
-        assert_eq!(result.resolve_var(y), Cell::Value(7));
+        assert_eq!(result.resolve_var(x), Can::Val(5));
+        assert_eq!(result.resolve_var(y), Can::Val(7));
     }
     #[test]
     fn all_fail() {
         let state: State<usize> = State::new();
         let goal = all(vec![
-            equal(Cell::Value(5), Cell::Value(5)),
+            equal(Can::Val(5), Can::Val(5)),
             Goal::Succeed,
             Goal::Fail,
         ]);

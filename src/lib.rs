@@ -1,11 +1,11 @@
-pub mod cell;
+pub mod can;
 pub mod goal;
 pub mod state;
 pub mod unify;
 
-pub use cell::lvar::LVar;
-pub use cell::pair::Pair;
-pub use cell::Cell;
+pub use can::lvar::LVar;
+pub use can::pair::Pair;
+pub use can::Can;
 pub use state::State;
 
 // Goals

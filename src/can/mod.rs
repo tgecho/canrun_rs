@@ -6,16 +6,16 @@ use lvar::LVar;
 use pair::Pair;
 
 #[derive(PartialEq, Eq, Debug, Hash, Clone)]
-pub enum Cell<T: Eq + Clone> {
+pub enum Can<T: Eq + Clone> {
     Nil,
     Var(LVar),
-    Value(T),
+    Val(T),
     Pair(Pair<T>),
-    Vec(Vec<Cell<T>>),
+    Vec(Vec<Can<T>>),
 }
 
-impl<T: Eq + Clone> From<LVar> for Cell<T> {
+impl<T: Eq + Clone> From<LVar> for Can<T> {
     fn from(lvar: LVar) -> Self {
-        Cell::Var(lvar)
+        Can::Var(lvar)
     }
 }

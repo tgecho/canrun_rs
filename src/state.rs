@@ -1,11 +1,11 @@
-use crate::cell::lvar::LVar;
-use crate::cell::Cell;
+use crate::can::lvar::LVar;
+use crate::can::Can;
 use crate::unify::Unify;
 use im::hashmap::HashMap;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct State<T: Eq + Clone> {
-    values: HashMap<LVar, Cell<T>>,
+    values: HashMap<LVar, Can<T>>,
 }
 
 impl<T: Eq + Clone> State<T> {
@@ -15,30 +15,30 @@ impl<T: Eq + Clone> State<T> {
         }
     }
 
-    pub fn assign(&self, key: LVar, value: Cell<T>) -> Self {
+    pub fn assign(&self, key: LVar, value: Can<T>) -> Self {
         State {
             values: self.values.update(key, value),
         }
     }
 
-    pub fn resolve(&self, cell: &Cell<T>) -> Cell<T> {
-        match cell {
-            Cell::Var(lvar) => match self.values.get(lvar) {
+    pub fn resolve(&self, can: &Can<T>) -> Can<T> {
+        match can {
+            Can::Var(lvar) => match self.values.get(lvar) {
                 Some(val) => self.resolve(val),
-                None => cell.clone(),
+                None => can.clone(),
             },
-            Cell::Value(_) => cell.clone(),
-            Cell::Pair(p) => p.resolve_in(self),
-            Cell::Vec(v) => v.resolve_in(self),
-            Cell::Nil => Cell::Nil,
+            Can::Val(_) => can.clone(),
+            Can::Pair(p) => p.resolve_in(self),
+            Can::Vec(v) => v.resolve_in(self),
+            Can::Nil => Can::Nil,
         }
     }
 
-    pub fn resolve_var(&self, key: LVar) -> Cell<T> {
-        self.resolve(&Cell::Var(key))
+    pub fn resolve_var(&self, key: LVar) -> Can<T> {
+        self.resolve(&Can::Var(key))
     }
 
-    pub fn unify(&self, a: &Cell<T>, b: &Cell<T>) -> Option<State<T>> {
+    pub fn unify(&self, a: &Can<T>, b: &Can<T>) -> Option<State<T>> {
         let a = self.resolve(a);
         let b = self.resolve(b);
 
@@ -46,10 +46,10 @@ impl<T: Eq + Clone> State<T> {
             Some(self.clone())
         } else {
             match (a, b) {
-                (Cell::Var(av), bv) => Some(self.assign(av, bv)),
-                (av, Cell::Var(bv)) => Some(self.assign(bv, av)),
-                (Cell::Pair(a), Cell::Pair(b)) => a.unify_with(&b, self),
-                (Cell::Vec(a), Cell::Vec(b)) => a.unify_with(&b, self),
+                (Can::Var(av), bv) => Some(self.assign(av, bv)),
+                (av, Can::Var(bv)) => Some(self.assign(bv, av)),
+                (Can::Pair(a), Can::Pair(b)) => a.unify_with(&b, self),
+                (Can::Vec(a), Can::Vec(b)) => a.unify_with(&b, self),
                 _ => None,
             }
         }
@@ -58,7 +58,7 @@ impl<T: Eq + Clone> State<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::{Cell, State};
+    use super::{Can, State};
     use crate::LVar;
     use im::HashMap;
 
@@ -72,24 +72,24 @@ mod tests {
     fn assign() {
         let state: State<u8> = State::new();
         let x = LVar::new();
-        let state = state.assign(x, Cell::Value(5));
-        assert_eq!(state.values, HashMap::unit(x, Cell::Value(5)));
+        let state = state.assign(x, Can::Val(5));
+        assert_eq!(state.values, HashMap::unit(x, Can::Val(5)));
     }
 
     #[test]
     fn value_of_direct() {
         let state: State<u8> = State::new();
         let x = LVar::new();
-        let state = state.assign(x, Cell::Value(5));
-        assert_eq!(state.resolve_var(x), Cell::Value(5));
+        let state = state.assign(x, Can::Val(5));
+        assert_eq!(state.resolve_var(x), Can::Val(5));
     }
 
     #[test]
     fn value_of_missing() {
         let state: State<u8> = State::new();
         let x = LVar::new();
-        assert_eq!(state.resolve_var(x), Cell::Var(x));
-        assert_eq!(state.resolve(&Cell::Value(5)), Cell::Value(5));
+        assert_eq!(state.resolve_var(x), Can::Var(x));
+        assert_eq!(state.resolve(&Can::Val(5)), Can::Val(5));
     }
     #[test]
     fn value_of_nested() {
@@ -97,19 +97,19 @@ mod tests {
         let x = LVar::new();
         let y = LVar::new();
         let z = LVar::new();
-        let state = state.assign(x, Cell::Var(y));
-        let state = state.assign(y, Cell::Var(z));
-        let state = state.assign(z, Cell::Value(5));
+        let state = state.assign(x, Can::Var(y));
+        let state = state.assign(y, Can::Var(z));
+        let state = state.assign(z, Can::Val(5));
 
-        assert_eq!(state.resolve_var(x), Cell::Value(5));
-        assert_eq!(state.resolve_var(y), Cell::Value(5));
-        assert_eq!(state.resolve_var(z), Cell::Value(5));
+        assert_eq!(state.resolve_var(x), Can::Val(5));
+        assert_eq!(state.resolve_var(y), Can::Val(5));
+        assert_eq!(state.resolve_var(z), Can::Val(5));
     }
     #[test]
     fn unify_with_self() {
         let state: State<u8> = State::new();
         let x = LVar::new();
-        let unified = state.unify(&Cell::Var(x), &Cell::Var(x));
+        let unified = state.unify(&Can::Var(x), &Can::Var(x));
         assert_eq!(unified.unwrap(), state);
     }
     #[test]
@@ -119,8 +119,8 @@ mod tests {
         let y = LVar::new();
 
         assert_eq!(
-            state.unify(&Cell::Var(x), &Cell::Var(y)).unwrap(),
-            state.assign(x, Cell::Var(y))
+            state.unify(&Can::Var(x), &Can::Var(y)).unwrap(),
+            state.assign(x, Can::Var(y))
         );
     }
     #[test]
@@ -129,19 +129,19 @@ mod tests {
         let state: State<u8> = State::new();
 
         assert_eq!(
-            state.unify(&Cell::Var(x), &Cell::Value(5)).unwrap(),
-            state.assign(x, Cell::Value(5))
+            state.unify(&Can::Var(x), &Can::Val(5)).unwrap(),
+            state.assign(x, Can::Val(5))
         );
         assert_eq!(
-            state.unify(&Cell::Value(5), &Cell::Var(x)).unwrap(),
-            state.assign(x, Cell::Value(5))
+            state.unify(&Can::Val(5), &Can::Var(x)).unwrap(),
+            state.assign(x, Can::Val(5))
         );
     }
     #[test]
     fn unify_already_bound() {
         let x = LVar::new();
-        let state: State<u8> = State::new().assign(x, Cell::Value(5));
-        assert_eq!(state.unify(&Cell::Var(x), &Cell::Value(6)), None);
+        let state: State<u8> = State::new().assign(x, Can::Val(5));
+        assert_eq!(state.unify(&Can::Var(x), &Can::Val(6)), None);
     }
 
     #[test]
@@ -149,9 +149,9 @@ mod tests {
         let x = LVar::new();
         let state: State<u8> = State::new();
         let unified = state.unify(
-            &Cell::Vec(vec![Cell::Value(1), Cell::Var(x), Cell::Value(3)]),
-            &Cell::Vec(vec![Cell::Value(1), Cell::Value(2), Cell::Value(3)]),
+            &Can::Vec(vec![Can::Val(1), Can::Var(x), Can::Val(3)]),
+            &Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
         );
-        assert_eq!(unified.unwrap().resolve_var(x), Cell::Value(2));
+        assert_eq!(unified.unwrap().resolve_var(x), Can::Val(2));
     }
 }
