@@ -1,10 +1,9 @@
-use super::Goal;
-use crate::LVar;
+use crate::{CanT, Goal, LVar};
 use std::rc::Rc;
 
 pub fn lazy<T, F>(func: F) -> Goal<T>
 where
-    T: Eq + Clone,
+    T: CanT,
     F: Fn() -> Goal<T> + 'static,
 {
     Goal::Lazy(Rc::new(func))
@@ -12,7 +11,7 @@ where
 
 pub fn with1<T, F>(func: F) -> Goal<T>
 where
-    T: Eq + Clone,
+    T: CanT,
     F: Fn(LVar) -> Goal<T> + 'static,
 {
     Goal::Lazy(Rc::new(move || func(LVar::new())))
@@ -20,7 +19,7 @@ where
 
 pub fn with2<T, F>(func: F) -> Goal<T>
 where
-    T: Eq + Clone,
+    T: CanT,
     F: Fn(LVar, LVar) -> Goal<T> + 'static,
 {
     Goal::Lazy(Rc::new(move || func(LVar::new(), LVar::new())))
@@ -28,7 +27,7 @@ where
 
 pub fn with3<T, F>(func: F) -> Goal<T>
 where
-    T: Eq + Clone,
+    T: CanT,
     F: Fn(LVar, LVar, LVar) -> Goal<T> + 'static,
 {
     Goal::Lazy(Rc::new(move || func(LVar::new(), LVar::new(), LVar::new())))

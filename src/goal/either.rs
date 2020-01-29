@@ -1,6 +1,6 @@
-use super::Goal;
+use crate::{CanT, Goal};
 
-pub fn either<T: Eq + Clone>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
+pub fn either<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
     Goal::Either {
         a: Box::new(a),
         b: Box::new(b),

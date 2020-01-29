@@ -1,16 +1,16 @@
 use crate::unify::Unify;
-use crate::{Can, State};
+use crate::{Can, CanT, State};
 
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
-pub struct Pair<T: Eq + Clone>(Box<(Can<T>, Can<T>)>);
+pub struct Pair<T: CanT>(Box<(Can<T>, Can<T>)>);
 
-impl<T: Eq + Clone> Pair<T> {
+impl<T: CanT> Pair<T> {
     pub fn new(a: Can<T>, b: Can<T>) -> Can<T> {
         Can::Pair(Pair(Box::new((a, b))))
     }
 }
 
-impl<T: Eq + Clone> Unify<T> for Pair<T> {
+impl<T: CanT> Unify<T> for Pair<T> {
     fn resolve_in(&self, state: &State<T>) -> Can<T> {
         let (l, r) = &*self.0;
         Pair::new(state.resolve(l), state.resolve(r))

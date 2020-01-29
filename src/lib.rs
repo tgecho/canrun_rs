@@ -5,7 +5,7 @@ pub mod unify;
 
 pub use can::lvar::LVar;
 pub use can::pair::Pair;
-pub use can::Can;
+pub use can::{Can, CanT};
 pub use state::State;
 
 // Goals

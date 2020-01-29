@@ -1,10 +1,9 @@
-use super::Goal;
-use crate::Can;
+use crate::{Can, CanT, Goal};
 use std::rc::Rc;
 
-pub fn member<T: Eq + Clone, I>(needle: Can<T>, haystack: I) -> Goal<T>
+pub fn member<T: CanT, I>(needle: Can<T>, haystack: I) -> Goal<T>
 where
-    I: 'static + Clone + IntoIterator<Item = Can<T>>,
+    I: IntoIterator<Item = Can<T>> + Clone + 'static,
 {
     Goal::Member {
         needle,
@@ -15,7 +14,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::member;
-    use crate::{any, both, equal, Can, LVar, Pair, State};
+    use crate::{any, both, equal, Can, CanT, LVar, Pair, State};
     #[test]
     fn basic_member() {
         let x = LVar::new();
@@ -38,7 +37,7 @@ mod tests {
         let x = LVar::new();
         let y = LVar::new();
 
-        fn rel<T: Eq + Clone>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
+        fn rel<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
             Pair::new(a, Pair::new(b, c))
         }
 
@@ -77,7 +76,7 @@ mod tests {
         let x = LVar::new();
         let y = LVar::new();
 
-        fn rel<T: Eq + Clone>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
+        fn rel<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
             Pair::new(a, Pair::new(b, c))
         }
 

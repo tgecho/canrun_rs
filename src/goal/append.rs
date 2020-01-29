@@ -1,8 +1,8 @@
 use crate::can::pair::Pair;
-use crate::Can;
 use crate::{both, either, equal, with3, Goal};
+use crate::{Can, CanT};
 
-pub fn append<T: Eq + Clone>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
+pub fn append<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
     either(
         both(equal(a.clone(), Can::Nil), equal(b.clone(), c.clone())),
         with3(move |first, rest_of_a, rest_of_c| {

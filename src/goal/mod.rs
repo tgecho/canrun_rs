@@ -1,4 +1,4 @@
-use crate::{Can, State};
+use crate::{Can, CanT, State};
 use itertools::Itertools;
 use std::fmt;
 use std::iter::{empty, once};
@@ -15,7 +15,7 @@ pub mod member;
 pub mod not;
 
 #[derive(Clone)]
-pub enum Goal<T: Eq + Clone + 'static> {
+pub enum Goal<T: CanT + 'static> {
     Succeed,
     Fail,
     Equal {
@@ -41,11 +41,11 @@ pub enum Goal<T: Eq + Clone + 'static> {
 
 type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
 
-pub trait Pursue<T: Eq + Clone> {
+pub trait Pursue<T: CanT> {
     fn run(self, state: State<T>) -> GoalIter<T>;
 }
 
-impl<T: Eq + Clone> Goal<T> {
+impl<T: CanT> Goal<T> {
     pub fn run(self, state: State<T>) -> GoalIter<T> {
         match self {
             Goal::Succeed => Box::new(once(state.clone())),
@@ -73,7 +73,7 @@ impl<T: Eq + Clone> Goal<T> {
     }
 }
 
-impl<T: Eq + Clone + fmt::Debug> fmt::Debug for Goal<T> {
+impl<T: CanT> fmt::Debug for Goal<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Goal::Succeed => write!(f, "Succeed"),

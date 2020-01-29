@@ -1,6 +1,6 @@
-use super::Goal;
+use crate::{CanT, Goal};
 
-pub fn not<T: Eq + Clone>(goal: Goal<T>) -> Goal<T> {
+pub fn not<T: CanT>(goal: Goal<T>) -> Goal<T> {
     Goal::Not(Box::new(goal))
 }
 

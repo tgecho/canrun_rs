@@ -1,7 +1,6 @@
-use super::Goal;
-use crate::Can;
+use crate::{Can, CanT, Goal};
 
-pub fn equal<T: Eq + Clone>(a: Can<T>, b: Can<T>) -> Goal<T> {
+pub fn equal<T: CanT>(a: Can<T>, b: Can<T>) -> Goal<T> {
     Goal::Equal { a, b }
 }
 

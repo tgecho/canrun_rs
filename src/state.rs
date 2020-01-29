@@ -1,14 +1,14 @@
 use crate::can::lvar::LVar;
-use crate::can::Can;
+use crate::can::{Can, CanT};
 use crate::unify::Unify;
 use im::hashmap::HashMap;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
-pub struct State<T: Eq + Clone> {
+pub struct State<T: CanT> {
     values: HashMap<LVar, Can<T>>,
 }
 
-impl<T: Eq + Clone> State<T> {
+impl<T: CanT> State<T> {
     pub fn new() -> State<T> {
         State {
             values: HashMap::new(),

@@ -1,6 +1,6 @@
-use super::Goal;
+use crate::{CanT, Goal};
 
-pub fn both<T: Eq + Clone>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
+pub fn both<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
     Goal::Both {
         a: Box::new(a),
         b: Box::new(b),

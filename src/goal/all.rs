@@ -1,6 +1,6 @@
-use super::Goal;
+use crate::{CanT, Goal};
 
-pub fn all<T: Eq + Clone>(goals: Vec<Goal<T>>) -> Goal<T> {
+pub fn all<T: CanT>(goals: Vec<Goal<T>>) -> Goal<T> {
     let mut iter = goals.into_iter();
     match iter.next() {
         Some(first) => iter.fold(first, |a, b| Goal::Both {

@@ -1,8 +1,7 @@
-use crate::can::Can;
-use crate::state::State;
 use crate::unify::Unify;
+use crate::{Can, CanT, State};
 
-impl<T: Eq + Clone> Unify<T> for Vec<Can<T>> {
+impl<T: CanT> Unify<T> for Vec<Can<T>> {
     fn resolve_in(&self, state: &State<T>) -> Can<T> {
         let resolved = self.iter().map(|i| state.resolve(i));
         Can::Vec(resolved.collect())
