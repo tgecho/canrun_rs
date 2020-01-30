@@ -33,13 +33,12 @@ pub enum Goal<T: CanT + 'static> {
     Lazy(Rc<dyn Fn() -> Goal<T>>),
     Not(Box<Goal<T>>),
     Member {
-        // TODO: should haystack be an iterator (or something convertable into one?)
         needle: Can<T>,
         iter: Rc<dyn Fn() -> Box<dyn Iterator<Item = Can<T>>>>,
     },
 }
 
-type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
+pub type GoalIter<T> = Box<dyn Iterator<Item = State<T>> + 'static>;
 
 pub trait Pursue<T: CanT> {
     fn run(self, state: State<T>) -> GoalIter<T>;

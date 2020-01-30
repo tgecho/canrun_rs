@@ -1,10 +1,12 @@
 pub mod lvar;
-pub mod pair;
-pub mod vec;
+// pub mod pair;
+// pub mod vec;
 
-use std::fmt;
+use crate::goal::GoalIter;
+use crate::State;
 use lvar::LVar;
-use pair::Pair;
+// use pair::Pair;
+use std::fmt;
 
 pub trait CanT: Eq + Clone + fmt::Debug {}
 impl<T: Eq + Clone + fmt::Debug> CanT for T {}
@@ -14,8 +16,10 @@ pub enum Can<T: CanT> {
     Nil,
     Var(LVar),
     Val(T),
-    Pair(Pair<T>),
+    Pair { l: Box<Can<T>>, r: Box<Can<T>> },
     Vec(Vec<Can<T>>),
+    // TODO: This could be a more flexible Fn, but we'll need to sort out the eq/hash/etc... issues
+    Contains(Box<Can<T>>),
 }
 
 impl<T: CanT> Can<T> {

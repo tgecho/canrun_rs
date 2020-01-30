@@ -1,6 +1,12 @@
-use crate::can::pair::Pair;
 use crate::{both, either, equal, with3, Goal};
 use crate::{Can, CanT};
+
+pub fn pair<T: CanT>(l: Can<T>, r: Can<T>) -> Can<T> {
+    Can::Pair {
+        l: Box::new(l),
+        r: Box::new(r),
+    }
+}
 
 pub fn append<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
     either(
@@ -8,8 +14,8 @@ pub fn append<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
         with3(move |first, rest_of_a, rest_of_c| {
             both(
                 both(
-                    equal(a.clone(), Pair::new(first.into(), rest_of_a.into())),
-                    equal(c.clone(), Pair::new(first.into(), rest_of_c.into())),
+                    equal(a.clone(), pair(first.into(), rest_of_a.into())),
+                    equal(c.clone(), pair(first.into(), rest_of_c.into())),
                 ),
                 append(rest_of_a.into(), b.clone(), rest_of_c.into()),
             )
@@ -19,20 +25,16 @@ pub fn append<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::append;
-    use crate::can::pair::Pair;
+    use super::{append, pair};
     use crate::{Can, LVar, State};
 
     #[test]
     fn basic_append() {
         let state: State<Option<&str>> = State::new();
         let x = LVar::new();
-        let hi = Pair::new(
-            Can::Val(Some("h")),
-            Pair::new(Can::Val(Some("i")), Can::Nil),
-        );
-        let h = Pair::new(Can::Val(Some("h")), Can::Nil);
-        let i = Pair::new(Can::Val(Some("i")), Can::Nil);
+        let hi = pair(Can::Val(Some("h")), pair(Can::Val(Some("i")), Can::Nil));
+        let h = pair(Can::Val(Some("h")), Can::Nil);
+        let i = pair(Can::Val(Some("i")), Can::Nil);
         let goal = append(h, x.into(), hi);
 
         let mut result1 = goal.clone().run(state);

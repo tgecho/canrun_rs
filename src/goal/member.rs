@@ -1,4 +1,4 @@
-use crate::{Can, CanT, Goal};
+use crate::{equal, Can, CanT, Goal};
 use std::rc::Rc;
 
 pub fn member<T: CanT, I>(needle: Can<T>, haystack: I) -> Goal<T>
@@ -11,10 +11,15 @@ where
     }
 }
 
+pub fn membero<T: CanT>(needle: Can<T>, vec: Can<T>) -> Goal<T> {
+    equal(Can::Contains(Box::new(needle)), vec)
+}
+
 #[cfg(test)]
 mod tests {
     use super::member;
-    use crate::{any, both, equal, Can, CanT, LVar, Pair, State};
+    use crate::goal::append::pair;
+    use crate::{all, any, both, equal, Can, CanT, LVar, State};
     #[test]
     fn basic_member() {
         let x = LVar::new();
@@ -38,7 +43,7 @@ mod tests {
         let y = LVar::new();
 
         fn rel<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
-            Pair::new(a, Pair::new(b, c))
+            pair(a, pair(b, c))
         }
 
         let find = |desired| {
@@ -77,7 +82,7 @@ mod tests {
         let y = LVar::new();
 
         fn rel<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
-            Pair::new(a, Pair::new(b, c))
+            pair(a, pair(b, c))
         }
 
         let goal = both(
@@ -97,5 +102,68 @@ mod tests {
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(y)).collect();
 
         assert_eq!(result, vec![Can::Val(5), Can::Val(0), Can::Val(1)]);
+    }
+
+    use super::membero;
+    #[test]
+    fn member_with_pairs_as_map() {
+        let x = LVar::labeled("x");
+        let y = LVar::labeled("y");
+        let z = LVar::labeled("z");
+
+        let john = Can::Vec(vec![
+            pair(Can::Val("name"), Can::Val("john")),
+            pair(Can::Val("wat"), Can::Val("foo")),
+            pair(Can::Val("is"), Can::Val("hungry")),
+        ]);
+
+        let mary = Can::Vec(vec![
+            pair(Can::Val("name"), Can::Val("mary")),
+            pair(Can::Val("wat"), Can::Val("the")),
+        ]);
+
+        let monkey = Can::Vec(vec![
+            pair(Can::Val("name"), Can::Val("monkey")),
+            pair(Can::Val("is"), Can::Val("super")),
+        ]);
+
+        // let goal = both(
+        //     member(x.into(), vec![john]),
+        //     membero(pair(Can::Val("name"), Can::Val("john")), x.into()),
+        //     // equal(y.into(), pair(Can::Val("is"), Can::Val("hungry"))),
+        // );
+
+        // let goal = all(vec![
+        //     equal(x.into(), pair(Can::Val("name"), z.into())),
+        //     equal(y.into(), john),
+        //     membero(x.into(), y.into()),
+        // ]);
+
+        let goal = all(vec![
+            equal(x.into(), pair(Can::Val("name"), z.into())),
+            equal(y.into(), Can::Vec(vec![john, mary, monkey])),
+            membero(Can::Contains(Box::new(x.into())), y.into()),
+        ]);
+
+        // let goal = membero(
+        //     Can::Val("name"),
+        //     Can::Vec(vec![Can::Val("name"), Can::Val("john")]),
+        // );
+
+        // let goal = both(
+        //     both(
+        //         equal(x.into(), Can::Val("name")),
+        //         membero(x.into(), y.into()),
+        //     ),
+        //     equal(y.into(), Can::Vec(vec![Can::Val("name"), Can::Val("john")])),
+        // );
+        let result: Vec<_> = goal.clone().run(State::new()).collect();
+
+        dbg!(goal
+            .run(State::new())
+            .map(|s| s.resolve_var(z))
+            .collect::<Vec<_>>());
+
+        assert_ne!(result, vec![]);
     }
 }
