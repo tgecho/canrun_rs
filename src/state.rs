@@ -4,7 +4,7 @@ use crate::goal::GoalIter;
 use im::hashmap::HashMap;
 use std::iter::{empty, once};
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct State<T: CanT> {
     values: HashMap<LVar, Can<T>>,
 }
@@ -38,7 +38,10 @@ impl<T: CanT + 'static> State<T> {
                 Can::Vec(resolved.collect())
             }
             Can::Nil => Can::Nil,
-            Can::Contains(c) => Can::Contains(Box::new(self.resolve(c))),
+            Can::Funky { v, f } => Can::Funky {
+                v: Box::new(self.resolve(v)),
+                f: f.clone(),
+            },
         }
     }
 
@@ -81,25 +84,11 @@ impl<T: CanT + 'static> State<T> {
                         Box::new(empty())
                     }
                 }
-                (Can::Contains(needle), Can::Vec(vec)) => {
-                    unify_contains(*needle, vec, self.clone())
-                }
+                (Can::Funky { v, f }, other) => f(*v, other, self.clone()),
                 _ => Box::new(empty()),
             }
         }
     }
-}
-
-fn unify_contains<T: CanT + 'static>(
-    needle: Can<T>,
-    haystack: Vec<Can<T>>,
-    state: State<T>,
-) -> GoalIter<T> {
-    Box::new(
-        haystack
-            .into_iter()
-            .flat_map(move |c| state.unify(&needle, &c)),
-    )
 }
 
 #[cfg(test)]

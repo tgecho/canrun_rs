@@ -10,9 +10,53 @@ where
         iter: Rc::new(move || Box::new(haystack.clone().into_iter())),
     }
 }
+use crate::goal::GoalIter;
+use crate::State;
+use std::iter::empty;
+
+// fn unify_contains<T: CanT + 'static>(
+//     needle: Can<T>,
+//     haystack: Vec<Can<T>>,
+//     state: State<T>,
+// ) -> GoalIter<T> {
+//     Box::new(
+//         haystack
+//             .into_iter()
+//             .flat_map(move |c| state.unify(&needle, &c)),
+//     )
+// }
+
+fn unify_contains<T: CanT + 'static>(
+    needle: Can<T>,
+    other: Can<T>,
+    state: State<T>,
+) -> GoalIter<T> {
+    match other {
+        Can::Vec(haystack) => Box::new(
+            haystack
+                .into_iter()
+                .flat_map(move |c| state.unify(&needle, &c)),
+        ),
+        _ => Box::new(empty()),
+    }
+}
+
+fn contains<T: CanT + 'static>(needle: Can<T>) -> Can<T> {
+    Can::Funky {
+        v: Box::new(needle),
+        f: Rc::new(|value, other, state| match other {
+            Can::Vec(haystack) => Box::new(
+                haystack
+                    .into_iter()
+                    .flat_map(move |c| state.unify(&value, &c)),
+            ),
+            _ => Box::new(empty()),
+        }),
+    }
+}
 
 pub fn membero<T: CanT>(needle: Can<T>, vec: Can<T>) -> Goal<T> {
-    equal(Can::Contains(Box::new(needle)), vec)
+    equal(contains(needle), vec)
 }
 
 #[cfg(test)]
@@ -104,7 +148,7 @@ mod tests {
         assert_eq!(result, vec![Can::Val(5), Can::Val(0), Can::Val(1)]);
     }
 
-    use super::membero;
+    use super::{contains, membero};
     #[test]
     fn member_with_pairs_as_map() {
         let x = LVar::labeled("x");
@@ -142,7 +186,7 @@ mod tests {
         let goal = all(vec![
             equal(x.into(), pair(Can::Val("name"), z.into())),
             equal(y.into(), Can::Vec(vec![john, mary, monkey])),
-            membero(Can::Contains(Box::new(x.into())), y.into()),
+            membero(contains(x.into()), y.into()),
         ]);
 
         // let goal = membero(
