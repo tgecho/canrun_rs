@@ -1,11 +1,6 @@
 pub mod lvar;
-// pub mod pair;
-// pub mod vec;
 
-use crate::goal::GoalIter;
-use crate::State;
 use lvar::LVar;
-// use pair::Pair;
 use std::fmt;
 
 pub trait CanT: Eq + Clone + fmt::Debug {}

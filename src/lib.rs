@@ -1,7 +1,6 @@
 pub mod can;
 pub mod goal;
 pub mod state;
-pub mod unify;
 
 pub use can::lvar::LVar;
 pub use can::{Can, CanT};

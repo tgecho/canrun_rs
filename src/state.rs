@@ -1,10 +1,8 @@
 use crate::can::lvar::LVar;
 use crate::can::{Can, CanT};
 use crate::goal::GoalIter;
-use crate::unify::Unify;
 use im::hashmap::HashMap;
 use std::iter::{empty, once};
-use std::rc::Rc;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct State<T: CanT> {
