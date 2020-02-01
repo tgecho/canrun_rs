@@ -1,5 +1,12 @@
 use crate::{Can, CanT, GoalIter, State};
 
+pub fn pair<T: CanT>(l: Can<T>, r: Can<T>) -> Can<T> {
+    Can::Pair {
+        l: Box::new(l),
+        r: Box::new(r),
+    }
+}
+
 pub fn resolve<T: CanT + 'static>(state: &State<T>, l: &Can<T>, r: &Can<T>) -> Can<T> {
     Can::Pair {
         l: Box::new(state.resolve(l)),

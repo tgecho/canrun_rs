@@ -5,12 +5,11 @@ use std::rc::Rc;
 
 pub mod all;
 pub mod any;
-pub mod append;
 pub mod both;
 pub mod either;
 pub mod equal;
+pub mod extra;
 pub mod lazy;
-pub mod member;
 pub mod not;
 
 #[derive(Clone)]

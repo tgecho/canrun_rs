@@ -1,12 +1,6 @@
+use crate::can::pair::pair;
 use crate::{both, either, equal, with3, Goal};
 use crate::{Can, CanT};
-
-pub fn pair<T: CanT>(l: Can<T>, r: Can<T>) -> Can<T> {
-    Can::Pair {
-        l: Box::new(l),
-        r: Box::new(r),
-    }
-}
 
 pub fn append<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
     either(

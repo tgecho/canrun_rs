@@ -34,7 +34,7 @@ pub fn membero<T: CanT>(needle: Can<T>, vec: Can<T>) -> Goal<T> {
 #[cfg(test)]
 mod tests {
     use super::member;
-    use crate::goal::append::pair;
+    use crate::can::pair::pair;
     use crate::{all, any, both, equal, Can, CanT, LVar, State};
     #[test]
     fn basic_member() {
