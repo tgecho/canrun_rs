@@ -6,8 +6,8 @@ use lvar::LVar;
 use std::fmt;
 use std::rc::Rc;
 
-pub trait CanT: Eq + Clone + fmt::Debug {}
-impl<T: Eq + Clone + fmt::Debug> CanT for T {}
+pub trait CanT: PartialEq + Clone + fmt::Debug {}
+impl<T: PartialEq + Clone + fmt::Debug> CanT for T {}
 
 #[derive(Clone)]
 pub enum Can<T: CanT> {
