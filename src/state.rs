@@ -38,9 +38,9 @@ impl<T: CanT + 'static> State<T> {
                 Can::Vec(resolved.collect())
             }
             Can::Nil => Can::Nil,
-            Can::Funky { v, f } => Can::Funky {
-                v: Box::new(self.resolve(v)),
-                f: f.clone(),
+            Can::HoC { value, unify } => Can::HoC {
+                value: Box::new(self.resolve(value)),
+                unify: *unify,
             },
         }
     }
@@ -84,7 +84,7 @@ impl<T: CanT + 'static> State<T> {
                         Box::new(empty())
                     }
                 }
-                (Can::Funky { v, f }, other) => f(*v, other, self.clone()),
+                (Can::HoC { value, unify }, other) => unify(*value, other, self.clone()),
                 _ => Box::new(empty()),
             }
         }

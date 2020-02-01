@@ -18,24 +18,11 @@ pub mod not;
 pub enum Goal<T: CanT + 'static> {
     Succeed,
     Fail,
-    Equal {
-        a: Can<T>,
-        b: Can<T>,
-    },
-    Both {
-        a: Box<Goal<T>>,
-        b: Box<Goal<T>>,
-    },
-    Either {
-        a: Box<Goal<T>>,
-        b: Box<Goal<T>>,
-    },
+    Equal { a: Can<T>, b: Can<T> },
+    Both { a: Box<Goal<T>>, b: Box<Goal<T>> },
+    Either { a: Box<Goal<T>>, b: Box<Goal<T>> },
     Lazy(Rc<dyn Fn() -> Goal<T>>),
     Not(Box<Goal<T>>),
-    Member {
-        needle: Can<T>,
-        iter: Rc<dyn Fn() -> Box<dyn Iterator<Item = Can<T>>>>,
-    },
 }
 
 pub type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
@@ -49,7 +36,7 @@ impl<T: CanT> Goal<T> {
         match self {
             Goal::Succeed => Box::new(once(state.clone())),
             Goal::Fail => Box::new(empty()),
-            Goal::Equal { a, b } => Box::new(state.unify(&a, &b).into_iter()),
+            Goal::Equal { a, b } => Box::new(state.unify(&a, &b)),
             Goal::Both { a, b } => Box::new(
                 (a.run(state))
                     .zip(once(b).cycle())
@@ -57,9 +44,6 @@ impl<T: CanT> Goal<T> {
             ),
             Goal::Either { a, b } => Box::new(a.run(state.clone()).interleave(b.run(state))),
             Goal::Lazy(func) => func().run(state),
-            Goal::Member { needle, iter } => {
-                Box::new(iter().flat_map(move |c| state.unify(&needle, &c).into_iter()))
-            }
             Goal::Not(goal) => {
                 let mut iter = goal.run(state.clone());
                 if iter.next().is_some() {
@@ -82,15 +66,6 @@ impl<T: CanT> fmt::Debug for Goal<T> {
             Goal::Either { a, b } => write!(f, "Either {{ {:?}, {:?} }}", a, b),
             Goal::Lazy(lazy) => write!(f, "Lazy(|| => {:?})", lazy()),
             Goal::Not(goal) => write!(f, "Not({:?})", goal),
-            Goal::Member { needle, iter } => {
-                let items: Vec<_> = iter().take(6).map(|i| format!("{:?}", i)).collect();
-                let joined = if items.len() == 6 {
-                    format!("{}, ...", items.iter().take(5).join(", "))
-                } else {
-                    items.join(", ")
-                };
-                write!(f, "Member({:?} in [{}])", needle, joined)
-            }
         }
     }
 }

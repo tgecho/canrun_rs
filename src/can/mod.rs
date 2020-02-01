@@ -4,7 +4,6 @@ use crate::goal::GoalIter;
 use crate::State;
 use lvar::LVar;
 use std::fmt;
-use std::rc::Rc;
 
 pub trait CanT: PartialEq + Clone + fmt::Debug {}
 impl<T: PartialEq + Clone + fmt::Debug> CanT for T {}
@@ -19,9 +18,9 @@ pub enum Can<T: CanT> {
         r: Box<Can<T>>,
     },
     Vec(Vec<Can<T>>),
-    Funky {
-        v: Box<Can<T>>,
-        f: Rc<dyn Fn(Can<T>, Can<T>, State<T>) -> GoalIter<T>>,
+    HoC {
+        value: Box<Can<T>>,
+        unify: fn(Can<T>, Can<T>, State<T>) -> GoalIter<T>,
     },
 }
 
@@ -43,7 +42,6 @@ impl<T: CanT> PartialEq for Can<T> {
         }
     }
 }
-// impl<T: CanT> Eq for Can<T> {}
 
 impl<T: CanT> fmt::Debug for Can<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -53,7 +51,7 @@ impl<T: CanT> fmt::Debug for Can<T> {
             Can::Val(v) => write!(f, "Val({:?})", v),
             Can::Pair { l, r } => write!(f, "Pair{{ {:?}, {:?} }}", l, r),
             Can::Vec(v) => write!(f, "Vec({:?})", v),
-            Can::Funky { v, .. } => write!(f, "Funky{{ {:?} + ?}}", v),
+            Can::HoC { value, .. } => write!(f, "HoC{{ {:?} + ?}}", value),
         }
     }
 }

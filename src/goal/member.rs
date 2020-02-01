@@ -1,56 +1,29 @@
-use crate::{equal, Can, CanT, Goal};
-use std::rc::Rc;
+use crate::{equal, Can, CanT, Goal, GoalIter, State};
+use std::iter::empty;
 
-pub fn member<T: CanT, I>(needle: Can<T>, haystack: I) -> Goal<T>
-where
-    I: IntoIterator<Item = Can<T>> + Clone + 'static,
-{
-    Goal::Member {
-        needle,
-        iter: Rc::new(move || Box::new(haystack.clone().into_iter())),
+pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
+    equal(contains(needle), haystack)
+}
+
+fn unify_contains<T: CanT + 'static>(
+    needle: Can<T>,
+    other: Can<T>,
+    state: State<T>,
+) -> GoalIter<T> {
+    match other {
+        Can::Vec(haystack) => Box::new(
+            haystack
+                .into_iter()
+                .flat_map(move |c| state.unify(&needle, &c)),
+        ),
+        _ => Box::new(empty()),
     }
 }
 
-use std::iter::empty;
-
-// fn unify_contains<T: CanT + 'static>(
-//     needle: Can<T>,
-//     haystack: Vec<Can<T>>,
-//     state: State<T>,
-// ) -> GoalIter<T> {
-//     Box::new(
-//         haystack
-//             .into_iter()
-//             .flat_map(move |c| state.unify(&needle, &c)),
-//     )
-// }
-
-// fn unify_contains<T: CanT + 'static>(
-//     needle: Can<T>,
-//     other: Can<T>,
-//     state: State<T>,
-// ) -> GoalIter<T> {
-//     match other {
-//         Can::Vec(haystack) => Box::new(
-//             haystack
-//                 .into_iter()
-//                 .flat_map(move |c| state.unify(&needle, &c)),
-//         ),
-//         _ => Box::new(empty()),
-//     }
-// }
-
 fn contains<T: CanT + 'static>(needle: Can<T>) -> Can<T> {
-    Can::Funky {
-        v: Box::new(needle),
-        f: Rc::new(|value, other, state| match other {
-            Can::Vec(haystack) => Box::new(
-                haystack
-                    .into_iter()
-                    .flat_map(move |c| state.unify(&value, &c)),
-            ),
-            _ => Box::new(empty()),
-        }),
+    Can::HoC {
+        value: Box::new(needle),
+        unify: unify_contains,
     }
 }
 
@@ -66,7 +39,10 @@ mod tests {
     #[test]
     fn basic_member() {
         let x = LVar::new();
-        let goal = member(Can::Var(x), vec![Can::Val(1), Can::Val(2), Can::Val(3)]);
+        let goal = member(
+            Can::Var(x),
+            Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
+        );
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(x)).collect();
         assert_eq!(result, vec![Can::Val(1), Can::Val(2), Can::Val(3)]);
     }
@@ -75,7 +51,10 @@ mod tests {
         let x = LVar::new();
         let goal = both(
             equal(Can::Var(x), Can::Val(2)),
-            member(Can::Var(x), vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
+            member(
+                Can::Var(x),
+                Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
+            ),
         );
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(x)).collect();
         assert_eq!(result, vec![Can::Val(2)]);
@@ -94,10 +73,10 @@ mod tests {
                 equal(x.into(), desired),
                 member(
                     x.into(),
-                    vec![
+                    Can::Vec(vec![
                         rel(Can::Val(0), Can::Val(1), Can::Val(2)),
                         rel(Can::Val(3), Can::Val(4), Can::Val(5)),
-                    ],
+                    ]),
                 ),
             );
             let result: Vec<_> = goal
@@ -136,10 +115,10 @@ mod tests {
             ]),
             member(
                 x.into(),
-                vec![
+                Can::Vec(vec![
                     rel(Can::Val(0), Can::Val(1), Can::Val(2)),
                     rel(Can::Val(3), Can::Val(4), Can::Val(5)),
-                ],
+                ]),
             ),
         );
         let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(y)).collect();
