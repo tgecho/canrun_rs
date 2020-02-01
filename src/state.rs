@@ -56,6 +56,7 @@ impl<T: CanT + 'static> State<T> {
     pub fn resolve_var(&self, key: LVar) -> ResolveResult<T> {
         self.resolve(&Can::Var(key))
     }
+
     pub fn unify(&self, a: &Can<T>, b: &Can<T>) -> StateIter<T> {
         self.try_unify(a, b).unwrap_or_else(|err| {
             debug!("{:?}", err);
@@ -94,8 +95,7 @@ pub type UnifyResult<T> = Result<StateIter<T>, UnifyError>;
 
 #[cfg(test)]
 mod tests {
-    use super::{Can, State};
-    use crate::LVar;
+    use crate::{Can, State,var, LVar};
     use im::HashMap;
 
     #[test]
@@ -123,8 +123,8 @@ mod tests {
     #[test]
     fn value_of_missing() {
         let state: State<u8> = State::new();
-        let x = LVar::new();
-        assert_eq!(state.resolve_var(x).unwrap(), Can::Var(x));
+        let x = var();
+        assert_eq!(state.resolve_var(x).unwrap(), x.can());
         assert_eq!(state.resolve(&Can::Val(5)).unwrap(), Can::Val(5));
     }
     #[test]
@@ -144,8 +144,8 @@ mod tests {
     #[test]
     fn unify_with_self() {
         let state: State<u8> = State::new();
-        let x = LVar::new();
-        let unified = state.unify(&Can::Var(x), &Can::Var(x)).nth(0);
+        let x = var();
+        let unified = state.unify(&x.can(), &x.can()).nth(0);
         assert_eq!(unified.unwrap(), state);
     }
     #[test]

@@ -8,10 +8,10 @@ pub fn append<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
         with3(move |first, rest_of_a, rest_of_c| {
             both(
                 both(
-                    equal(a.clone(), pair(first.into(), rest_of_a.into())),
-                    equal(c.clone(), pair(first.into(), rest_of_c.into())),
+                    equal(a.clone(), pair(first.can(), rest_of_a.can())),
+                    equal(c.clone(), pair(first.can(), rest_of_c.can())),
                 ),
-                append(rest_of_a.into(), b.clone(), rest_of_c.into()),
+                append(rest_of_a.can(), b.clone(), rest_of_c.can()),
             )
         }),
     )
@@ -20,16 +20,16 @@ pub fn append<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
 #[cfg(test)]
 mod tests {
     use super::{append, pair};
-    use crate::{Can, LVar, State};
+    use crate::{Can, var, State};
 
     #[test]
     fn basic_append() {
         let state: State<Option<&str>> = State::new();
-        let x = LVar::new();
+        let x = var();
         let hi = pair(Can::Val(Some("h")), pair(Can::Val(Some("i")), Can::Nil));
         let h = pair(Can::Val(Some("h")), Can::Nil);
         let i = pair(Can::Val(Some("i")), Can::Nil);
-        let goal = append(h, x.into(), hi);
+        let goal = append(h, x.can(), hi);
 
         let mut result1 = goal.run(&state);
         assert_eq!(result1.nth(0).unwrap().resolve_var(x).unwrap(), i);

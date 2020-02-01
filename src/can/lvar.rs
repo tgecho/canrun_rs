@@ -1,6 +1,7 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use crate::{CanT, Can};
 
 fn get_id() -> usize {
     static COUNTER: AtomicUsize = AtomicUsize::new(1);
@@ -11,6 +12,10 @@ fn get_id() -> usize {
 pub struct LVar {
     id: usize,
     label: Option<&'static str>,
+}
+
+pub fn var() -> LVar {
+    LVar::new()
 }
 
 impl PartialEq for LVar {
@@ -32,6 +37,10 @@ impl LVar {
             label: Some(label),
         }
     }
+
+    pub fn can<T: CanT>(&self) -> Can<T>{
+        Can::Var(*self)
+    }
 }
 
 impl Hash for LVar {
@@ -51,26 +60,28 @@ impl fmt::Debug for LVar {
 
 #[cfg(test)]
 mod tests {
-    use crate::can::lvar::LVar;
+    use crate::{Can, var, LVar};
+
     #[test]
     fn lvar_equality() {
-        let x = LVar::new();
+        let x = var();
         assert_eq!(x, x);
-        assert_ne!(x, LVar::new());
+        assert_ne!(x, var());
     }
     #[test]
     fn lvar_labels() {
         let a = LVar::labeled("a");
+        let av: Can<()> = Can::Var(a);
         // Matching labels do not make them equal
-        assert_ne!(a, LVar::labeled("a"));
+        assert_ne!(av, Can::Var(LVar::labeled("a")));
         // Mismatched labels do not negate matching ids
         // (though you shouldn't do this)
         assert_eq!(
-            a,
-            LVar {
+            av,
+            Can::Var(LVar {
                 id: a.id,
                 label: Some("b")
-            }
+            })
         );
     }
 }

@@ -1,4 +1,4 @@
-use crate::{CanT, Goal, LVar};
+use crate::{CanT, Goal, LVar, var};
 use std::rc::Rc;
 
 pub fn lazy<T, F>(func: F) -> Goal<T>
@@ -14,7 +14,7 @@ where
     T: CanT,
     F: Fn(LVar) -> Goal<T> + 'static,
 {
-    Goal::Lazy(Rc::new(move || func(LVar::new())))
+    Goal::Lazy(Rc::new(move || func(var())))
 }
 
 pub fn with2<T, F>(func: F) -> Goal<T>
@@ -22,7 +22,7 @@ where
     T: CanT,
     F: Fn(LVar, LVar) -> Goal<T> + 'static,
 {
-    Goal::Lazy(Rc::new(move || func(LVar::new(), LVar::new())))
+    Goal::Lazy(Rc::new(move || func(var(), var())))
 }
 
 pub fn with3<T, F>(func: F) -> Goal<T>
@@ -30,20 +30,19 @@ where
     T: CanT,
     F: Fn(LVar, LVar, LVar) -> Goal<T> + 'static,
 {
-    Goal::Lazy(Rc::new(move || func(LVar::new(), LVar::new(), LVar::new())))
+    Goal::Lazy(Rc::new(move || func(var(), var(), var())))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{both, equal, lazy, Can, LVar, State};
+    use crate::{both, lazy, Can, var, State, Equals};
 
     #[test]
     fn basic_lazy() {
-        let y = LVar::new();
+        let y = var();
         let goal = lazy(move || {
-            let x = Can::Var(LVar::new());
-            let yy = Can::Var(y);
-            both(equal(x.clone(), Can::Val(5)), equal(x, yy))
+            let x = var();
+            both(x.equals(5), x.equals(y.can()))
         });
 
         let mut result1 = goal.run(&State::new());

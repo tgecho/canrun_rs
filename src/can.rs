@@ -26,9 +26,9 @@ pub enum Can<T: CanT> {
     },
 }
 
-impl<T: CanT> From<LVar> for Can<T> {
-    fn from(lvar: LVar) -> Self {
-        Can::Var(lvar)
+impl<T: CanT> From<T> for Can<T> {
+    fn from(t: T) -> Self {
+        Can::Val(t)
     }
 }
 

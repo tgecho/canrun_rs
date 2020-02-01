@@ -12,14 +12,14 @@ where
 #[cfg(test)]
 mod tests {
     use super::custom;
-    use crate::{both, equal, Can, LVar, State};
+    use crate::{both, Can, var, State,LVar, Equals};
 
     #[test]
     fn basic_custom() {
         let y = LVar::new();
         let goal = custom(move |state| {
-            let x = Can::Var(LVar::new());
-            both(equal(x.clone(), Can::Val(5)), equal(x, y.into())).run(state)
+            let x = var();
+            both(x.equals(5), x.equals(y.can())).run(state)
         });
 
         let mut result1 = goal.run(&State::new());

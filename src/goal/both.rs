@@ -19,15 +19,13 @@ pub(crate) fn run<T: CanT>(state: &State<T>, a: &Goal<T>, b: &Goal<T>) -> StateI
 
 #[cfg(test)]
 mod tests {
-    use crate::{both, equal, Can, LVar, State};
+    use crate::{both, Can, var, State, Equals};
     #[test]
     fn basic_both() {
         let state: State<usize> = State::new();
-        let x = LVar::new();
-        let xv = Can::Var(x);
-        let y = LVar::new();
-        let yv = Can::Var(y);
-        let goal = both(equal(xv.clone(), Can::Val(5)), equal(yv, Can::Val(7)));
+        let x = var();
+        let y = var();
+        let goal = both(x.equals(Can::Val(5)), y.equals(Can::Val(7)));
         let result = goal.run(&state).nth(0).unwrap();
         assert_eq!(result.resolve_var(x).unwrap(), Can::Val(5));
         assert_eq!(result.resolve_var(y).unwrap(), Can::Val(7));

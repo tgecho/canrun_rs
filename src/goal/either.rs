@@ -14,13 +14,12 @@ pub(crate) fn run<T: CanT>(state: &State<T>, a: &Goal<T>, b: &Goal<T>) -> StateI
 
 #[cfg(test)]
 mod tests {
-    use crate::{either, equal, Can, LVar, State};
+    use crate::{either, Can, LVar, State, Equals};
     #[test]
     fn basic_either() {
         let state: State<usize> = State::new();
         let x = LVar::new();
-        let xv = Can::Var(x);
-        let goal = either(equal(xv.clone(), Can::Val(5)), equal(xv, Can::Val(6)));
+        let goal = either(x.equals(Can::Val(5)), x.equals(Can::Val(6)));
         let mut results = goal.run(&state).map(|s| s.resolve_var(x).unwrap());
         assert_eq!(results.nth(0).unwrap(), Can::Val(5));
         assert_eq!(results.nth(0).unwrap(), Can::Val(6));

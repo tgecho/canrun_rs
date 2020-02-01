@@ -13,15 +13,15 @@ pub fn all<T: CanT>(goals: Vec<Goal<T>>) -> Goal<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{all, equal, Can, Goal, LVar, State};
+    use crate::{all, equal, Can, Goal, var, State, Equals};
     #[test]
     fn all_succeed() {
         let state: State<usize> = State::new();
-        let x = LVar::new();
-        let y = LVar::new();
+        let x = var();
+        let y = var();
         let goal = all(vec![
-            equal(x.into(), Can::Val(5)),
-            equal(y.into(), Can::Val(7)),
+            x.equals(5),
+            y.equals(7),
             Goal::Succeed,
         ]);
         let result = goal.run(&state).nth(0).unwrap();

@@ -13,16 +13,16 @@ pub fn any<T: CanT>(goals: Vec<Goal<T>>) -> Goal<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{any, equal, Can, Goal, LVar, State};
+    use crate::{any, equal, Can, Goal, var, State, Equals};
     #[test]
     fn any_succeed() {
         let state: State<usize> = State::new();
-        let x = LVar::new();
-        let y = LVar::new();
+        let x = var();
+        let y = var();
         let goal = any(vec![
             Goal::Fail,
-            equal(x.into(), Can::Val(5)),
-            equal(y.into(), Can::Val(7)),
+            x.equals(Can::Val(5)),
+            y.equals(Can::Val(7)),
         ]);
         let results: Vec<State<usize>> = goal.run(&state).collect();
         assert_eq!(results[0].resolve_var(y).unwrap(), Can::Val(7));

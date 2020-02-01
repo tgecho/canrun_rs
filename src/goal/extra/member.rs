@@ -35,10 +35,10 @@ pub fn membero<T: CanT>(needle: Can<T>, vec: Can<T>) -> Goal<T> {
 mod tests {
     use super::member;
     use crate::can::pair::pair;
-    use crate::{all, any, both, equal, Can, CanT, LVar, State};
+    use crate::{all, any, both, equal, Can, CanT, var, State, LVar, Equals, Goal};
     #[test]
     fn basic_member() {
-        let x = LVar::new();
+        let x = var();
         let goal = member(
             Can::Var(x),
             Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
@@ -51,7 +51,7 @@ mod tests {
     }
     #[test]
     fn member_with_conditions() {
-        let x = LVar::new();
+        let x = var();
         let goal = both(
             equal(Can::Var(x), Can::Val(2)),
             member(
@@ -67,18 +67,18 @@ mod tests {
     }
     #[test]
     fn member_with_pairs() {
-        let x = LVar::new();
-        let y = LVar::new();
+        let x = var();
+        let y = var();
 
         fn rel<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
             pair(a, pair(b, c))
         }
 
-        let find = |desired| {
+        let find = |desired: Can<_>| {
             let goal = both(
-                equal(x.into(), desired),
+                x.equals(desired),
                 member(
-                    x.into(),
+                    x.can(),
                     Can::Vec(vec![
                         rel(Can::Val(0), Can::Val(1), Can::Val(2)),
                         rel(Can::Val(3), Can::Val(4), Can::Val(5)),
@@ -93,34 +93,34 @@ mod tests {
         };
 
         assert_eq!(
-            find(rel(y.into(), Can::Val(1), Can::Val(2))),
+            find(rel(y.can(), Can::Val(1), Can::Val(2))),
             vec![(Can::Val(0), rel(Can::Val(0), Can::Val(1), Can::Val(2)))]
         );
 
         assert_eq!(
-            find(rel(Can::Val(0), y.into(), Can::Val(2))),
+            find(rel(Can::Val(0), y.can(), Can::Val(2))),
             vec![(Can::Val(1), rel(Can::Val(0), Can::Val(1), Can::Val(2)))]
         );
 
-        assert_eq!(find(rel(Can::Val(1), y.into(), Can::Val(2))), vec![]);
+        assert_eq!(find(rel(Can::Val(1), y.can(), Can::Val(2))), vec![]);
     }
     #[test]
     fn member_with_pairs_complex() {
-        let x = LVar::new();
-        let y = LVar::new();
+        let x = var();
+        let y = var();
 
         fn rel<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Can<T> {
             pair(a, pair(b, c))
         }
 
-        let goal = both(
+        let goal: Goal<usize> = both(
             any(vec![
-                equal(x.into(), rel(Can::Val(0), y.into(), Can::Val(2))),
-                equal(x.into(), rel(y.into(), Can::Val(1), Can::Val(2))),
-                equal(x.into(), rel(Can::Val(3), Can::Val(4), y.into())),
+                x.equals(rel(Can::Val(0), y.can(), Can::Val(2))),
+                x.equals(rel(y.can(), Can::Val(1), Can::Val(2))),
+                x.equals(rel(Can::Val(3), Can::Val(4), y.can())),
             ]),
             member(
-                x.into(),
+                x.can(),
                 Can::Vec(vec![
                     rel(Can::Val(0), Can::Val(1), Can::Val(2)),
                     rel(Can::Val(3), Can::Val(4), Can::Val(5)),
@@ -170,10 +170,10 @@ mod tests {
         //     membero(x.into(), y.into()),
         // ]);
 
-        let goal = all(vec![
-            equal(x.into(), pair(Can::Val("name"), z.into())),
-            equal(y.into(), Can::Vec(vec![john, mary, monkey])),
-            membero(contains(x.into()), y.into()),
+        let goal: Goal<&str> = all(vec![
+            equal(x.can(), pair(Can::Val("name"), z.can())),
+            equal(y.can(), Can::Vec(vec![john, mary, monkey])),
+            membero(contains(x.can()), y.can()),
         ]);
 
         // let goal = membero(

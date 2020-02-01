@@ -39,14 +39,13 @@ pub fn unify<T: CanT + 'static>(state: &State<T>, a: Vec<Can<T>>, b: Vec<Can<T>>
 
 #[cfg(test)]
 mod tests {
-    use super::{Can, State};
-    use crate::LVar;
+    use crate::{Can, State, var};
 
     #[test]
     fn unify_two_vecs() {
-        let x = LVar::new();
+        let x = var();
         let mut unified = State::new().unify(
-            &Can::Vec(vec![Can::Var(x)]),
+            &Can::Vec(vec![x.can()]),
             &Can::Vec(vec![Can::Val(2)]),
             // &Can::Vec(vec![Can::Val(1), Can::Var(x), Can::Val(3)]),
             // &Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
