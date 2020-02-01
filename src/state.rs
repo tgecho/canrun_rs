@@ -54,7 +54,7 @@ impl<T: CanT + 'static> State<T> {
         let b = self.resolve(b);
 
         if a == b {
-            Box::new(once(self.clone())) as GoalIter<_>
+            Box::new(once(self.clone())) as GoalIter<T>
         } else {
             match (a, b) {
                 (Can::Var(av), bv) => Box::new(once(self.assign(av, bv))),

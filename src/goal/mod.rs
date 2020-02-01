@@ -38,7 +38,7 @@ pub enum Goal<T: CanT + 'static> {
     },
 }
 
-pub type GoalIter<T> = Box<dyn Iterator<Item = State<T>> + 'static>;
+pub type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
 
 pub trait Pursue<T: CanT> {
     fn run(self, state: State<T>) -> GoalIter<T>;
