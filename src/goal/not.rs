@@ -1,11 +1,11 @@
-use crate::{CanT, Goal, GoalIter, State};
+use crate::{CanT, Goal, State, StateIter};
 use std::iter::{empty, once};
 
 pub fn not<T: CanT>(goal: Goal<T>) -> Goal<T> {
     Goal::Not(Box::new(goal))
 }
 
-pub(crate) fn run<T: CanT>(state: &State<T>, goal: &Goal<T>) -> GoalIter<T> {
+pub(crate) fn run<T: CanT>(state: &State<T>, goal: &Goal<T>) -> StateIter<T> {
     if goal.run(state).nth(0).is_some() {
         Box::new(empty())
     } else {

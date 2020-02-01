@@ -1,6 +1,6 @@
 use crate::can::lvar::LVar;
 use crate::can::{pair, vec, Can, CanT};
-use crate::goal::GoalIter;
+use crate::goal::StateIter;
 use im::hashmap::HashMap;
 use std::iter::{empty, once};
 
@@ -43,12 +43,12 @@ impl<T: CanT + 'static> State<T> {
         self.resolve(&Can::Var(key))
     }
 
-    pub fn unify(&self, a: &Can<T>, b: &Can<T>) -> GoalIter<T> {
+    pub fn unify(&self, a: &Can<T>, b: &Can<T>) -> StateIter<T> {
         let a = self.resolve(a);
         let b = self.resolve(b);
 
         if a == b {
-            Box::new(once(self.clone())) as GoalIter<T>
+            Box::new(once(self.clone())) as StateIter<T>
         } else {
             match (a, b) {
                 (Can::Var(av), bv) => Box::new(once(self.assign(av, bv))),

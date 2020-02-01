@@ -15,4 +15,4 @@ pub use goal::equal::equal;
 pub use goal::lazy::{lazy, with1, with2, with3};
 pub use goal::not::not;
 pub use goal::Goal;
-pub use goal::GoalIter;
+pub use goal::StateIter;

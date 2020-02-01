@@ -1,4 +1,4 @@
-use crate::{Can, CanT, GoalIter, State};
+use crate::{Can, CanT, State, StateIter};
 use std::iter::empty;
 
 pub fn resolve<T: CanT + 'static>(state: &State<T>, vec: &Vec<Can<T>>) -> Can<T> {
@@ -6,7 +6,7 @@ pub fn resolve<T: CanT + 'static>(state: &State<T>, vec: &Vec<Can<T>>) -> Can<T>
     Can::Vec(resolved.collect())
 }
 
-pub fn unify<T: CanT + 'static>(state: &State<T>, a: Vec<Can<T>>, b: Vec<Can<T>>) -> GoalIter<T> {
+pub fn unify<T: CanT + 'static>(state: &State<T>, a: Vec<Can<T>>, b: Vec<Can<T>>) -> StateIter<T> {
     if a.len() == b.len() {
         let mut pairs = a.iter().zip(b.iter());
         // Start with a single copy of the state

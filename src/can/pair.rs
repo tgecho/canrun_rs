@@ -1,4 +1,4 @@
-use crate::{Can, CanT, GoalIter, State};
+use crate::{Can, CanT, State, StateIter};
 
 pub fn pair<T: CanT>(l: Can<T>, r: Can<T>) -> Can<T> {
     Can::Pair {
@@ -20,6 +20,6 @@ pub fn unify<T: CanT + 'static>(
     ar: Can<T>,
     bl: Can<T>,
     br: Can<T>,
-) -> GoalIter<T> {
+) -> StateIter<T> {
     Box::new(state.unify(&al, &bl).flat_map(move |l| l.unify(&ar, &br)))
 }

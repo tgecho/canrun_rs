@@ -1,4 +1,4 @@
-use crate::{CanT, Goal, GoalIter, State};
+use crate::{CanT, Goal, State, StateIter};
 use std::iter::once;
 
 pub fn both<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
@@ -8,7 +8,7 @@ pub fn both<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
     }
 }
 
-pub(crate) fn run<T: CanT>(state: &State<T>, a: &Goal<T>, b: &Goal<T>) -> GoalIter<T> {
+pub(crate) fn run<T: CanT>(state: &State<T>, a: &Goal<T>, b: &Goal<T>) -> StateIter<T> {
     Box::new(
         (a.run(state))
             // TODO: understand how to lifetime away this b.clone()

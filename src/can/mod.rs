@@ -2,7 +2,7 @@ pub mod lvar;
 pub mod pair;
 pub mod vec;
 
-use crate::goal::GoalIter;
+use crate::goal::StateIter;
 use crate::State;
 use lvar::LVar;
 use std::fmt;
@@ -22,7 +22,7 @@ pub enum Can<T: CanT> {
     Vec(Vec<Can<T>>),
     HoC {
         value: Box<Can<T>>,
-        unify: fn(Can<T>, Can<T>, State<T>) -> GoalIter<T>,
+        unify: fn(Can<T>, Can<T>, State<T>) -> StateIter<T>,
     },
 }
 

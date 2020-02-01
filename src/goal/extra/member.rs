@@ -1,4 +1,4 @@
-use crate::{equal, Can, CanT, Goal, GoalIter, State};
+use crate::{equal, Can, CanT, Goal, State, StateIter};
 use std::iter::empty;
 
 pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
@@ -9,7 +9,7 @@ fn unify_contains<T: CanT + 'static>(
     needle: Can<T>,
     other: Can<T>,
     state: State<T>,
-) -> GoalIter<T> {
+) -> StateIter<T> {
     match other {
         Can::Vec(haystack) => Box::new(
             haystack
