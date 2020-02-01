@@ -27,15 +27,15 @@ pub enum Goal<T: CanT + 'static> {
 pub type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
 
 impl<T: CanT> Goal<T> {
-    pub fn run(self, state: State<T>) -> GoalIter<T> {
+    pub fn run(&self, state: State<T>) -> GoalIter<T> {
         match self {
             Goal::Succeed => Box::new(once(state.clone())),
             Goal::Fail => Box::new(empty()),
             Goal::Equal { a, b } => equal::run(state, a, b),
-            Goal::Both { a, b } => both::run(state, *a, *b),
-            Goal::Either { a, b } => either::run(state, *a, *b),
+            Goal::Both { a, b } => both::run(state, &a, &b),
+            Goal::Either { a, b } => either::run(state, &a, &b),
             Goal::Lazy(func) => func().run(state),
-            Goal::Not(goal) => not::run(state, *goal),
+            Goal::Not(goal) => not::run(state, goal),
         }
     }
 }

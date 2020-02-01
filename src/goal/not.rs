@@ -5,7 +5,7 @@ pub fn not<T: CanT>(goal: Goal<T>) -> Goal<T> {
     Goal::Not(Box::new(goal))
 }
 
-pub(crate) fn run<T: CanT>(state: State<T>, goal: Goal<T>) -> GoalIter<T> {
+pub(crate) fn run<T: CanT>(state: State<T>, goal: &Goal<T>) -> GoalIter<T> {
     let mut iter = goal.run(state.clone());
     if iter.next().is_some() {
         Box::new(empty())
@@ -53,11 +53,11 @@ mod tests {
         let state: State<u32> = State::new();
         let x = LVar::new();
         let goal = not(not(equal(x.into(), Can::Val(1))));
-        let results: Vec<_> = goal.clone().run(state).map(|s| s.resolve_var(x)).collect();
+        let results: Vec<_> = goal.run(state).map(|s| s.resolve_var(x)).collect();
         // I'm not actually sure if this result makes sense or is what we want
         assert_eq!(results, vec![x.into()]);
 
         let goal = not(not(equal(Can::Val(1), Can::Val(1))));
-        assert!(goal.clone().run(State::new()).nth(0).is_some());
+        assert!(goal.run(State::new()).nth(0).is_some());
     }
 }

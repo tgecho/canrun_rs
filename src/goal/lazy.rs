@@ -46,7 +46,7 @@ mod tests {
             both(equal(x.clone(), Can::Val(5)), equal(x, yy))
         });
 
-        let mut result1 = goal.clone().run(State::new());
+        let mut result1 = goal.run(State::new());
         assert_eq!(result1.nth(0).unwrap().resolve_var(y), Can::Val(5));
 
         // This shows that we can run the same lazy goal again

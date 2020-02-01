@@ -179,7 +179,7 @@ mod tests {
         //     ),
         //     equal(y.into(), Can::Vec(vec![Can::Val("name"), Can::Val("john")])),
         // );
-        let result: Vec<_> = goal.clone().run(State::new()).collect();
+        let result: Vec<_> = goal.run(State::new()).collect();
 
         dbg!(goal
             .run(State::new())

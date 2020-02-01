@@ -8,7 +8,7 @@ pub fn either<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
     }
 }
 
-pub(crate) fn run<T: CanT>(state: State<T>, a: Goal<T>, b: Goal<T>) -> GoalIter<T> {
+pub(crate) fn run<T: CanT>(state: State<T>, a: &Goal<T>, b: &Goal<T>) -> GoalIter<T> {
     Box::new(a.run(state.clone()).interleave(b.run(state)))
 }
 

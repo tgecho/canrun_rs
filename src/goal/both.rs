@@ -8,10 +8,11 @@ pub fn both<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
     }
 }
 
-pub(crate) fn run<T: CanT>(state: State<T>, a: Goal<T>, b: Goal<T>) -> GoalIter<T> {
+pub(crate) fn run<T: CanT>(state: State<T>, a: &Goal<T>, b: &Goal<T>) -> GoalIter<T> {
     Box::new(
         (a.run(state))
-            .zip(once(b).cycle())
+            // TODO: understand how to lifetime away this b.clone()
+            .zip(once(b.clone()).cycle())
             .flat_map(|(s, b)| b.run(s)),
     )
 }
