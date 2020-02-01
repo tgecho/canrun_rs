@@ -6,6 +6,7 @@ use std::rc::Rc;
 pub mod all;
 pub mod any;
 pub mod both;
+pub mod custom;
 pub mod either;
 pub mod equal;
 pub mod extra;
@@ -20,6 +21,7 @@ pub enum Goal<T: CanT + 'static> {
     Both { a: Box<Goal<T>>, b: Box<Goal<T>> },
     Either { a: Box<Goal<T>>, b: Box<Goal<T>> },
     Lazy(Rc<dyn Fn() -> Goal<T>>),
+    Custom(Rc<dyn Fn(&State<T>) -> StateIter<T>>),
     Not(Box<Goal<T>>),
 }
 
@@ -34,6 +36,7 @@ impl<T: CanT> Goal<T> {
             Goal::Both { a, b } => both::run(state, &a, &b),
             Goal::Either { a, b } => either::run(state, &a, &b),
             Goal::Lazy(func) => func().run(state),
+            Goal::Custom(func) => func(state),
             Goal::Not(goal) => not::run(state, goal),
         }
     }
@@ -47,7 +50,8 @@ impl<T: CanT> fmt::Debug for Goal<T> {
             Goal::Equal { a, b } => write!(f, "Equal {{ {:?}, {:?} }}", a, b),
             Goal::Both { a, b } => write!(f, "Both {{ {:?}, {:?} }}", a, b),
             Goal::Either { a, b } => write!(f, "Either {{ {:?}, {:?} }}", a, b),
-            Goal::Lazy(lazy) => write!(f, "Lazy(|| => {:?})", lazy()),
+            Goal::Lazy(func) => write!(f, "Lazy(|| => {:?})", func()),
+            Goal::Custom(_) => write!(f, "Custom(?)"),
             Goal::Not(goal) => write!(f, "Not({:?})", goal),
         }
     }
