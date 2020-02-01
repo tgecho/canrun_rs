@@ -1,5 +1,5 @@
 use crate::can::lvar::LVar;
-use crate::can::{Can, CanT};
+use crate::can::{pair, vec, Can, CanT};
 use crate::goal::GoalIter;
 use im::hashmap::HashMap;
 use std::iter::{empty, once};
@@ -29,14 +29,8 @@ impl<T: CanT + 'static> State<T> {
                 None => can.clone(),
             },
             Can::Val(_) => can.clone(),
-            Can::Pair { l, r } => Can::Pair {
-                l: Box::new(self.resolve(l)),
-                r: Box::new(self.resolve(r)),
-            },
-            Can::Vec(v) => {
-                let resolved = v.iter().map(|i| self.resolve(i));
-                Can::Vec(resolved.collect())
-            }
+            Can::Pair { l, r } => pair::resolve(self, l, r),
+            Can::Vec(v) => vec::resolve(self, v),
             Can::Nil => Can::Nil,
             Can::HoC { value, unify } => Can::HoC {
                 value: Box::new(self.resolve(value)),
@@ -60,30 +54,9 @@ impl<T: CanT + 'static> State<T> {
                 (Can::Var(av), bv) => Box::new(once(self.assign(av, bv))),
                 (av, Can::Var(bv)) => Box::new(once(self.assign(bv, av))),
                 (Can::Pair { l: al, r: ar }, Can::Pair { l: bl, r: br }) => {
-                    Box::new(self.unify(&al, &bl).flat_map(move |l| l.unify(&ar, &*br)))
+                    pair::unify(self, *al, *ar, *bl, *br)
                 }
-                (Can::Vec(a), Can::Vec(b)) => {
-                    if a.len() == b.len() {
-                        let mut pairs = a.iter().zip(b.iter());
-                        // Start with a single copy of the state
-                        let initial = vec![self.clone()];
-                        let states = pairs.try_fold(initial, |states, (a, b)| {
-                            // Try to unify the two sides in each state and flatten out the results
-                            // Failed unifications will return empty and those states will drop out
-                            if states.len() > 0 {
-                                Some(states.iter().flat_map(|s| s.unify(a, b)).collect())
-                            } else {
-                                None
-                            }
-                        });
-                        match states {
-                            Some(states) => Box::new(states.into_iter()),
-                            None => Box::new(empty()),
-                        }
-                    } else {
-                        Box::new(empty())
-                    }
-                }
+                (Can::Vec(a), Can::Vec(b)) => vec::unify(self, a, b),
                 (Can::HoC { value, unify }, other) => unify(*value, other, self.clone()),
                 _ => Box::new(empty()),
             }
@@ -178,16 +151,5 @@ mod tests {
         let state: State<u8> = State::new().assign(x, Can::Val(5));
         let result: Vec<_> = state.unify(&Can::Var(x), &Can::Val(6)).collect();
         assert_eq!(result, vec![]);
-    }
-
-    #[test]
-    fn unify_list() {
-        let x = LVar::new();
-        let state: State<u8> = State::new();
-        let mut unified = state.unify(
-            &Can::Vec(vec![Can::Val(1), Can::Var(x), Can::Val(3)]),
-            &Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
-        );
-        assert_eq!(unified.nth(0).unwrap().resolve_var(x), Can::Val(2));
     }
 }

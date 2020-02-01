@@ -1,4 +1,6 @@
 pub mod lvar;
+pub mod pair;
+pub mod vec;
 
 use crate::goal::GoalIter;
 use crate::State;
