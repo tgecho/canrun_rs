@@ -1,5 +1,5 @@
 use std::fmt;
-use std::hash::Hash;
+use std::hash::{Hash, Hasher};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 fn get_id() -> usize {
@@ -7,7 +7,7 @@ fn get_id() -> usize {
     COUNTER.fetch_add(1, Ordering::Relaxed)
 }
 
-#[derive(Eq, Clone, Copy, Hash)]
+#[derive(Eq, Clone, Copy)]
 pub struct LVar {
     id: usize,
     label: Option<&'static str>,
@@ -31,6 +31,12 @@ impl LVar {
             id: get_id(),
             label: Some(label),
         }
+    }
+}
+
+impl Hash for LVar {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }
 
