@@ -10,8 +10,7 @@ where
         iter: Rc::new(move || Box::new(haystack.clone().into_iter())),
     }
 }
-use crate::goal::GoalIter;
-use crate::State;
+
 use std::iter::empty;
 
 // fn unify_contains<T: CanT + 'static>(
@@ -26,20 +25,20 @@ use std::iter::empty;
 //     )
 // }
 
-fn unify_contains<T: CanT + 'static>(
-    needle: Can<T>,
-    other: Can<T>,
-    state: State<T>,
-) -> GoalIter<T> {
-    match other {
-        Can::Vec(haystack) => Box::new(
-            haystack
-                .into_iter()
-                .flat_map(move |c| state.unify(&needle, &c)),
-        ),
-        _ => Box::new(empty()),
-    }
-}
+// fn unify_contains<T: CanT + 'static>(
+//     needle: Can<T>,
+//     other: Can<T>,
+//     state: State<T>,
+// ) -> GoalIter<T> {
+//     match other {
+//         Can::Vec(haystack) => Box::new(
+//             haystack
+//                 .into_iter()
+//                 .flat_map(move |c| state.unify(&needle, &c)),
+//         ),
+//         _ => Box::new(empty()),
+//     }
+// }
 
 fn contains<T: CanT + 'static>(needle: Can<T>) -> Can<T> {
     Can::Funky {
