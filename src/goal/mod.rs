@@ -27,7 +27,7 @@ pub enum Goal<T: CanT + 'static> {
 pub type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
 
 impl<T: CanT> Goal<T> {
-    pub fn run(&self, state: State<T>) -> GoalIter<T> {
+    pub fn run(&self, state: &State<T>) -> GoalIter<T> {
         match self {
             Goal::Succeed => Box::new(once(state.clone())),
             Goal::Fail => Box::new(empty()),

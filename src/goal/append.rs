@@ -37,7 +37,7 @@ mod tests {
         let i = pair(Can::Val(Some("i")), Can::Nil);
         let goal = append(h, x.into(), hi);
 
-        let mut result1 = goal.run(state);
+        let mut result1 = goal.run(&state);
         assert_eq!(result1.nth(0).unwrap().resolve_var(x), i);
     }
 }

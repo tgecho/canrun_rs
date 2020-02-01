@@ -43,7 +43,7 @@ mod tests {
             Can::Var(x),
             Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
         );
-        let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(x)).collect();
+        let result: Vec<_> = goal.run(&State::new()).map(|r| r.resolve_var(x)).collect();
         assert_eq!(result, vec![Can::Val(1), Can::Val(2), Can::Val(3)]);
     }
     #[test]
@@ -56,7 +56,7 @@ mod tests {
                 Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
             ),
         );
-        let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(x)).collect();
+        let result: Vec<_> = goal.run(&State::new()).map(|r| r.resolve_var(x)).collect();
         assert_eq!(result, vec![Can::Val(2)]);
     }
     #[test]
@@ -80,7 +80,7 @@ mod tests {
                 ),
             );
             let result: Vec<_> = goal
-                .run(State::new())
+                .run(&State::new())
                 .map(|r| (r.resolve_var(y), r.resolve_var(x)))
                 .collect();
             result
@@ -121,7 +121,7 @@ mod tests {
                 ]),
             ),
         );
-        let result: Vec<_> = goal.run(State::new()).map(|r| r.resolve_var(y)).collect();
+        let result: Vec<_> = goal.run(&State::new()).map(|r| r.resolve_var(y)).collect();
 
         assert_eq!(result, vec![Can::Val(5), Can::Val(0), Can::Val(1)]);
     }
@@ -179,10 +179,10 @@ mod tests {
         //     ),
         //     equal(y.into(), Can::Vec(vec![Can::Val("name"), Can::Val("john")])),
         // );
-        let result: Vec<_> = goal.run(State::new()).collect();
+        let result: Vec<_> = goal.run(&State::new()).collect();
 
         dbg!(goal
-            .run(State::new())
+            .run(&State::new())
             .map(|s| s.resolve_var(z))
             .collect::<Vec<_>>());
 

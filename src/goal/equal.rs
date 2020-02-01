@@ -4,7 +4,7 @@ pub fn equal<T: CanT>(a: Can<T>, b: Can<T>) -> Goal<T> {
     Goal::Equal { a, b }
 }
 
-pub(crate) fn run<T: CanT + 'static>(state: State<T>, a: &Can<T>, b: &Can<T>) -> GoalIter<T> {
+pub(crate) fn run<T: CanT + 'static>(state: &State<T>, a: &Can<T>, b: &Can<T>) -> GoalIter<T> {
     Box::new(state.unify(a, b))
 }
 
@@ -17,7 +17,7 @@ mod tests {
         let state: State<u32> = State::new();
         let x = LVar::new();
         let goal = equal(Can::Var(x), Can::Val(5));
-        let mut result = goal.run(state);
+        let mut result = goal.run(&state);
         assert_eq!(result.nth(0).unwrap().resolve_var(x), Can::Val(5));
     }
 }
