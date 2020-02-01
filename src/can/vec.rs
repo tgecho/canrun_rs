@@ -1,7 +1,7 @@
 use crate::{Can, CanT, State, StateIter};
 use std::iter::empty;
 
-pub fn resolve<T: CanT + 'static>(state: &State<T>, vec: &Vec<Can<T>>) -> Can<T> {
+pub fn resolve<T: CanT + 'static>(state: &State<T>, vec: &[Can<T>]) -> Can<T> {
     let resolved = vec.iter().map(|i| state.resolve(i));
     Can::Vec(resolved.collect())
 }
@@ -14,10 +14,10 @@ pub fn unify<T: CanT + 'static>(state: &State<T>, a: Vec<Can<T>>, b: Vec<Can<T>>
         let states = pairs.try_fold(initial, |states, (a, b)| {
             // Try to unify the two sides in each state and flatten out the results
             // Failed unifications will return empty and those states will drop out
-            if states.len() > 0 {
-                Some(states.iter().flat_map(|s| s.unify(a, b)).collect())
-            } else {
+            if states.is_empty() {
                 None
+            } else {
+                Some(states.iter().flat_map(|s| s.unify(a, b)).collect())
             }
         });
         match states {

@@ -7,7 +7,7 @@ fn get_id() -> usize {
     COUNTER.fetch_add(1, Ordering::Relaxed)
 }
 
-#[derive(Eq, Clone, Copy)]
+#[derive(Eq, Clone, Copy, Default)]
 pub struct LVar {
     id: usize,
     label: Option<&'static str>,

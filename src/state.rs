@@ -4,7 +4,7 @@ use crate::goal::StateIter;
 use im::hashmap::HashMap;
 use std::iter::{empty, once};
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Default)]
 pub struct State<T: CanT> {
     values: HashMap<LVar, Can<T>>,
 }
