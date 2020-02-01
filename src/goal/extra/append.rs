@@ -32,6 +32,6 @@ mod tests {
         let goal = append(h, x.into(), hi);
 
         let mut result1 = goal.run(&state);
-        assert_eq!(result1.nth(0).unwrap().resolve_var(x), i);
+        assert_eq!(result1.nth(0).unwrap().resolve_var(x).unwrap(), i);
     }
 }

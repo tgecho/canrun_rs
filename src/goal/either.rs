@@ -21,7 +21,7 @@ mod tests {
         let x = LVar::new();
         let xv = Can::Var(x);
         let goal = either(equal(xv.clone(), Can::Val(5)), equal(xv, Can::Val(6)));
-        let mut results = goal.run(&state).map(|s| s.resolve_var(x));
+        let mut results = goal.run(&state).map(|s| s.resolve_var(x).unwrap());
         assert_eq!(results.nth(0).unwrap(), Can::Val(5));
         assert_eq!(results.nth(0).unwrap(), Can::Val(6));
     }

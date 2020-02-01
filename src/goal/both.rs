@@ -29,7 +29,7 @@ mod tests {
         let yv = Can::Var(y);
         let goal = both(equal(xv.clone(), Can::Val(5)), equal(yv, Can::Val(7)));
         let result = goal.run(&state).nth(0).unwrap();
-        assert_eq!(result.resolve_var(x), Can::Val(5));
-        assert_eq!(result.resolve_var(y), Can::Val(7));
+        assert_eq!(result.resolve_var(x).unwrap(), Can::Val(5));
+        assert_eq!(result.resolve_var(y).unwrap(), Can::Val(7));
     }
 }

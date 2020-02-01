@@ -25,8 +25,8 @@ mod tests {
             Goal::Succeed,
         ]);
         let result = goal.run(&state).nth(0).unwrap();
-        assert_eq!(result.resolve_var(x), Can::Val(5));
-        assert_eq!(result.resolve_var(y), Can::Val(7));
+        assert_eq!(result.resolve_var(x).unwrap(), Can::Val(5));
+        assert_eq!(result.resolve_var(y).unwrap(), Can::Val(7));
     }
     #[test]
     fn all_fail() {

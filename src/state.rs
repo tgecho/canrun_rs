@@ -1,9 +1,8 @@
 use crate::can::lvar::LVar;
 use crate::can::{pair, vec, Can, CanT};
 use crate::goal::StateIter;
-use im::hashmap::HashMap;
+use im::{HashMap, HashSet};
 use std::iter::{empty, once};
-
 #[derive(Clone, PartialEq, Debug, Default)]
 pub struct State<T: CanT> {
     values: HashMap<LVar, Can<T>>,
@@ -22,32 +21,53 @@ impl<T: CanT + 'static> State<T> {
         }
     }
 
-    pub fn resolve(&self, can: &Can<T>) -> Can<T> {
+    pub(crate) fn checked_resolve(
+        &self,
+        can: &Can<T>,
+        history: &HashSet<LVar>,
+    ) -> ResolveResult<T> {
         match can {
-            Can::Var(lvar) => match self.values.get(lvar) {
-                Some(val) => self.resolve(val),
-                None => can.clone(),
-            },
-            Can::Val(_) => can.clone(),
-            Can::Pair { l, r } => pair::resolve(self, l, r),
-            Can::Vec(v) => vec::resolve(self, v),
-            Can::Nil => Can::Nil,
-            Can::HoC { value, unify } => Can::HoC {
-                value: Box::new(self.resolve(value)),
+            Can::Var(lvar) => {
+                if history.contains(lvar) {
+                    Err(UnifyError::InfiniteRecursion(*lvar))
+                } else {
+                    let history = history.update(*lvar);
+                    match self.values.get(lvar) {
+                        Some(val) => self.checked_resolve(val, &history),
+                        None => Ok(can.clone()),
+                    }
+                }
+            }
+            Can::Val(v) => Ok(Can::Val(v.clone())),
+            Can::Pair { l, r } => pair::resolve(self, l, r, history),
+            Can::Vec(v) => vec::resolve(self, v, history),
+            Can::Nil => Ok(Can::Nil),
+            Can::HoC { value, unify } => Ok(Can::HoC {
+                value: Box::new(self.checked_resolve(value, history)?),
                 unify: *unify,
-            },
+            }),
         }
     }
 
-    pub fn resolve_var(&self, key: LVar) -> Can<T> {
-        self.resolve(&Can::Var(key))
+    pub fn resolve(&self, can: &Can<T>) -> ResolveResult<T> {
+        self.checked_resolve(can, &HashSet::new())
     }
 
+    pub fn resolve_var(&self, key: LVar) -> ResolveResult<T> {
+        self.resolve(&Can::Var(key))
+    }
     pub fn unify(&self, a: &Can<T>, b: &Can<T>) -> StateIter<T> {
-        let a = self.resolve(a);
-        let b = self.resolve(b);
+        self.try_unify(a, b).unwrap_or_else(|err| {
+            debug!("{:?}", err);
+            Box::new(empty())
+        })
+    }
 
-        if a == b {
+    fn try_unify(&self, a: &Can<T>, b: &Can<T>) -> UnifyResult<T> {
+        let a = self.resolve(a)?;
+        let b = self.resolve(b)?;
+
+        Ok(if a == b {
             Box::new(once(self.clone())) as StateIter<T>
         } else {
             match (a, b) {
@@ -60,9 +80,17 @@ impl<T: CanT + 'static> State<T> {
                 (Can::HoC { value, unify }, other) => unify(*value, other, self.clone()),
                 _ => Box::new(empty()),
             }
-        }
+        })
     }
 }
+
+#[derive(Debug)]
+pub enum UnifyError {
+    InfiniteRecursion(LVar),
+}
+
+pub type ResolveResult<T> = Result<Can<T>, UnifyError>;
+pub type UnifyResult<T> = Result<StateIter<T>, UnifyError>;
 
 #[cfg(test)]
 mod tests {
@@ -89,15 +117,15 @@ mod tests {
         let state: State<u8> = State::new();
         let x = LVar::new();
         let state = state.assign(x, Can::Val(5));
-        assert_eq!(state.resolve_var(x), Can::Val(5));
+        assert_eq!(state.resolve_var(x).unwrap(), Can::Val(5));
     }
 
     #[test]
     fn value_of_missing() {
         let state: State<u8> = State::new();
         let x = LVar::new();
-        assert_eq!(state.resolve_var(x), Can::Var(x));
-        assert_eq!(state.resolve(&Can::Val(5)), Can::Val(5));
+        assert_eq!(state.resolve_var(x).unwrap(), Can::Var(x));
+        assert_eq!(state.resolve(&Can::Val(5)).unwrap(), Can::Val(5));
     }
     #[test]
     fn value_of_nested() {
@@ -109,9 +137,9 @@ mod tests {
         let state = state.assign(y, Can::Var(z));
         let state = state.assign(z, Can::Val(5));
 
-        assert_eq!(state.resolve_var(x), Can::Val(5));
-        assert_eq!(state.resolve_var(y), Can::Val(5));
-        assert_eq!(state.resolve_var(z), Can::Val(5));
+        assert_eq!(state.resolve_var(x).unwrap(), Can::Val(5));
+        assert_eq!(state.resolve_var(y).unwrap(), Can::Val(5));
+        assert_eq!(state.resolve_var(z).unwrap(), Can::Val(5));
     }
     #[test]
     fn unify_with_self() {

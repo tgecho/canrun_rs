@@ -25,8 +25,8 @@ mod tests {
             equal(y.into(), Can::Val(7)),
         ]);
         let results: Vec<State<usize>> = goal.run(&state).collect();
-        assert_eq!(results[0].resolve_var(y), Can::Val(7));
-        assert_eq!(results[1].resolve_var(x), Can::Val(5));
+        assert_eq!(results[0].resolve_var(y).unwrap(), Can::Val(7));
+        assert_eq!(results[1].resolve_var(x).unwrap(), Can::Val(5));
     }
     #[test]
     fn any_fail() {

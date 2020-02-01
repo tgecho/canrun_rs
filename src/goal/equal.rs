@@ -18,6 +18,6 @@ mod tests {
         let x = LVar::new();
         let goal = equal(Can::Var(x), Can::Val(5));
         let mut result = goal.run(&state);
-        assert_eq!(result.nth(0).unwrap().resolve_var(x), Can::Val(5));
+        assert_eq!(result.nth(0).unwrap().resolve_var(x).unwrap(), Can::Val(5));
     }
 }

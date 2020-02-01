@@ -1,4 +1,5 @@
-use crate::{Can, CanT, State, StateIter};
+use crate::{Can, CanT, LVar, ResolveResult, State, StateIter};
+use im::HashSet;
 
 pub fn pair<T: CanT>(l: Can<T>, r: Can<T>) -> Can<T> {
     Can::Pair {
@@ -7,11 +8,16 @@ pub fn pair<T: CanT>(l: Can<T>, r: Can<T>) -> Can<T> {
     }
 }
 
-pub fn resolve<T: CanT + 'static>(state: &State<T>, l: &Can<T>, r: &Can<T>) -> Can<T> {
-    Can::Pair {
-        l: Box::new(state.resolve(l)),
-        r: Box::new(state.resolve(r)),
-    }
+pub fn resolve<T: CanT + 'static>(
+    state: &State<T>,
+    l: &Can<T>,
+    r: &Can<T>,
+    history: &HashSet<LVar>,
+) -> ResolveResult<T> {
+    Ok(Can::Pair {
+        l: Box::new(state.checked_resolve(l, history)?),
+        r: Box::new(state.checked_resolve(r, history)?),
+    })
 }
 
 pub fn unify<T: CanT + 'static>(

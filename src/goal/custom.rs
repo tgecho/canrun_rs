@@ -23,10 +23,10 @@ mod tests {
         });
 
         let mut result1 = goal.run(&State::new());
-        assert_eq!(result1.nth(0).unwrap().resolve_var(y), Can::Val(5));
+        assert_eq!(result1.nth(0).unwrap().resolve_var(y).unwrap(), Can::Val(5));
 
         // This shows that we can run the same custom goal again
         let mut result2 = goal.run(&State::new());
-        assert_eq!(result2.nth(0).unwrap().resolve_var(y), Can::Val(5));
+        assert_eq!(result2.nth(0).unwrap().resolve_var(y).unwrap(), Can::Val(5));
     }
 }

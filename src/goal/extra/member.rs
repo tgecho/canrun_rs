@@ -43,7 +43,10 @@ mod tests {
             Can::Var(x),
             Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
         );
-        let result: Vec<_> = goal.run(&State::new()).map(|r| r.resolve_var(x)).collect();
+        let result: Vec<_> = goal
+            .run(&State::new())
+            .map(|r| r.resolve_var(x).unwrap())
+            .collect();
         assert_eq!(result, vec![Can::Val(1), Can::Val(2), Can::Val(3)]);
     }
     #[test]
@@ -56,7 +59,10 @@ mod tests {
                 Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
             ),
         );
-        let result: Vec<_> = goal.run(&State::new()).map(|r| r.resolve_var(x)).collect();
+        let result: Vec<_> = goal
+            .run(&State::new())
+            .map(|r| r.resolve_var(x).unwrap())
+            .collect();
         assert_eq!(result, vec![Can::Val(2)]);
     }
     #[test]
@@ -81,7 +87,7 @@ mod tests {
             );
             let result: Vec<_> = goal
                 .run(&State::new())
-                .map(|r| (r.resolve_var(y), r.resolve_var(x)))
+                .map(|r| (r.resolve_var(y).unwrap(), r.resolve_var(x).unwrap()))
                 .collect();
             result
         };
@@ -121,7 +127,10 @@ mod tests {
                 ]),
             ),
         );
-        let result: Vec<_> = goal.run(&State::new()).map(|r| r.resolve_var(y)).collect();
+        let result: Vec<_> = goal
+            .run(&State::new())
+            .map(|r| r.resolve_var(y).unwrap())
+            .collect();
 
         assert_eq!(result, vec![Can::Val(5), Can::Val(0), Can::Val(1)]);
     }
@@ -181,10 +190,10 @@ mod tests {
         // );
         let result: Vec<_> = goal.run(&State::new()).collect();
 
-        dbg!(goal
-            .run(&State::new())
-            .map(|s| s.resolve_var(z))
-            .collect::<Vec<_>>());
+        // dbg!(goal
+        //     .run(&State::new())
+        //     .map(|s| s.resolve_var(z))
+        //     .collect::<Vec<_>>());
 
         assert_ne!(result, vec![]);
     }

@@ -34,7 +34,7 @@ mod tests {
         let results: Vec<_> = goal
             .clone()
             .run(&State::new())
-            .map(|s| s.resolve_var(x))
+            .map(|s| s.resolve_var(x).unwrap())
             .collect();
         assert_eq!(results, vec![Can::Val(3), Can::Val(2), Can::Val(1)]);
 
@@ -42,7 +42,7 @@ mod tests {
         let results: Vec<_> = goal
             .clone()
             .run(&State::new())
-            .map(|s| s.resolve_var(x))
+            .map(|s| s.resolve_var(x).unwrap())
             .collect();
         assert_eq!(results, vec![Can::Val(3), Can::Val(2)]);
     }
@@ -52,7 +52,10 @@ mod tests {
         let state: State<u32> = State::new();
         let x = LVar::new();
         let goal = not(not(equal(x.into(), Can::Val(1))));
-        let results: Vec<_> = goal.run(&state).map(|s| s.resolve_var(x)).collect();
+        let results: Vec<_> = goal
+            .run(&state)
+            .map(|s| s.resolve_var(x).unwrap())
+            .collect();
         // I'm not actually sure if this result makes sense or is what we want
         assert_eq!(results, vec![x.into()]);
 

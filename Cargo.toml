@@ -12,3 +12,4 @@ doctest = false
 im = "14.2.0"
 rand = "0.7.3"
 itertools = "0.8.2"
+log = "0.4.8"
