@@ -1,5 +1,4 @@
 use crate::{Can, CanT, State};
-use itertools::Itertools;
 use std::fmt;
 use std::iter::{empty, once};
 use std::rc::Rc;
@@ -27,31 +26,16 @@ pub enum Goal<T: CanT + 'static> {
 
 pub type GoalIter<T> = Box<dyn Iterator<Item = State<T>>>;
 
-pub trait Pursue<T: CanT> {
-    fn run(self, state: State<T>) -> GoalIter<T>;
-}
-
 impl<T: CanT> Goal<T> {
     pub fn run(self, state: State<T>) -> GoalIter<T> {
         match self {
             Goal::Succeed => Box::new(once(state.clone())),
             Goal::Fail => Box::new(empty()),
-            Goal::Equal { a, b } => Box::new(state.unify(&a, &b)),
-            Goal::Both { a, b } => Box::new(
-                (a.run(state))
-                    .zip(once(b).cycle())
-                    .flat_map(|(s, b)| b.run(s)),
-            ),
-            Goal::Either { a, b } => Box::new(a.run(state.clone()).interleave(b.run(state))),
+            Goal::Equal { a, b } => equal::run(state, a, b),
+            Goal::Both { a, b } => both::run(state, *a, *b),
+            Goal::Either { a, b } => either::run(state, *a, *b),
             Goal::Lazy(func) => func().run(state),
-            Goal::Not(goal) => {
-                let mut iter = goal.run(state.clone());
-                if iter.next().is_some() {
-                    Box::new(empty())
-                } else {
-                    Box::new(once(state))
-                }
-            }
+            Goal::Not(goal) => not::run(state, *goal),
         }
     }
 }

@@ -1,10 +1,19 @@
-use crate::{CanT, Goal};
+use crate::{CanT, Goal, GoalIter, State};
+use std::iter::once;
 
 pub fn both<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
     Goal::Both {
         a: Box::new(a),
         b: Box::new(b),
     }
+}
+
+pub(crate) fn run<T: CanT>(state: State<T>, a: Goal<T>, b: Goal<T>) -> GoalIter<T> {
+    Box::new(
+        (a.run(state))
+            .zip(once(b).cycle())
+            .flat_map(|(s, b)| b.run(s)),
+    )
 }
 
 #[cfg(test)]

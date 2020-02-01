@@ -1,10 +1,15 @@
-use crate::{CanT, Goal};
+use crate::{CanT, Goal, GoalIter, State};
+use itertools::Itertools;
 
 pub fn either<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
     Goal::Either {
         a: Box::new(a),
         b: Box::new(b),
     }
+}
+
+pub(crate) fn run<T: CanT>(state: State<T>, a: Goal<T>, b: Goal<T>) -> GoalIter<T> {
+    Box::new(a.run(state.clone()).interleave(b.run(state)))
 }
 
 #[cfg(test)]

@@ -1,7 +1,11 @@
-use crate::{Can, CanT, Goal};
+use crate::{Can, CanT, Goal, GoalIter, State};
 
 pub fn equal<T: CanT>(a: Can<T>, b: Can<T>) -> Goal<T> {
     Goal::Equal { a, b }
+}
+
+pub(crate) fn run<T: CanT + 'static>(state: State<T>, a: Can<T>, b: Can<T>) -> GoalIter<T> {
+    Box::new(state.unify(&a, &b))
 }
 
 #[cfg(test)]
