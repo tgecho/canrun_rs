@@ -45,10 +45,8 @@ mod tests {
     fn unify_two_vecs() {
         let x = var();
         let mut unified = State::new().unify(
-            &Can::Vec(vec![x.can()]),
-            &Can::Vec(vec![Can::Val(2)]),
-            // &Can::Vec(vec![Can::Val(1), Can::Var(x), Can::Val(3)]),
-            // &Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
+            &Can::Vec(vec![Can::Val(1), x.can(), Can::Val(3)]),
+            &Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
         );
         assert_eq!(unified.nth(0).unwrap().resolve_var(x).unwrap(), Can::Val(2));
     }

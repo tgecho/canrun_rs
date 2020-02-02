@@ -3,8 +3,6 @@ use std::fmt;
 use std::iter::{empty, once};
 use std::rc::Rc;
 
-pub mod all;
-pub mod any;
 pub mod both;
 pub mod custom;
 pub mod either;
