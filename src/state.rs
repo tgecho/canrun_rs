@@ -79,6 +79,7 @@ impl<T: CanT + 'static> State<T> {
                 }
                 (Can::Vec(a), Can::Vec(b)) => vec::unify(self, a, b),
                 (Can::HoC { value, unify }, other) => unify(*value, other, self.clone()),
+                (other, Can::HoC { value, unify }, ) => unify(*value, other, self.clone()),
                 _ => Box::new(empty()),
             }
         })
