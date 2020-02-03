@@ -1,7 +1,7 @@
+use crate::{Can, CanT};
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use crate::{CanT, Can};
 
 fn get_id() -> usize {
     static COUNTER: AtomicUsize = AtomicUsize::new(1);
@@ -38,7 +38,7 @@ impl LVar {
         }
     }
 
-    pub fn can<T: CanT>(&self) -> Can<T>{
+    pub fn can<T: CanT>(&self) -> Can<T> {
         Can::Var(*self)
     }
 }
@@ -60,7 +60,7 @@ impl fmt::Debug for LVar {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Can, var, LVar};
+    use crate::{var, Can, LVar};
 
     #[test]
     fn lvar_equality() {

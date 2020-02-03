@@ -1,5 +1,5 @@
 use crate::can::lvar::LVar;
-use crate::can::{pair, vec, Can, CanT};
+use crate::can::{hoc, pair, vec, Can, CanT};
 use crate::goal::StateIter;
 use im::{HashMap, HashSet};
 use std::iter::{empty, once};
@@ -15,10 +15,14 @@ impl<T: CanT + 'static> State<T> {
         }
     }
 
-    pub(crate) fn assign(&self, key: LVar, value: Can<T>) -> Self {
+    pub(crate) fn assign(&self, var: LVar, value: Can<T>) -> Self {
         State {
-            values: self.values.update(key, value),
+            values: self.values.update(var, value),
         }
+    }
+
+    pub(crate) fn contains_var(&self, var: &LVar) -> bool {
+        self.values.contains_key(var)
     }
 
     pub(crate) fn checked_resolve(
@@ -42,17 +46,7 @@ impl<T: CanT + 'static> State<T> {
             Can::Pair { l, r } => pair::resolve(self, l, r, history),
             Can::Vec(v) => vec::resolve(self, v, history),
             Can::Nil => Ok(Can::Nil),
-            Can::HoC { var, value, unify } => {
-                if self.values.contains_key(var) {
-                    self.checked_resolve(&var.can(), history)
-                } else {
-                    Ok(Can::HoC {
-                        var: var.clone(),
-                        value: Box::new(self.checked_resolve(value, history)?),
-                        unify: *unify,
-                    })
-                }
-            },
+            Can::HoC { var, value, unify } => hoc::resolve(self, var, value, unify, history),
         }
     }
 
@@ -86,7 +80,7 @@ impl<T: CanT + 'static> State<T> {
                 }
                 (Can::Vec(a), Can::Vec(b)) => vec::unify(self, a, b),
                 (Can::HoC { var, value, unify }, other) => unify(var, *value, other, self.clone()),
-                (other, Can::HoC { var, value, unify }, ) => unify(var, *value, other, self.clone()),
+                (other, Can::HoC { var, value, unify }) => unify(var, *value, other, self.clone()),
                 _ => Box::new(empty()),
             }
         })
@@ -103,7 +97,7 @@ pub type UnifyResult<T> = Result<StateIter<T>, UnifyError>;
 
 #[cfg(test)]
 mod tests {
-    use crate::{Can, State,var, LVar};
+    use crate::{var, Can, LVar, State};
     use im::HashMap;
 
     #[test]

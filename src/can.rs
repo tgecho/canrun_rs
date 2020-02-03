@@ -1,9 +1,9 @@
+pub mod hoc;
 pub mod lvar;
 pub mod pair;
 pub mod vec;
 
-use crate::goal::StateIter;
-use crate::State;
+use crate::can::hoc::HocUnifyFn;
 use lvar::LVar;
 use std::fmt;
 
@@ -23,7 +23,7 @@ pub enum Can<T: CanT> {
     HoC {
         var: LVar,
         value: Box<Can<T>>,
-        unify: fn(LVar, Can<T>, Can<T>, State<T>) -> StateIter<T>,
+        unify: HocUnifyFn<T>,
     },
 }
 
