@@ -19,10 +19,11 @@ fn unify_contains<T: CanT + 'static>(
     other: Can<T>,
     state: State<T>,
 ) -> StateIter<T> {
-    match other {
+    match other.clone() {
         Can::Vec(haystack) => {
-            let iter = (haystack.into_iter())
-                .flat_map(move |can| both(var.equals(can), var.equals(needle.clone())).run(&state));
+            let iter = (haystack.into_iter()).flat_map(move |can| {
+                both(needle.clone().equals(can), var.equals(other.clone())).run(&state)
+            });
             Box::new(iter)
         }
         _ => Box::new(empty()),
@@ -31,7 +32,6 @@ fn unify_contains<T: CanT + 'static>(
 
 #[cfg(test)]
 mod tests {
-    use super::contains;
     use crate::can::pair::pair;
     use crate::{all, any, both, equal, member, var, Can, CanT, Equals, Goal, State};
 
@@ -197,21 +197,30 @@ mod tests {
         let goal: Goal<&str> = all(vec![
             x.equals(pair(Can::Val("name"), z.can())),
             y.equals(Can::Vec(vec![john.clone(), mary.clone(), monkey.clone()])),
-            c.equals(contains(contains(x.can()))),
-            equal(c.can(), y.can()),
+            member(x.can(), c.can()),
+            member(c.can(), y.can()),
         ]);
 
-        let result: Vec<_> = goal
-            .run(&State::new())
-            .map(|s| (s.resolve_var(z).unwrap(), s.resolve_var(c).unwrap()))
-            .collect();
+        let resolve = |goal: &Goal<&'static str>| -> Vec<(Can<&'static str>, Can<&'static str>)> {
+            goal.run(&State::new())
+                .map(|s| (s.resolve_var(z).unwrap(), s.resolve_var(c).unwrap()))
+                .collect()
+        };
+
         assert_eq!(
-            result,
+            resolve(&goal),
             vec![
-                (Can::Val("john"), john),
-                (Can::Val("mary"), mary),
-                (Can::Val("monkey"), monkey)
+                (Can::Val("john"), john.clone()),
+                (Can::Val("mary"), mary.clone()),
+                (Can::Val("monkey"), monkey.clone())
             ]
         );
+
+        let goal = both(
+            member(pair(Can::Val("is"), Can::Val("hungry")), c.can()),
+            goal,
+        );
+        // TODO: This works if the extra member and goal are swapped :/
+        assert_eq!(resolve(&goal), vec![(Can::Val("monkey"), monkey)]);
     }
 }

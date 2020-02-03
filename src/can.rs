@@ -54,7 +54,9 @@ impl<T: CanT> fmt::Debug for Can<T> {
             Can::Val(v) => write!(f, "Val({:?})", v),
             Can::Pair { l, r } => write!(f, "Pair{{ {:?}, {:?} }}", l, r),
             Can::Vec(v) => write!(f, "Vec({:?})", v),
-            Can::HoC { value, .. } => write!(f, "HoC{{ {:?} + ?}}", value),
+            Can::HoC { var, value, .. } => {
+                write!(f, "HoC{{ var: {:?}, value: {:?} + ?}}", var, value)
+            }
         }
     }
 }
