@@ -21,8 +21,9 @@ pub enum Can<T: CanT> {
     },
     Vec(Vec<Can<T>>),
     HoC {
+        var: LVar,
         value: Box<Can<T>>,
-        unify: fn(Can<T>, Can<T>, State<T>) -> StateIter<T>,
+        unify: fn(LVar, Can<T>, Can<T>, State<T>) -> StateIter<T>,
     },
 }
 

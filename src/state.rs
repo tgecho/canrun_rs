@@ -15,7 +15,7 @@ impl<T: CanT + 'static> State<T> {
         }
     }
 
-    pub fn assign(&self, key: LVar, value: Can<T>) -> Self {
+    pub(crate) fn assign(&self, key: LVar, value: Can<T>) -> Self {
         State {
             values: self.values.update(key, value),
         }
@@ -42,10 +42,17 @@ impl<T: CanT + 'static> State<T> {
             Can::Pair { l, r } => pair::resolve(self, l, r, history),
             Can::Vec(v) => vec::resolve(self, v, history),
             Can::Nil => Ok(Can::Nil),
-            Can::HoC { value, unify } => Ok(Can::HoC {
-                value: Box::new(self.checked_resolve(value, history)?),
-                unify: *unify,
-            }),
+            Can::HoC { var, value, unify } => {
+                if self.values.contains_key(var) {
+                    self.checked_resolve(&var.can(), history)
+                } else {
+                    Ok(Can::HoC {
+                        var: var.clone(),
+                        value: Box::new(self.checked_resolve(value, history)?),
+                        unify: *unify,
+                    })
+                }
+            },
         }
     }
 
@@ -64,9 +71,9 @@ impl<T: CanT + 'static> State<T> {
         })
     }
 
-    fn try_unify(&self, a: &Can<T>, b: &Can<T>) -> UnifyResult<T> {
-        let a = self.resolve(a)?;
-        let b = self.resolve(b)?;
+    fn try_unify(&self, a_: &Can<T>, b_: &Can<T>) -> UnifyResult<T> {
+        let a = self.resolve(a_)?;
+        let b = self.resolve(b_)?;
 
         Ok(if a == b {
             Box::new(once(self.clone())) as StateIter<T>
@@ -78,8 +85,8 @@ impl<T: CanT + 'static> State<T> {
                     pair::unify(self, *al, *ar, *bl, *br)
                 }
                 (Can::Vec(a), Can::Vec(b)) => vec::unify(self, a, b),
-                (Can::HoC { value, unify }, other) => unify(*value, other, self.clone()),
-                (other, Can::HoC { value, unify }, ) => unify(*value, other, self.clone()),
+                (Can::HoC { var, value, unify }, other) => unify(var, *value, other, self.clone()),
+                (other, Can::HoC { var, value, unify }, ) => unify(var, *value, other, self.clone()),
                 _ => Box::new(empty()),
             }
         })

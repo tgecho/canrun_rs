@@ -1,4 +1,4 @@
-use crate::{equal, Can, CanT, Goal, State, StateIter};
+use crate::{both, equal, var, Can, CanT, Equals, Goal, LVar, State, StateIter};
 use std::iter::empty;
 
 pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
@@ -7,22 +7,24 @@ pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
 
 fn contains<T: CanT + 'static>(needle: Can<T>) -> Can<T> {
     Can::HoC {
+        var: var(),
         value: Box::new(needle),
         unify: unify_contains,
     }
 }
 
 fn unify_contains<T: CanT + 'static>(
+    var: LVar,
     needle: Can<T>,
     other: Can<T>,
     state: State<T>,
 ) -> StateIter<T> {
     match other {
-        Can::Vec(haystack) => Box::new(
-            haystack
-                .into_iter()
-                .flat_map(move |c| state.unify(&needle, &c)),
-        ),
+        Can::Vec(haystack) => {
+            let iter = (haystack.into_iter())
+                .flat_map(move |can| both(var.equals(can), var.equals(needle.clone())).run(&state));
+            Box::new(iter)
+        }
         _ => Box::new(empty()),
     }
 }
@@ -31,7 +33,7 @@ fn unify_contains<T: CanT + 'static>(
 mod tests {
     use super::contains;
     use crate::can::pair::pair;
-    use crate::{all, any, both, equal, Can, CanT, var, State, Equals, Goal, member};
+    use crate::{all, any, both, equal, member, var, Can, CanT, Equals, Goal, State};
 
     #[test]
     fn basic_member() {
@@ -161,32 +163,55 @@ mod tests {
             member(pair(Can::Val("name"), y.can()), x.can()),
         );
 
-        let resolve = |goal: &Goal<&'static str>| ->  Vec<Can<&'static str>> {
-            goal.run(&State::new()).map(|s| s.resolve_var(y).unwrap()).collect()
+        let resolve = |goal: &Goal<&'static str>| -> Vec<Can<&'static str>> {
+            goal.run(&State::new())
+                .map(|s| s.resolve_var(y).unwrap())
+                .collect()
         };
 
-        assert_eq!(resolve(&goal), vec![Can::Val("john"), Can::Val("mary"), Can::Val("monkey")]);
+        assert_eq!(
+            resolve(&goal),
+            vec![Can::Val("john"), Can::Val("mary"), Can::Val("monkey")]
+        );
 
         // We can also add extra conditions (NOTE: should think about efficiency long term)
-        let goal = both(goal, member(pair(Can::Val("is"), Can::Val("hungry")), x.can()));
+        let goal = both(
+            goal,
+            member(pair(Can::Val("is"), Can::Val("hungry")), x.can()),
+        );
         assert_eq!(resolve(&goal), vec![Can::Val("monkey")]);
     }
 
+    use crate::LVar;
+
     #[test]
     fn member_with_vars_in_both_positions() {
-        let (c, x, y, z) = (var(), var(), var(), var());
+        let (c, x, y, z) = (
+            LVar::labeled("c"),
+            LVar::labeled("x"),
+            LVar::labeled("y"),
+            LVar::labeled("z"),
+        );
         let (john, mary, monkey) = get_records();
 
         let goal: Goal<&str> = all(vec![
             x.equals(pair(Can::Val("name"), z.can())),
             y.equals(Can::Vec(vec![john.clone(), mary.clone(), monkey.clone()])),
-            c.equals(contains(x.can())),
-            member(c.can(), y.can()),
+            c.equals(contains(contains(x.can()))),
+            equal(c.can(), y.can()),
         ]);
 
-        let result: Vec<_> = goal.run(&State::new()).map(|s| {
-            (s.resolve_var(z).unwrap(), s.resolve_var(c).unwrap())
-        }).collect();
-        assert_eq!(result, vec![(Can::Val("john"), john), (Can::Val("mary"), mary), (Can::Val("monkey"), monkey)]);
+        let result: Vec<_> = goal
+            .run(&State::new())
+            .map(|s| (s.resolve_var(z).unwrap(), s.resolve_var(c).unwrap()))
+            .collect();
+        assert_eq!(
+            result,
+            vec![
+                (Can::Val("john"), john),
+                (Can::Val("mary"), mary),
+                (Can::Val("monkey"), monkey)
+            ]
+        );
     }
 }
