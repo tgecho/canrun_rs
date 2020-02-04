@@ -33,6 +33,7 @@ impl<T: CanT + 'static> State<T> {
         match can {
             Can::Var(lvar) => {
                 if history.contains(lvar) {
+                    dbg!(history);
                     Err(UnifyError::InfiniteRecursion(*lvar))
                 } else {
                     let history = history.update(*lvar);
@@ -46,7 +47,7 @@ impl<T: CanT + 'static> State<T> {
             Can::Pair { l, r } => pair::resolve(self, l, r, history),
             Can::Vec(v) => vec::resolve(self, v, history),
             Can::Nil => Ok(Can::Nil),
-            Can::HoC { var, value, unify } => hoc::resolve(self, var, value, unify, history),
+            Can::HoC(hoc) => hoc::resolve(self, hoc, history),
         }
     }
 
@@ -60,30 +61,50 @@ impl<T: CanT + 'static> State<T> {
 
     pub fn unify(&self, a: &Can<T>, b: &Can<T>) -> StateIter<T> {
         self.try_unify(a, b).unwrap_or_else(|err| {
-            debug!("{:?}", err);
+            dbg!("{:?}", err);
             Box::new(empty())
         })
     }
 
     fn try_unify(&self, a_: &Can<T>, b_: &Can<T>) -> UnifyResult<T> {
+        dbg!("try_unify", self, &a_, &b_);
         let a = self.resolve(a_)?;
         let b = self.resolve(b_)?;
+        dbg!("try_unify resolved", &a, &b);
 
-        Ok(if a == b {
+        let res = Ok(if a == b {
             Box::new(once(self.clone())) as StateIter<T>
         } else {
             match (a, b) {
-                (Can::Var(av), bv) => Box::new(once(self.assign(av, bv))),
+                (Can::Var(av), bv) => {
+                    dbg!("var on left", av, &bv);
+                    Box::new(once(self.assign(av, bv)))
+                }
                 (av, Can::Var(bv)) => Box::new(once(self.assign(bv, av))),
                 (Can::Pair { l: al, r: ar }, Can::Pair { l: bl, r: br }) => {
                     pair::unify(self, *al, *ar, *bl, *br)
                 }
                 (Can::Vec(a), Can::Vec(b)) => vec::unify(self, a, b),
-                (Can::HoC { var, value, unify }, other) => unify(var, *value, other, self.clone()),
-                (other, Can::HoC { var, value, unify }) => unify(var, *value, other, self.clone()),
+                (Can::HoC(a), Can::HoC(b)) => hoc::unify(a, b, self),
+                (
+                    Can::HoC(hoc::HoC {
+                        var, value, unify, ..
+                    }),
+                    other,
+                ) => unify(var, *value, other, self.clone()),
+                (
+                    other,
+                    Can::HoC(hoc::HoC {
+                        var, value, unify, ..
+                    }),
+                ) => unify(var, *value, other, self.clone()),
                 _ => Box::new(empty()),
             }
-        })
+        });
+        res
+        // let vec: Vec<_> = res?.collect();
+        // dbg!(&vec);
+        // Ok(Box::new(vec.into_iter()))
     }
 }
 
