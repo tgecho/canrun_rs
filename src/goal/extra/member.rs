@@ -1,5 +1,5 @@
 use crate::can::hoc::HoC;
-use crate::{both, equal, var, Can, CanT, Equals, Goal, LVar, State, StateIter};
+use crate::{both, equal, var, Can, CanT, Goal, LVar, State, StateIter};
 use std::iter::empty;
 
 pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
@@ -34,7 +34,10 @@ fn unify_contains<T: CanT + 'static>(
 
 #[cfg(test)]
 mod tests {
-    use crate::{all, any, both, equal, member, pair, var, Can, CanT, Equals, Goal, LVar, State};
+    use crate::{
+        all, any, both, either, equal, member, pair, var, Can, CanT, Equals, Goal, LVar, State,
+    };
+    use itertools::Itertools;
 
     #[test]
     fn basic_member() {
@@ -193,61 +196,120 @@ mod tests {
         );
         let (john, mary, monkey) = get_records();
 
-        let goal: Goal<&str> = all(vec![
-            x.equals(pair(Can::Val("name"), z.can())),
-            y.equals(Can::Vec(vec![john.clone(), mary.clone(), monkey.clone()])),
-            member(x.can(), c.can()),
-            member(c.can(), y.can()),
-        ]);
-
-        let resolve = |goal: &Goal<_>| -> Vec<_> {
-            goal.run(&State::new())
-                .map(|s| (s.resolve_var(z).unwrap(), s.resolve_var(c).unwrap()))
-                .collect()
+        struct Case<T: CanT + 'static> {
+            goals: Vec<Goal<T>>,
+            results: Vec<LVar>,
+            expected: Vec<Vec<Can<T>>>,
         };
 
-        // assert_eq!(
-        //     resolve(&goal),
-        //     vec![
-        //         (Can::Val("john"), john.clone()),
-        //         (Can::Val("mary"), mary.clone()),
-        //         (Can::Val("monkey"), monkey.clone())
-        //     ]
-        // );
+        let test_cases: Vec<Case<_>> = vec![
+            Case {
+                goals: vec![
+                    x.equals(pair(Can::Val("name"), z.can())),
+                    y.equals(Can::Vec(vec![john.clone(), mary.clone(), monkey.clone()])),
+                    member(x.can(), c.can()),
+                    member(c.can(), y.can()),
+                ],
+                results: vec![z, c],
+                expected: vec![
+                    vec![Can::Val("john"), john.clone()],
+                    vec![Can::Val("mary"), mary.clone()],
+                    vec![Can::Val("monkey"), monkey.clone()],
+                ],
+            },
+            Case {
+                goals: vec![
+                    x.equals(pair(Can::Val("name"), z.can())),
+                    y.equals(Can::Vec(vec![john.clone(), mary.clone(), monkey.clone()])),
+                    member(x.can(), c.can()),
+                    member(c.can(), y.can()),
+                    member(pair(Can::Val("is"), Can::Val("hungry")), c.can()),
+                ],
+                results: vec![z, c],
+                expected: vec![vec![Can::Val("monkey"), monkey.clone()]],
+            },
+        ];
 
-        let goal = both(
-            goal,
-            member(pair(Can::Val("is"), Can::Val("hungry")), c.can()),
-        );
-        let res = resolve(&goal);
-        dbg!(&res);
-        // TODO: This works if the extra member and goal are swapped :/
-        // Also, swapping the two members in the original goals fixes it too :/
-        assert_eq!(res, vec![(Can::Val("monkey"), monkey)]);
+        for Case {
+            goals,
+            results,
+            expected,
+        } in test_cases
+        {
+            let goals_len = goals.len();
+            for permutation in goals.into_iter().permutations(goals_len) {
+                dbg!(&permutation);
+                assert_eq!(resolve(&all(permutation), results.clone()), expected);
+            }
+        }
     }
 
     fn val<T: CanT>(value: T) -> Can<T> {
         Can::Val(value)
     }
 
+    fn resolve<T: CanT>(goal: &Goal<T>, vars: Vec<LVar>) -> Vec<Vec<Can<T>>> {
+        let vars = &vars;
+        goal.run(&State::new())
+            .map(|s| {
+                vars.into_iter()
+                    .map(|v| s.resolve_var(*v).unwrap())
+                    .collect()
+            })
+            .collect()
+    }
+
     #[test]
     fn unify_two_contains() {
-        // let (x, y, z) = (var(), var(), var());
         let z = LVar::labeled("z");
         let list = Can::Vec(vec![val(1), val(2), val(3)]);
 
-        let goal = all(vec![
-            member(val(1), z.can()),
-            member(val(1), z.can()),
-            z.equals(list.clone()),
-        ]);
-
-        let resolve = |goal: &Goal<_>| -> Vec<_> {
-            goal.run(&State::new())
-                .map(|s| s.resolve_var(z).unwrap())
-                .collect()
+        struct Case<T: CanT + 'static> {
+            expected: Vec<Vec<Can<T>>>,
+            goals: Vec<Goal<T>>,
         };
 
-        assert_eq!(resolve(&goal), vec![list]);
+        let test_cases: Vec<Case<_>> = vec![
+            Case {
+                expected: vec![vec![list.clone()]],
+                goals: vec![
+                    member(val(1), z.can()),
+                    member(val(1), z.can()),
+                    z.equals(list.clone()),
+                ],
+            },
+            Case {
+                expected: vec![vec![list.clone()]],
+                goals: vec![
+                    member(val(1), z.can()),
+                    member(val(2), z.can()),
+                    z.equals(list.clone()),
+                ],
+            },
+            Case {
+                expected: vec![vec![list.clone()]],
+                goals: vec![
+                    either(member(val(1), z.can()), member(val(4), z.can())),
+                    member(val(2), z.can()),
+                    z.equals(list.clone()),
+                ],
+            },
+            Case {
+                expected: vec![],
+                goals: vec![
+                    member(val(1), z.can()),
+                    member(val(4), z.can()),
+                    z.equals(list.clone()),
+                ],
+            },
+        ];
+
+        for Case { goals, expected } in test_cases {
+            let goals_len = goals.len();
+            for permutation in goals.into_iter().permutations(goals_len) {
+                dbg!(&permutation);
+                assert_eq!(resolve(&all(permutation), vec![z]), expected);
+            }
+        }
     }
 }

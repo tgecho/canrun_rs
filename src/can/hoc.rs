@@ -1,4 +1,4 @@
-use crate::{both, pair, var, Can, CanT, Equals, LVar, ResolveResult, State, StateIter};
+use crate::{pair, var, Can, CanT, LVar, ResolveResult, State, StateIter};
 use im::HashSet;
 use std::iter::{empty, once};
 
@@ -37,7 +37,6 @@ fn unify_combined<T: CanT + 'static>(
     other: Can<T>,
     state: State<T>,
 ) -> StateIter<T> {
-    dbg!("unify_combined", var, &value);
     match value {
         Can::Pair { l, r } => match (*l, *r) {
             (Can::HoC(l), Can::HoC(r)) => {
@@ -65,8 +64,8 @@ pub(crate) fn unify<T: CanT + 'static>(a: HoC<T>, b: HoC<T>, state: &State<T>) -
         value: Box::new(pair(Can::HoC(a.clone()), Can::HoC(b.clone()))),
         unify: unify_combined,
     });
-    dbg!("make unify_combined", &combined);
-    // by definition we only arrive here if both a and b are unresolved
+    // by definition we only arrive here if both a and b are unresolved, so we
+    // can just assign directly to avoid resolving the contents
     Box::new(once(
         state
             .assign(a.var, combined.clone())

@@ -67,19 +67,14 @@ impl<T: CanT + 'static> State<T> {
     }
 
     fn try_unify(&self, a_: &Can<T>, b_: &Can<T>) -> UnifyResult<T> {
-        dbg!("try_unify", self, &a_, &b_);
         let a = self.resolve(a_)?;
         let b = self.resolve(b_)?;
-        dbg!("try_unify resolved", &a, &b);
 
-        let res = Ok(if a == b {
+        Ok(if a == b {
             Box::new(once(self.clone())) as StateIter<T>
         } else {
             match (a, b) {
-                (Can::Var(av), bv) => {
-                    dbg!("var on left", av, &bv);
-                    Box::new(once(self.assign(av, bv)))
-                }
+                (Can::Var(av), bv) => Box::new(once(self.assign(av, bv))),
                 (av, Can::Var(bv)) => Box::new(once(self.assign(bv, av))),
                 (Can::Pair { l: al, r: ar }, Can::Pair { l: bl, r: br }) => {
                     pair::unify(self, *al, *ar, *bl, *br)
@@ -100,11 +95,7 @@ impl<T: CanT + 'static> State<T> {
                 ) => unify(var, *value, other, self.clone()),
                 _ => Box::new(empty()),
             }
-        });
-        res
-        // let vec: Vec<_> = res?.collect();
-        // dbg!(&vec);
-        // Ok(Box::new(vec.into_iter()))
+        })
     }
 }
 
