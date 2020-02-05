@@ -1,8 +1,9 @@
 use crate::can::lvar::LVar;
-use crate::can::{hoc, pair, vec, Can, CanT};
+use crate::can::{pair, vec, Can, CanT};
 use crate::goal::StateIter;
 use im::{HashMap, HashSet};
 use std::iter::{empty, once};
+
 #[derive(Clone, PartialEq, Debug, Default)]
 pub struct State<T: CanT> {
     values: HashMap<LVar, Can<T>>,
@@ -47,7 +48,7 @@ impl<T: CanT + 'static> State<T> {
             Can::Pair { l, r } => pair::resolve(self, l, r, history),
             Can::Vec(v) => vec::resolve(self, v, history),
             Can::Nil => Ok(Can::Nil),
-            Can::HoC(hoc) => hoc::resolve(self, hoc, history),
+            Can::Hoc(hoc) => hoc.resolve_in(self, history),
         }
     }
 
@@ -80,19 +81,8 @@ impl<T: CanT + 'static> State<T> {
                     pair::unify(self, *al, *ar, *bl, *br)
                 }
                 (Can::Vec(a), Can::Vec(b)) => vec::unify(self, a, b),
-                (Can::HoC(a), Can::HoC(b)) => hoc::unify(a, b, self),
-                (
-                    Can::HoC(hoc::HoC {
-                        var, value, unify, ..
-                    }),
-                    other,
-                ) => unify(var, *value, other, self.clone()),
-                (
-                    other,
-                    Can::HoC(hoc::HoC {
-                        var, value, unify, ..
-                    }),
-                ) => unify(var, *value, other, self.clone()),
+                (Can::Hoc(a), b) => a.unify_with(b, self),
+                (a, Can::Hoc(b)) => b.unify_with(a, self),
                 _ => Box::new(empty()),
             }
         })

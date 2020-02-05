@@ -1,4 +1,4 @@
-use crate::can::hoc::HoC;
+use crate::can::hoc::Hoc;
 use crate::{both, equal, var, Can, CanT, Goal, LVar, State, StateIter};
 use std::iter::empty;
 
@@ -7,7 +7,7 @@ pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
 }
 
 fn contains<T: CanT + 'static>(needle: Can<T>) -> Can<T> {
-    Can::HoC(HoC {
+    Can::Hoc(Hoc {
         composed: false,
         var: var(),
         value: Box::new(needle),

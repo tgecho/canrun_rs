@@ -1,33 +1,55 @@
-use crate::{pair, var, Can, CanT, LVar, ResolveResult, State, StateIter};
+use crate::{pair, Can, CanT, LVar, ResolveResult, State, StateIter};
 use im::HashSet;
 use std::iter::{empty, once};
 
 pub type HocUnifyFn<T> = fn(LVar, Can<T>, Can<T>, State<T>) -> StateIter<T>;
 
 #[derive(Clone)]
-pub struct HoC<T: CanT> {
+pub struct Hoc<T: CanT> {
     pub composed: bool,
     pub var: LVar,
     pub value: Box<Can<T>>,
     pub unify: HocUnifyFn<T>,
 }
 
-pub(crate) fn resolve<T: CanT + 'static>(
-    state: &State<T>,
-    hoc: &HoC<T>,
-    history: &HashSet<LVar>,
-) -> ResolveResult<T> {
-    if state.contains_var(&hoc.var) {
-        state.checked_resolve(&hoc.var.can(), history)
-    } else if hoc.composed {
-        Ok(Can::HoC(hoc.clone()))
-    } else {
-        Ok(Can::HoC(HoC {
-            composed: false,
-            var: hoc.var.clone(),
-            value: Box::new(state.checked_resolve(&hoc.value, history)?),
-            unify: hoc.unify,
-        }))
+impl<T: CanT + 'static> Hoc<T> {
+    pub(crate) fn resolve_in(&self, state: &State<T>, history: &HashSet<LVar>) -> ResolveResult<T> {
+        if state.contains_var(&self.var) {
+            state.checked_resolve(&self.var.can(), history)
+        } else if self.composed {
+            Ok(Can::Hoc(self.clone()))
+        } else {
+            Ok(Can::Hoc(Hoc {
+                composed: false,
+                var: self.var.clone(),
+                value: Box::new(state.checked_resolve(&self.value, history)?),
+                unify: self.unify,
+            }))
+        }
+    }
+
+    pub(crate) fn unify_with(self, other: Can<T>, state: &State<T>) -> StateIter<T> {
+        match other.clone() {
+            Can::Hoc(Hoc { var, .. }) => {
+                let combined = Can::Hoc(Hoc {
+                    composed: true,
+                    var: LVar::new(),
+                    value: Box::new(pair(Can::Hoc(self.clone()), other.clone())),
+                    unify: unify_combined,
+                });
+                // by definition we only arrive here if both self and other are unresolved, so we
+                // can just assign directly to avoid resolving the contents
+                Box::new(once(
+                    state
+                        .assign(self.var, combined.clone())
+                        .assign(var, combined),
+                ))
+            }
+            other => {
+                let unify = self.unify;
+                unify(self.var, *self.value, other, state.clone())
+            }
+        }
     }
 }
 
@@ -39,7 +61,7 @@ fn unify_combined<T: CanT + 'static>(
 ) -> StateIter<T> {
     match value {
         Can::Pair { l, r } => match (*l, *r) {
-            (Can::HoC(l), Can::HoC(r)) => {
+            (Can::Hoc(l), Can::Hoc(r)) => {
                 let l_unify = l.unify;
                 let r_unify = r.unify;
                 // The trick here is that we want to apply the inner hocs WITHOUT resolving their .var fields, which would loop back to the composed hoc
@@ -55,20 +77,4 @@ fn unify_combined<T: CanT + 'static>(
         },
         _ => Box::new(empty()),
     }
-}
-
-pub(crate) fn unify<T: CanT + 'static>(a: HoC<T>, b: HoC<T>, state: &State<T>) -> StateIter<T> {
-    let combined = Can::HoC(HoC {
-        composed: true,
-        var: var(),
-        value: Box::new(pair(Can::HoC(a.clone()), Can::HoC(b.clone()))),
-        unify: unify_combined,
-    });
-    // by definition we only arrive here if both a and b are unresolved, so we
-    // can just assign directly to avoid resolving the contents
-    Box::new(once(
-        state
-            .assign(a.var, combined.clone())
-            .assign(b.var, combined),
-    ))
 }
