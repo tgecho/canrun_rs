@@ -1,5 +1,5 @@
-use crate::can::hoc::Hoc;
-use crate::{both, equal, var, Can, CanT, Goal, LVar, State, StateIter};
+use crate::can::hoc::hoc_fn;
+use crate::{both, equal, Can, CanT, Goal, LVar, State, StateIter};
 use std::iter::empty;
 
 pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
@@ -7,12 +7,7 @@ pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
 }
 
 fn contains<T: CanT + 'static>(needle: Can<T>) -> Can<T> {
-    Can::Hoc(Hoc {
-        composed: false,
-        var: var(),
-        value: Box::new(needle),
-        unify: unify_contains,
-    })
+    hoc_fn(needle, unify_contains)
 }
 
 fn unify_contains<T: CanT + 'static>(

@@ -22,10 +22,6 @@ impl<T: CanT + 'static> State<T> {
         }
     }
 
-    pub(crate) fn contains_var(&self, var: &LVar) -> bool {
-        self.values.contains_key(var)
-    }
-
     pub(crate) fn checked_resolve(
         &self,
         can: &Can<T>,
