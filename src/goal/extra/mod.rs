@@ -5,7 +5,8 @@ This distinction is weakened a bit by extra goals that use lazy/custom. We'll
 probably need to eventually revisit this categorization.
 */
 
-pub mod append;
-pub mod member;
 pub mod all;
 pub mod any;
+pub mod append;
+pub mod member;
+pub mod relative;
