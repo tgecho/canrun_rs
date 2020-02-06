@@ -1,7 +1,8 @@
-use canrun::{both, pair, Can, var, State, Equals, Goal};
-
+use canrun::{both, pair, var, Can, Equals, Goal, State};
+extern crate env_logger;
 #[test]
 fn does_not_overflow() {
+    let _ = env_logger::init();
     let x = var();
     let infinite_xs: Goal<usize> = x.equals(pair(x.can(), Can::Nil));
     // An overflow is not triggered if infinite_xs is the second argument

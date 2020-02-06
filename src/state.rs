@@ -30,7 +30,7 @@ impl<T: CanT + 'static> State<T> {
         match can {
             Can::Var(lvar) => {
                 if history.contains(lvar) {
-                    dbg!(history);
+                    debug!("{:?}", history);
                     Err(UnifyError::InfiniteRecursion(*lvar))
                 } else {
                     let history = history.update(*lvar);
@@ -58,7 +58,7 @@ impl<T: CanT + 'static> State<T> {
 
     pub fn unify(&self, a: &Can<T>, b: &Can<T>) -> StateIter<T> {
         self.try_unify(a, b).unwrap_or_else(|err| {
-            dbg!("{:?}", err);
+            debug!("{:?}", err);
             Box::new(empty())
         })
     }

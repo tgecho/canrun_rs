@@ -233,7 +233,7 @@ mod tests {
         {
             let goals_len = goals.len();
             for permutation in goals.into_iter().permutations(goals_len) {
-                dbg!(&permutation);
+                debug!("{:?}", &permutation);
                 assert_eq!(resolve(&all(permutation), results.clone()), expected);
             }
         }
@@ -302,7 +302,7 @@ mod tests {
         for Case { goals, expected } in test_cases {
             let goals_len = goals.len();
             for permutation in goals.into_iter().permutations(goals_len) {
-                dbg!(&permutation);
+                debug!("{:?}", &permutation);
                 assert_eq!(resolve(&all(permutation), vec![z]), expected);
             }
         }
