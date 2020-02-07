@@ -9,7 +9,7 @@ pub struct State<T: CanT> {
     values: HashMap<LVar, Can<T>>,
 }
 
-impl<T: CanT + 'static> State<T> {
+impl<'a, T: CanT + 'a> State<T> {
     pub fn new() -> State<T> {
         State {
             values: HashMap::new(),
@@ -56,16 +56,16 @@ impl<T: CanT + 'static> State<T> {
         self.resolve(&Can::Var(key))
     }
 
-    pub fn unify(&self, a: &Can<T>, b: &Can<T>) -> StateIter<T> {
+    pub fn unify(self, a: Can<T>, b: Can<T>) -> StateIter<'a, T> {
         self.try_unify(a, b).unwrap_or_else(|err| {
             debug!("{:?}", err);
             Box::new(empty())
         })
     }
 
-    fn try_unify(&self, a_: &Can<T>, b_: &Can<T>) -> UnifyResult<T> {
-        let a = self.resolve(a_)?;
-        let b = self.resolve(b_)?;
+    fn try_unify(self, a_: Can<T>, b_: Can<T>) -> UnifyResult<'a, T> {
+        let a = self.resolve(&a_)?;
+        let b = self.resolve(&b_)?;
 
         Ok(if a == b {
             Box::new(once(self.clone())) as StateIter<T>
@@ -91,7 +91,7 @@ pub enum UnifyError {
 }
 
 pub type ResolveResult<T> = Result<Can<T>, UnifyError>;
-pub type UnifyResult<T> = Result<StateIter<T>, UnifyError>;
+pub type UnifyResult<'a, T> = Result<StateIter<'a, T>, UnifyError>;
 
 #[cfg(test)]
 mod tests {
@@ -145,7 +145,7 @@ mod tests {
     fn unify_with_self() {
         let state: State<u8> = State::new();
         let x = var();
-        let unified = state.unify(&x.can(), &x.can()).nth(0);
+        let unified = state.clone().unify(x.can(), x.can()).nth(0);
         assert_eq!(unified.unwrap(), state);
     }
     #[test]
@@ -155,7 +155,11 @@ mod tests {
         let y = LVar::new();
 
         assert_eq!(
-            state.unify(&Can::Var(x), &Can::Var(y)).nth(0).unwrap(),
+            state
+                .clone()
+                .unify(Can::Var(x), Can::Var(y))
+                .nth(0)
+                .unwrap(),
             state.assign(x, Can::Var(y))
         );
     }
@@ -165,11 +169,17 @@ mod tests {
         let state: State<u8> = State::new();
 
         assert_eq!(
-            state.unify(&Can::Var(x), &Can::Val(5)).nth(0).unwrap(),
+            (state.clone())
+                .unify(Can::Var(x), Can::Val(5))
+                .nth(0)
+                .unwrap(),
             state.assign(x, Can::Val(5))
         );
         assert_eq!(
-            state.unify(&Can::Val(5), &Can::Var(x)).nth(0).unwrap(),
+            (state.clone())
+                .unify(Can::Val(5), Can::Var(x))
+                .nth(0)
+                .unwrap(),
             state.assign(x, Can::Val(5))
         );
     }
@@ -177,7 +187,7 @@ mod tests {
     fn unify_already_bound() {
         let x = LVar::new();
         let state: State<u8> = State::new().assign(x, Can::Val(5));
-        let result: Vec<_> = state.unify(&Can::Var(x), &Can::Val(6)).collect();
+        let result: Vec<_> = state.unify(Can::Var(x), Can::Val(6)).collect();
         assert_eq!(result, vec![]);
     }
 }

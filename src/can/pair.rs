@@ -1,5 +1,6 @@
 use crate::{Can, CanT, LVar, ResolveResult, State, StateIter};
 use im::HashSet;
+use std::iter::once;
 
 pub fn pair<T: CanT>(l: Can<T>, r: Can<T>) -> Can<T> {
     Can::Pair {
@@ -8,7 +9,7 @@ pub fn pair<T: CanT>(l: Can<T>, r: Can<T>) -> Can<T> {
     }
 }
 
-pub fn resolve<T: CanT + 'static>(
+pub fn resolve<T: CanT>(
     state: &State<T>,
     l: &Can<T>,
     r: &Can<T>,
@@ -20,12 +21,17 @@ pub fn resolve<T: CanT + 'static>(
     })
 }
 
-pub fn unify<T: CanT + 'static>(
-    state: &State<T>,
+pub fn unify<'a, T: CanT + 'a>(
+    state: State<T>,
     al: Can<T>,
     ar: Can<T>,
     bl: Can<T>,
     br: Can<T>,
-) -> StateIter<T> {
-    Box::new(state.unify(&al, &bl).flat_map(move |l| l.unify(&ar, &br)))
+) -> StateIter<'a, T> {
+    Box::new(
+        state
+            .unify(al, bl)
+            .zip(once((ar, br)).cycle())
+            .flat_map(|(l, (ar, br)): (State<T>, (Can<T>, Can<T>))| l.unify(ar, br)),
+    )
 }

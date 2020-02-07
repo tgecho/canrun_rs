@@ -2,7 +2,7 @@ use crate::can::pair::pair;
 use crate::{both, either, equal, with3, Goal};
 use crate::{Can, CanT};
 
-pub fn append<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
+pub fn append<T: CanT + 'static>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
     either(
         both(equal(a.clone(), Can::Nil), equal(b.clone(), c.clone())),
         with3(move |first, rest_of_a, rest_of_c| {
@@ -20,7 +20,7 @@ pub fn append<T: CanT>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
 #[cfg(test)]
 mod tests {
     use super::{append, pair};
-    use crate::{Can, var, State};
+    use crate::{var, Can, State};
 
     #[test]
     fn basic_append() {
@@ -31,7 +31,7 @@ mod tests {
         let i = pair(Can::Val(Some("i")), Can::Nil);
         let goal = append(h, x.can(), hi);
 
-        let mut result1 = goal.run(&state);
+        let mut result1 = goal.run(state);
         assert_eq!(result1.nth(0).unwrap().resolve_var(x).unwrap(), i);
     }
 }

@@ -2,7 +2,7 @@ pub mod can;
 pub mod goal;
 pub mod state;
 
-pub use can::lvar::{LVar, var};
+pub use can::lvar::{var, LVar};
 pub use can::pair::pair;
 pub use can::{Can, CanT};
 pub use state::{ResolveResult, State, UnifyError, UnifyResult};
@@ -18,8 +18,8 @@ pub use goal::StateIter;
 
 pub use goal::extra::all::all;
 pub use goal::extra::any::any;
-pub use goal::extra::member::member;
 pub use goal::extra::append::append;
+pub use goal::extra::member::member;
 
 #[macro_use]
 extern crate log;

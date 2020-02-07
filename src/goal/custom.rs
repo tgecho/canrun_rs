@@ -12,7 +12,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::custom;
-    use crate::{both, Can, var, State,LVar, Equals};
+    use crate::{both, var, Can, Equals, LVar, State};
 
     #[test]
     fn basic_custom() {
@@ -22,11 +22,11 @@ mod tests {
             both(x.equals(5), x.equals(y.can())).run(state)
         });
 
-        let mut result1 = goal.run(&State::new());
+        let mut result1 = goal.run(State::new());
         assert_eq!(result1.nth(0).unwrap().resolve_var(y).unwrap(), Can::Val(5));
 
         // This shows that we can run the same custom goal again
-        let mut result2 = goal.run(&State::new());
+        let mut result2 = goal.run(State::new());
         assert_eq!(result2.nth(0).unwrap().resolve_var(y).unwrap(), Can::Val(5));
     }
 }

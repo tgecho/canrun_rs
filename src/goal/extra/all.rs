@@ -13,18 +13,14 @@ pub fn all<T: CanT>(goals: Vec<Goal<T>>) -> Goal<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{all, equal, Can, Goal, var, State, Equals};
+    use crate::{all, equal, var, Can, Equals, Goal, State};
     #[test]
     fn all_succeed() {
         let state: State<usize> = State::new();
         let x = var();
         let y = var();
-        let goal = all(vec![
-            x.equals(5),
-            y.equals(7),
-            Goal::Succeed,
-        ]);
-        let result = goal.run(&state).nth(0).unwrap();
+        let goal = all(vec![x.equals(5), y.equals(7), Goal::Succeed]);
+        let result = goal.run(state).nth(0).unwrap();
         assert_eq!(result.resolve_var(x).unwrap(), Can::Val(5));
         assert_eq!(result.resolve_var(y).unwrap(), Can::Val(7));
     }
@@ -36,6 +32,6 @@ mod tests {
             Goal::Succeed,
             Goal::Fail,
         ]);
-        assert_eq!(goal.run(&state).nth(0), None);
+        assert_eq!(goal.run(state).nth(0), None);
     }
 }

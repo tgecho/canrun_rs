@@ -2,7 +2,7 @@ use crate::{Can, CanT, LVar, ResolveResult, State, StateIter};
 use im::HashSet;
 use std::iter::empty;
 
-pub fn resolve<T: CanT + 'static>(
+pub fn resolve<T: CanT>(
     state: &State<T>,
     vec: &[Can<T>],
     history: &HashSet<LVar>,
@@ -14,7 +14,11 @@ pub fn resolve<T: CanT + 'static>(
     Ok(Can::Vec(resolved))
 }
 
-pub fn unify<T: CanT + 'static>(state: &State<T>, a: Vec<Can<T>>, b: Vec<Can<T>>) -> StateIter<T> {
+pub fn unify<'a, T: CanT + 'a>(
+    state: State<T>,
+    a: Vec<Can<T>>,
+    b: Vec<Can<T>>,
+) -> StateIter<'a, T> {
     if a.len() == b.len() {
         let mut pairs = a.iter().zip(b.iter());
         // Start with a single copy of the state
@@ -25,7 +29,12 @@ pub fn unify<T: CanT + 'static>(state: &State<T>, a: Vec<Can<T>>, b: Vec<Can<T>>
             if states.is_empty() {
                 None
             } else {
-                Some(states.iter().flat_map(|s| s.unify(a, b)).collect())
+                Some(
+                    states
+                        .into_iter()
+                        .flat_map(|s| s.unify(a.clone(), b.clone()))
+                        .collect(),
+                )
             }
         });
         match states {
@@ -39,14 +48,15 @@ pub fn unify<T: CanT + 'static>(state: &State<T>, a: Vec<Can<T>>, b: Vec<Can<T>>
 
 #[cfg(test)]
 mod tests {
-    use crate::{Can, State, var};
+    use crate::{var, Can, State};
 
     #[test]
     fn unify_two_vecs() {
         let x = var();
-        let mut unified = State::new().unify(
-            &Can::Vec(vec![Can::Val(1), x.can(), Can::Val(3)]),
-            &Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
+        let state = State::new();
+        let mut unified = state.unify(
+            Can::Vec(vec![Can::Val(1), x.can(), Can::Val(3)]),
+            Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
         );
         assert_eq!(unified.nth(0).unwrap().resolve_var(x).unwrap(), Can::Val(2));
     }

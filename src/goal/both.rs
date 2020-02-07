@@ -8,25 +8,24 @@ pub fn both<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
     }
 }
 
-pub(crate) fn run<T: CanT>(state: &State<T>, a: &Goal<T>, b: &Goal<T>) -> StateIter<T> {
+pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, a: Goal<T>, b: Goal<T>) -> StateIter<'a, T> {
     Box::new(
-        (a.run(state))
-            // TODO: understand how to lifetime away this b.clone()
-            .zip(once(b.clone()).cycle())
-            .flat_map(|(s, b)| b.run(&s)),
+        a.run(state)
+            .zip(once(b).cycle())
+            .flat_map(|(s, b)| b.run(s)),
     )
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{both, Can, var, State, Equals};
+    use crate::{both, var, Can, Equals, State};
     #[test]
     fn basic_both() {
         let state: State<usize> = State::new();
         let x = var();
         let y = var();
         let goal = both(x.equals(Can::Val(5)), y.equals(Can::Val(7)));
-        let result = goal.run(&state).nth(0).unwrap();
+        let result = goal.run(state).nth(0).unwrap();
         assert_eq!(result.resolve_var(x).unwrap(), Can::Val(5));
         assert_eq!(result.resolve_var(y).unwrap(), Can::Val(7));
     }

@@ -1,29 +1,22 @@
 use crate::can::hoc::hoc_fn;
-use crate::{both, equal, Can, CanT, Goal, LVar, State, StateIter};
-use std::iter::empty;
+use crate::{any, both, equal, Can, CanT, Goal, LVar};
 
 pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
     equal(contains(needle), haystack)
 }
 
-fn contains<T: CanT + 'static>(needle: Can<T>) -> Can<T> {
+fn contains<T: CanT>(needle: Can<T>) -> Can<T> {
     hoc_fn(needle, unify_contains)
 }
 
-fn unify_contains<T: CanT + 'static>(
-    var: LVar,
-    needle: Can<T>,
-    other: Can<T>,
-    state: State<T>,
-) -> StateIter<T> {
+fn unify_contains<'a, T: CanT + 'a>(var: LVar, needle: Can<T>, other: Can<T>) -> Goal<T> {
     match other.clone() {
         Can::Vec(haystack) => {
-            let iter = (haystack.into_iter()).flat_map(move |can| {
-                both(equal(needle.clone(), can), equal(other.clone(), var.can())).run(&state)
-            });
-            Box::new(iter)
+            let goals = (haystack.into_iter())
+                .map(|can| both(equal(needle.clone(), can), equal(other.clone(), var.can())));
+            any(goals.collect())
         }
-        _ => Box::new(empty()),
+        _ => Goal::Fail,
     }
 }
 
@@ -42,10 +35,10 @@ mod tests {
             Can::Vec(vec![Can::Val(1), Can::Val(2), Can::Val(3)]),
         );
         let result: Vec<_> = goal
-            .run(&State::new())
+            .run(State::new())
             .map(|r| r.resolve_var(x).unwrap())
             .collect();
-        assert_eq!(result, vec![Can::Val(1), Can::Val(2), Can::Val(3)]);
+        assert_eq!(result, vec![Can::Val(3), Can::Val(2), Can::Val(1)]);
     }
     #[test]
     fn member_with_conditions() {
@@ -58,7 +51,7 @@ mod tests {
             ),
         );
         let result: Vec<_> = goal
-            .run(&State::new())
+            .run(State::new())
             .map(|r| r.resolve_var(x).unwrap())
             .collect();
         assert_eq!(result, vec![Can::Val(2)]);
@@ -84,7 +77,7 @@ mod tests {
                 ),
             );
             let result: Vec<_> = goal
-                .run(&State::new())
+                .run(State::new())
                 .map(|r| (r.resolve_var(y).unwrap(), r.resolve_var(x).unwrap()))
                 .collect();
             result
@@ -126,7 +119,7 @@ mod tests {
             ),
         );
         let result: Vec<_> = goal
-            .run(&State::new())
+            .run(State::new())
             .map(|r| r.resolve_var(y).unwrap())
             .collect();
 
@@ -163,14 +156,15 @@ mod tests {
         );
 
         let resolve = |goal: &Goal<&'static str>| -> Vec<Can<&'static str>> {
-            goal.run(&State::new())
+            goal.clone()
+                .run(State::new())
                 .map(|s| s.resolve_var(y).unwrap())
                 .collect()
         };
 
         assert_eq!(
             resolve(&goal),
-            vec![Can::Val("john"), Can::Val("mary"), Can::Val("monkey")]
+            vec![Can::Val("monkey"), Can::Val("mary"), Can::Val("john")]
         );
 
         // We can also add extra conditions (NOTE: should think about efficiency long term)
@@ -191,7 +185,7 @@ mod tests {
         );
         let (john, mary, monkey) = get_records();
 
-        struct Case<T: CanT + 'static> {
+        struct Case<T: CanT> {
             goals: Vec<Goal<T>>,
             results: Vec<LVar>,
             expected: Vec<Vec<Can<T>>>,
@@ -207,9 +201,9 @@ mod tests {
                 ],
                 results: vec![z, c],
                 expected: vec![
-                    vec![Can::Val("john"), john.clone()],
-                    vec![Can::Val("mary"), mary.clone()],
                     vec![Can::Val("monkey"), monkey.clone()],
+                    vec![Can::Val("mary"), mary.clone()],
+                    vec![Can::Val("john"), john.clone()],
                 ],
             },
             Case {
@@ -234,7 +228,7 @@ mod tests {
             let goals_len = goals.len();
             for permutation in goals.into_iter().permutations(goals_len) {
                 debug!("{:?}", &permutation);
-                assert_eq!(resolve(&all(permutation), results.clone()), expected);
+                assert_eq!(resolve(all(permutation), results.clone()), expected);
             }
         }
     }
@@ -243,9 +237,9 @@ mod tests {
         Can::Val(value)
     }
 
-    fn resolve<T: CanT>(goal: &Goal<T>, vars: Vec<LVar>) -> Vec<Vec<Can<T>>> {
+    fn resolve<T: CanT>(goal: Goal<T>, vars: Vec<LVar>) -> Vec<Vec<Can<T>>> {
         let vars = &vars;
-        goal.run(&State::new())
+        goal.run(State::new())
             .map(|s| {
                 vars.into_iter()
                     .map(|v| s.resolve_var(*v).unwrap())
@@ -259,7 +253,7 @@ mod tests {
         let z = LVar::labeled("z");
         let list = Can::Vec(vec![val(1), val(2), val(3)]);
 
-        struct Case<T: CanT + 'static> {
+        struct Case<T: CanT> {
             expected: Vec<Vec<Can<T>>>,
             goals: Vec<Goal<T>>,
         };
@@ -303,7 +297,7 @@ mod tests {
             let goals_len = goals.len();
             for permutation in goals.into_iter().permutations(goals_len) {
                 debug!("{:?}", &permutation);
-                assert_eq!(resolve(&all(permutation), vec![z]), expected);
+                assert_eq!(resolve(all(permutation), vec![z]), expected);
             }
         }
     }

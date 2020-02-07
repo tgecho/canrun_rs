@@ -8,19 +8,19 @@ pub fn either<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
     }
 }
 
-pub(crate) fn run<T: CanT>(state: &State<T>, a: &Goal<T>, b: &Goal<T>) -> StateIter<T> {
-    Box::new(a.run(state).interleave(b.run(state)))
+pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, a: Goal<T>, b: Goal<T>) -> StateIter<'a, T> {
+    Box::new(a.run(state.clone()).interleave(b.run(state)))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{either, Can, LVar, State, Equals};
+    use crate::{either, Can, Equals, LVar, State};
     #[test]
     fn basic_either() {
         let state: State<usize> = State::new();
         let x = LVar::new();
         let goal = either(x.equals(Can::Val(5)), x.equals(Can::Val(6)));
-        let mut results = goal.run(&state).map(|s| s.resolve_var(x).unwrap());
+        let mut results = goal.run(state).map(|s| s.resolve_var(x).unwrap());
         assert_eq!(results.nth(0).unwrap(), Can::Val(5));
         assert_eq!(results.nth(0).unwrap(), Can::Val(6));
     }
