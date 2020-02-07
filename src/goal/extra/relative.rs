@@ -1,11 +1,8 @@
-use crate::can::hoc::hoc_fn;
-use crate::{equal, Can, CanT, Goal};
+use crate::can::hoc::condition_fn;
+use crate::{Can, CanT};
 
-fn greater_than<T: CanT + PartialOrd + 'static>(value: Can<T>) -> Can<T> {
-    hoc_fn(value, |output, value, other| match (other, value) {
-        (Can::Val(o), Can::Val(v)) if o > v => equal(output.can(), Can::Val(o)),
-        _ => Goal::Fail,
-    })
+pub fn greater_than<T: CanT + PartialOrd>(value: Can<T>) -> Can<T> {
+    condition_fn(value, |a, b| b > a)
 }
 
 #[cfg(test)]
