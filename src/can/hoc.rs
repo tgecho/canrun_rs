@@ -72,6 +72,7 @@ impl<'a, T: CanT + 'a> Hoc<T> {
     }
 
     pub(crate) fn unify_with(self, other: Can<T>, state: State<T>) -> StateIter<'a, T> {
+        dbg!("hoc.unify_with", &other);
         match other.clone() {
             Can::Hoc(other_hoc) => {
                 let self_out = self.output;
@@ -83,6 +84,7 @@ impl<'a, T: CanT + 'a> Hoc<T> {
                         b: Box::new(other_hoc),
                     },
                 });
+                dbg!("hoc.unify_with hoc", self_out, other_out, &combined);
                 // by definition we only arrive here if both self and other are unresolved, so we
                 // can just assign directly to avoid further resolving the contents
                 Box::new(once(
@@ -93,12 +95,15 @@ impl<'a, T: CanT + 'a> Hoc<T> {
             }
             other_can => match self.body {
                 HocBody::Fn { input, unify } => unify(self.output, *input, other_can).run(state),
-                HocBody::Condition { input, func } => match (*input, other) {
-                    (Can::Val(i), Can::Val(o)) if func(&i, &o) => {
-                        equal(self.output.can(), Can::Val(o)).run(state)
+                HocBody::Condition { input, func } => {
+                    dbg!(&input, &other);
+                    match (*input, other) {
+                        (Can::Val(i), Can::Val(o)) if func(&i, &o) => {
+                            equal(self.output.can(), Can::Val(o)).run(state)
+                        }
+                        _ => Box::new(empty()),
                     }
-                    _ => Box::new(empty()),
-                },
+                }
                 HocBody::Pair { a, b } => {
                     let state = state.assign(self.output, other.clone());
                     let iter = a
