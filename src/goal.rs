@@ -1,3 +1,4 @@
+use crate::state::Constraint;
 use crate::{Can, CanT, State};
 use std::fmt;
 use std::iter::{empty, once};
@@ -21,6 +22,7 @@ pub enum Goal<T: CanT> {
     Lazy(Rc<dyn Fn() -> Goal<T>>),
     // Custom(Rc<dyn Fn(&State<T>) -> StateIter<T>>),
     Not(Box<Goal<T>>),
+    Constrain(Constraint<T>),
 }
 
 pub type StateIter<'a, T> = Box<dyn Iterator<Item = State<T>> + 'a>;
@@ -36,6 +38,7 @@ impl<'a, T: CanT + 'a> Goal<T> {
             Goal::Lazy(func) => func().run(state),
             // Goal::Custom(func) => func(&state),
             Goal::Not(goal) => not::run(state, *goal),
+            Goal::Constrain(constraint) => Box::new(state.constrain(constraint).into_iter()),
         }
     }
 }
@@ -51,6 +54,7 @@ impl<T: CanT> fmt::Debug for Goal<T> {
             Goal::Lazy(func) => write!(f, "Lazy(|| => {:?})", func()),
             // Goal::Custom(_) => write!(f, "Custom(?)"),
             Goal::Not(goal) => write!(f, "Not({:?})", goal),
+            Goal::Constrain(constraint) => write!(f, "Constrain({:?})", constraint),
         }
     }
 }

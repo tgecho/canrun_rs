@@ -1,11 +1,21 @@
-use crate::can::hoc::condition_fn;
-use crate::{equal, Can, CanT, Goal, LVar};
+use crate::state::Constraint;
+use crate::{all, equal, Can, CanT, Goal, LVar};
 
-pub fn greater_than<T: CanT + PartialOrd>(value: Can<T>) -> Can<T> {
-    condition_fn(value, |value, other| other > value)
+pub fn greater_than<T: CanT + PartialOrd>(a: Can<T>, b: Can<T>) -> Goal<T> {
+    let left = LVar::new();
+    let right = LVar::new();
+    all(vec![
+        equal(left.can(), a),
+        equal(right.can(), b),
+        Goal::Constrain(Constraint {
+            left,
+            right,
+            func: |a, b| a > b,
+        }),
+    ])
 }
-pub fn less_than<T: CanT + PartialOrd>(value: Can<T>) -> Can<T> {
-    condition_fn(value, |value, other| other < value)
+pub fn less_than<T: CanT + PartialOrd>(a: Can<T>, b: Can<T>) -> Goal<T> {
+    greater_than(b, a)
 }
 
 pub trait RelativeComparison<T: CanT + PartialOrd> {
@@ -14,25 +24,25 @@ pub trait RelativeComparison<T: CanT + PartialOrd> {
 }
 impl<T: CanT + PartialOrd> RelativeComparison<T> for Can<T> {
     fn greater_than(self, other: Can<T>) -> Goal<T> {
-        equal(self, greater_than(other))
+        greater_than(self, other)
     }
     fn less_than(self, other: Can<T>) -> Goal<T> {
-        equal(self, less_than(other))
+        less_than(self, other)
     }
 }
 impl<T: CanT + PartialOrd> RelativeComparison<T> for LVar {
     fn greater_than(self, other: Can<T>) -> Goal<T> {
-        equal(self.can(), greater_than(other))
+        greater_than(self.can(), other)
     }
     fn less_than(self, other: Can<T>) -> Goal<T> {
-        equal(self.can(), less_than(other))
+        less_than(self.can(), other)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{greater_than, RelativeComparison};
-    use crate::{all, equal, Can, CanT, Equals, Goal, LVar, State};
+    use crate::{all, Can, CanT, Equals, Goal, LVar, State};
     use itertools::Itertools;
 
     fn val<T: CanT>(value: T) -> Can<T> {
@@ -60,26 +70,26 @@ mod tests {
         };
 
         let test_cases: Vec<Case<_>> = vec![
-            // Case {
-            //     expected: vec![vec![val(2)]],
-            //     goals: vec![x.equals(greater_than(val(1))), x.equals(val(2))],
-            // },
-            // Case {
-            //     expected: vec![vec![val(2)]],
-            //     goals: vec![x.greater_than(val(1)), x.equals(val(2))],
-            // },
+            Case {
+                expected: vec![vec![val(2)]],
+                goals: vec![greater_than(x.can(), val(1)), x.equals(val(2))],
+            },
+            Case {
+                expected: vec![vec![val(2)]],
+                goals: vec![x.greater_than(val(1)), x.equals(val(2))],
+            },
             Case {
                 expected: vec![vec![val(1)]],
-                goals: vec![equal(val(2), greater_than(x.can())), x.equals(val(1))],
+                goals: vec![greater_than(val(2), x.can()), x.equals(val(1))],
             },
-            // Case {
-            //     expected: vec![vec![val(2)]],
-            //     goals: vec![x.equals(val(2)), val(1).less_than(x.can())],
-            // },
-            // Case {
-            //     expected: vec![],
-            //     goals: vec![x.equals(val(1)), x.greater_than(val(2))],
-            // },
+            Case {
+                expected: vec![vec![val(2)]],
+                goals: vec![x.equals(val(2)), val(1).less_than(x.can())],
+            },
+            Case {
+                expected: vec![],
+                goals: vec![x.equals(val(1)), x.greater_than(val(2))],
+            },
         ];
 
         for Case { goals, expected } in test_cases {
