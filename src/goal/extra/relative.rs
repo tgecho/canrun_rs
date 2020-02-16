@@ -1,21 +1,10 @@
-use crate::state::Constraint;
-use crate::{all, equal, Can, CanT, Goal, LVar};
+use crate::{constrain, Can, CanT, Goal, LVar};
 
 pub fn greater_than<T: CanT + PartialOrd>(a: Can<T>, b: Can<T>) -> Goal<T> {
-    let left = LVar::new();
-    let right = LVar::new();
-    all(vec![
-        equal(left.can(), a),
-        equal(right.can(), b),
-        Goal::Constrain(Constraint {
-            left,
-            right,
-            func: |a, b| a > b,
-        }),
-    ])
+    constrain(a, b, |a, b| a > b)
 }
 pub fn less_than<T: CanT + PartialOrd>(a: Can<T>, b: Can<T>) -> Goal<T> {
-    greater_than(b, a)
+    constrain(a, b, |a, b| a < b)
 }
 
 pub trait RelativeComparison<T: CanT + PartialOrd> {

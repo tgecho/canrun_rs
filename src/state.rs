@@ -1,15 +1,9 @@
 use crate::can::lvar::LVar;
 use crate::can::{pair, vec, Can, CanT};
+use crate::goal::constrain::Constraint;
 use crate::goal::StateIter;
 use im::{HashMap, HashSet};
 use std::iter::{empty, once};
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct Constraint<T: CanT> {
-    pub left: LVar,
-    pub right: LVar,
-    pub func: fn(T, T) -> bool,
-}
 
 #[derive(Clone, PartialEq, Debug, Default)]
 pub struct State<T: CanT> {
@@ -33,12 +27,63 @@ impl<'a, T: CanT + 'a> State<T> {
     }
 
     pub(crate) fn constrain(&self, constraint: Constraint<T>) -> Option<Self> {
-        let anchor = constraint.left;
+        match (constraint.left.clone(), constraint.right.clone()) {
+            (Can::Var(left), _) => self.add_constraint(left, constraint),
+            (_, Can::Var(right)) => self.add_constraint(right, constraint),
+            (Can::Val(left), Can::Val(right)) => {
+                let func = constraint.func;
+                if func(left, right) {
+                    Some(self.clone())
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+
+    fn add_constraint(&self, lvar: LVar, constraint: Constraint<T>) -> Option<Self> {
         let constrained = State {
             values: self.values.clone(),
-            constraints: self.constraints.update(anchor, constraint),
+            constraints: self.constraints.update(lvar, constraint),
         };
-        constrained.check_constraint(anchor)
+        constrained.check_constraint(lvar.can())
+    }
+
+    pub(crate) fn check_constraint(self, can: Can<T>) -> Option<Self> {
+        match can {
+            Can::Var(lvar) => match self.constraints.extract(&lvar) {
+                Some((constraint, constraints)) => match self.resolve(&constraint.left).ok()? {
+                    Can::Var(left) if left == lvar => Some(self),
+                    Can::Var(left) => Some(State {
+                        values: self.values.clone(),
+                        constraints: constraints.update(left, constraint),
+                    }),
+                    Can::Val(left) => match self.resolve(&constraint.right).ok()? {
+                        Can::Var(right) if right == lvar => Some(self),
+                        Can::Var(right) => Some(State {
+                            values: self.values.clone(),
+                            constraints: constraints.update(right, constraint),
+                        }),
+                        Can::Val(right) => {
+                            let func = constraint.func;
+                            if func(left, right) {
+                                Some(State {
+                                    values: self.values.clone(),
+                                    constraints: constraints,
+                                })
+                            } else {
+                                None
+                            }
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                },
+                None => Some(self),
+            },
+            _ => Some(self.clone()),
+        }
     }
 
     pub(crate) fn checked_resolve(
@@ -82,39 +127,6 @@ impl<'a, T: CanT + 'a> State<T> {
         })
     }
 
-    pub(crate) fn check_constraint(self, lvar: LVar) -> Option<Self> {
-        match self.constraints.extract(&lvar) {
-            Some((constraint, constraints)) => match self.resolve(&constraint.left.can()).ok()? {
-                Can::Var(left) if left == lvar => Some(self),
-                Can::Var(left) => Some(State {
-                    values: self.values.clone(),
-                    constraints: constraints.update(left, constraint),
-                }),
-                Can::Val(left) => match self.resolve(&constraint.right.can()).ok()? {
-                    Can::Var(right) if right == lvar => Some(self),
-                    Can::Var(right) => Some(State {
-                        values: self.values.clone(),
-                        constraints: constraints.update(right, constraint),
-                    }),
-                    Can::Val(right) => {
-                        let func = constraint.func;
-                        if func(left, right) {
-                            Some(State {
-                                values: self.values.clone(),
-                                constraints: constraints,
-                            })
-                        } else {
-                            None
-                        }
-                    }
-                    _ => None,
-                },
-                _ => None,
-            },
-            None => Some(self),
-        }
-    }
-
     fn try_unify(self, a_: Can<T>, b_: Can<T>) -> UnifyResult<'a, T> {
         let a = self.resolve(&a_)?;
         let b = self.resolve(&b_)?;
@@ -124,10 +136,10 @@ impl<'a, T: CanT + 'a> State<T> {
         } else {
             match (a, b) {
                 (Can::Var(av), bv) => {
-                    Box::new(self.assign(av, bv).check_constraint(av).into_iter())
+                    Box::new(self.assign(av, bv).check_constraint(av.can()).into_iter())
                 }
                 (av, Can::Var(bv)) => {
-                    Box::new(self.assign(bv, av).check_constraint(bv).into_iter())
+                    Box::new(self.assign(bv, av).check_constraint(bv.can()).into_iter())
                 }
                 (Can::Pair { l: al, r: ar }, Can::Pair { l: bl, r: br }) => {
                     pair::unify(self, *al, *ar, *bl, *br)

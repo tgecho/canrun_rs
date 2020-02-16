@@ -1,4 +1,4 @@
-use crate::state::Constraint;
+use crate::goal::constrain::Constraint;
 use crate::{Can, CanT, State};
 use std::fmt;
 use std::iter::{empty, once};
@@ -6,6 +6,7 @@ use std::rc::Rc;
 
 pub mod both;
 // pub mod custom;
+pub mod constrain;
 pub mod either;
 pub mod equal;
 pub mod extra;

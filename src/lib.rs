@@ -9,6 +9,7 @@ pub use state::{ResolveResult, State, UnifyError, UnifyResult};
 
 // Goals
 pub use goal::both::both;
+pub use goal::constrain::constrain;
 pub use goal::either::either;
 pub use goal::equal::{equal, Equals};
 pub use goal::lazy::{lazy, with1, with2, with3};
