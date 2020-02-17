@@ -1,7 +1,7 @@
 use crate::can::lvar::LVar;
 use crate::can::{pair, vec, Can, CanT};
 use crate::goal::constrain::Constraint;
-use crate::goal::StateIter;
+use crate::goal::{Goal, StateIter};
 use im::{HashMap, HashSet};
 use std::iter::{empty, once};
 
@@ -19,6 +19,10 @@ impl<'a, T: CanT + 'a> State<T> {
         }
     }
 
+    pub(crate) fn to_iter(self) -> StateIter<'a, T> {
+        Box::new(once(self))
+    }
+
     pub(crate) fn assign(&self, var: LVar, value: Can<T>) -> Self {
         State {
             values: self.values.update(var, value),
@@ -26,47 +30,49 @@ impl<'a, T: CanT + 'a> State<T> {
         }
     }
 
-    pub(crate) fn add_constraint(&self, lvar: LVar, constraint: Constraint<T>) -> Option<Self> {
-        let constrained = State {
+    pub(crate) fn add_constraint(&self, lvar: LVar, constraint: Constraint<T>) -> Self {
+        State {
             values: self.values.clone(),
             constraints: self.constraints.update(lvar, constraint),
-        };
-        constrained.check_constraint(lvar.can())
+        }
     }
 
-    pub(crate) fn check_constraint(self, can: Can<T>) -> Option<Self> {
+    pub(crate) fn check_constraint(self, can: Can<T>) -> StateIter<'a, T> {
         match can {
             Can::Var(lvar) => match self.constraints.extract(&lvar) {
-                Some((constraint, constraints)) => match self.resolve(&constraint.left).ok()? {
-                    Can::Var(left) if left == lvar => Some(self),
-                    Can::Var(left) => Some(State {
-                        values: self.values.clone(),
-                        constraints: constraints.update(left, constraint),
-                    }),
-                    Can::Val(left) => match self.resolve(&constraint.right).ok()? {
-                        Can::Var(right) if right == lvar => Some(self),
-                        Can::Var(right) => Some(State {
-                            values: self.values.clone(),
-                            constraints: constraints.update(right, constraint),
-                        }),
-                        Can::Val(right) => {
-                            let func = constraint.func;
-                            if func(left, right) {
-                                Some(State {
-                                    values: self.values.clone(),
-                                    constraints: constraints,
-                                })
-                            } else {
-                                None
-                            }
-                        }
-                        _ => None,
+                Some((constraint, constraints)) => match self.resolve(&constraint.left) {
+                    Ok(left) => match left {
+                        Can::Var(left) if left == lvar => self.to_iter(),
+                        Can::Var(left) => self.add_constraint(left, constraint).to_iter(),
+                        Can::Val(left) => match self.resolve(&constraint.right) {
+                            Ok(right) => match right {
+                                Can::Var(right) if right == lvar => self.to_iter(),
+                                Can::Var(right) => self.add_constraint(right, constraint).to_iter(),
+                                Can::Val(right) => match constraint.evaluate(left, right) {
+                                    Goal::Fail => empty_iter(),
+                                    goal => goal.run(State {
+                                        values: self.values.clone(),
+                                        constraints: constraints,
+                                    }),
+                                },
+                                // The right var resolves to a non Val (should we support vecs, etc...?)
+                                _ => empty_iter(),
+                            },
+                            // Failed attempting to resolve right var
+                            _ => empty_iter(),
+                        },
+                        // The left var resolves to a non Val (should we support vecs, etc...?)
+                        _ => empty_iter(),
                     },
-                    _ => None,
+                    // Failed attempting to resolve left var
+                    _ => empty_iter(),
                 },
-                None => Some(self),
+                // No constraint found for LVar
+                None => self.to_iter(),
             },
-            _ => Some(self.clone()),
+            // Base is not an LVar. This depends on the correct base LVar being
+            // maintained in the constraint store.
+            _ => self.to_iter(),
         }
     }
 
@@ -107,7 +113,7 @@ impl<'a, T: CanT + 'a> State<T> {
     pub fn unify(self, a: Can<T>, b: Can<T>) -> StateIter<'a, T> {
         self.try_unify(a, b).unwrap_or_else(|err| {
             debug!("{:?}", err);
-            Box::new(empty())
+            empty_iter()
         })
     }
 
@@ -119,22 +125,22 @@ impl<'a, T: CanT + 'a> State<T> {
             Box::new(once(self.clone())) as StateIter<T>
         } else {
             match (a, b) {
-                (Can::Var(av), bv) => {
-                    Box::new(self.assign(av, bv).check_constraint(av.can()).into_iter())
-                }
-                (av, Can::Var(bv)) => {
-                    Box::new(self.assign(bv, av).check_constraint(bv.can()).into_iter())
-                }
+                (Can::Var(av), bv) => Box::new(self.assign(av, bv).check_constraint(av.can())),
+                (av, Can::Var(bv)) => Box::new(self.assign(bv, av).check_constraint(bv.can())),
                 (Can::Pair { l: al, r: ar }, Can::Pair { l: bl, r: br }) => {
                     pair::unify(self, *al, *ar, *bl, *br)
                 }
                 (Can::Vec(a), Can::Vec(b)) => vec::unify(self, a, b),
                 (Can::Hoc(a), b) => a.unify_with(b, self),
                 (a, Can::Hoc(b)) => b.unify_with(a, self),
-                _ => Box::new(empty()),
+                _ => empty_iter(),
             }
         })
     }
+}
+
+pub(crate) fn empty_iter<'a, T: CanT + 'a>() -> StateIter<'a, T> {
+    Box::new(empty())
 }
 
 #[derive(Debug)]

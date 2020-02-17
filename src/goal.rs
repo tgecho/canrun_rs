@@ -1,7 +1,7 @@
 use crate::goal::constrain::Constraint;
+use crate::state::empty_iter;
 use crate::{Can, CanT, State};
 use std::fmt;
-use std::iter::{empty, once};
 use std::rc::Rc;
 
 pub mod both;
@@ -31,8 +31,8 @@ pub type StateIter<'a, T> = Box<dyn Iterator<Item = State<T>> + 'a>;
 impl<'a, T: CanT + 'a> Goal<T> {
     pub fn run(self, state: State<T>) -> StateIter<'a, T> {
         match self {
-            Goal::Succeed => Box::new(once(state.clone())),
-            Goal::Fail => Box::new(empty()),
+            Goal::Succeed => state.to_iter(),
+            Goal::Fail => empty_iter(),
             Goal::Equal { a, b } => equal::run(state, a, b),
             Goal::Both { a, b } => both::run(state, *a, *b),
             Goal::Either { a, b } => either::run(state, *a, *b),

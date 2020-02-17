@@ -1,5 +1,5 @@
+use crate::state::empty_iter;
 use crate::{CanT, Goal, State, StateIter};
-use std::iter::{empty, once};
 
 pub fn not<T: CanT>(goal: Goal<T>) -> Goal<T> {
     Goal::Not(Box::new(goal))
@@ -7,9 +7,9 @@ pub fn not<T: CanT>(goal: Goal<T>) -> Goal<T> {
 
 pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, goal: Goal<T>) -> StateIter<'a, T> {
     if goal.run(state.clone()).nth(0).is_some() {
-        Box::new(empty())
+        empty_iter()
     } else {
-        Box::new(once(state))
+        state.to_iter()
     }
 }
 

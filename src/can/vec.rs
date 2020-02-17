@@ -1,6 +1,6 @@
+use crate::state;
 use crate::{Can, CanT, LVar, ResolveResult, State, StateIter};
 use im::HashSet;
-use std::iter::empty;
 
 pub fn resolve<T: CanT>(
     state: &State<T>,
@@ -39,10 +39,10 @@ pub fn unify<'a, T: CanT + 'a>(
         });
         match states {
             Some(states) => Box::new(states.into_iter()),
-            None => Box::new(empty()),
+            None => state::empty_iter(),
         }
     } else {
-        Box::new(empty())
+        state::empty_iter()
     }
 }
 

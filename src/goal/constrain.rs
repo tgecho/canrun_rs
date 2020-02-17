@@ -1,3 +1,4 @@
+use crate::state;
 use crate::{Can, CanT, Goal, State, StateIter};
 
 #[derive(Clone, PartialEq, Debug)]
@@ -9,21 +10,28 @@ pub struct Constraint<T: CanT> {
 
 impl<'a, T: CanT + 'a> Constraint<T> {
     pub fn run(self, state: State<T>) -> StateIter<'a, T> {
-        let constrained = match (self.left.clone(), self.right.clone()) {
-            (Can::Var(left), _) => state.add_constraint(left, self),
-            (_, Can::Var(right)) => state.add_constraint(right, self),
-            (Can::Val(left), Can::Val(right)) => self.evaluate(left, right, &state),
-            _ => None,
-        };
-        Box::new(constrained.into_iter())
+        match (self.left.clone(), self.right.clone()) {
+            (Can::Var(left), _) => Box::new(
+                state
+                    .add_constraint(left, self)
+                    .check_constraint(left.can()),
+            ),
+            (_, Can::Var(right)) => Box::new(
+                state
+                    .add_constraint(right, self)
+                    .check_constraint(right.can()),
+            ),
+            (Can::Val(left), Can::Val(right)) => Box::new(self.evaluate(left, right).run(state)),
+            _ => state::empty_iter(),
+        }
     }
 
-    pub fn evaluate(self, left: T, right: T, state: &State<T>) -> Option<State<T>> {
+    pub fn evaluate(self, left: T, right: T) -> Goal<T> {
         let func = self.func;
         if func(left, right) {
-            Some(state.clone())
+            Goal::Succeed
         } else {
-            None
+            Goal::Fail
         }
     }
 }
