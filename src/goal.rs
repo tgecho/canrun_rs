@@ -39,7 +39,7 @@ impl<'a, T: CanT + 'a> Goal<T> {
             Goal::Lazy(func) => func().run(state),
             // Goal::Custom(func) => func(&state),
             Goal::Not(goal) => not::run(state, *goal),
-            Goal::Constrain(constraint) => Box::new(state.constrain(constraint).into_iter()),
+            Goal::Constrain(constraint) => constraint.run(state),
         }
     }
 }

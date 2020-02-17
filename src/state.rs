@@ -26,23 +26,7 @@ impl<'a, T: CanT + 'a> State<T> {
         }
     }
 
-    pub(crate) fn constrain(&self, constraint: Constraint<T>) -> Option<Self> {
-        match (constraint.left.clone(), constraint.right.clone()) {
-            (Can::Var(left), _) => self.add_constraint(left, constraint),
-            (_, Can::Var(right)) => self.add_constraint(right, constraint),
-            (Can::Val(left), Can::Val(right)) => {
-                let func = constraint.func;
-                if func(left, right) {
-                    Some(self.clone())
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        }
-    }
-
-    fn add_constraint(&self, lvar: LVar, constraint: Constraint<T>) -> Option<Self> {
+    pub(crate) fn add_constraint(&self, lvar: LVar, constraint: Constraint<T>) -> Option<Self> {
         let constrained = State {
             values: self.values.clone(),
             constraints: self.constraints.update(lvar, constraint),
