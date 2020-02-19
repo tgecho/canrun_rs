@@ -1,9 +1,9 @@
-pub mod hoc;
+// pub mod hoc;
 pub mod lvar;
 pub mod pair;
 pub mod vec;
 
-use crate::can::hoc::Hoc;
+// use crate::can::hoc::Hoc;
 use lvar::LVar;
 use std::fmt;
 
@@ -17,7 +17,7 @@ pub enum Can<T: CanT> {
     Val(T),
     Pair { l: Box<Can<T>>, r: Box<Can<T>> },
     Vec(Vec<Can<T>>),
-    Hoc(Hoc<T>),
+    // Hoc(Hoc<T>),
 }
 
 impl<T: CanT> From<T> for Can<T> {
@@ -47,7 +47,7 @@ impl<T: CanT> fmt::Debug for Can<T> {
             Can::Val(v) => write!(f, "Val({:?})", v),
             Can::Pair { l, r } => write!(f, "Pair{{ {:?}, {:?} }}", l, r),
             Can::Vec(v) => write!(f, "Vec({:?})", v),
-            Can::Hoc(_) => write!(f, "Hoc",),
+            // Can::Hoc(_) => write!(f, "Hoc",),
         }
     }
 }

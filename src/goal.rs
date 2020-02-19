@@ -14,21 +14,30 @@ pub mod lazy;
 pub mod not;
 
 #[derive(Clone)]
-pub enum Goal<T: CanT> {
+pub enum Goal<'a, T: CanT> {
     Succeed,
     Fail,
-    Equal { a: Can<T>, b: Can<T> },
-    Both { a: Box<Goal<T>>, b: Box<Goal<T>> },
-    Either { a: Box<Goal<T>>, b: Box<Goal<T>> },
-    Lazy(Rc<dyn Fn() -> Goal<T>>),
+    Equal {
+        a: Can<T>,
+        b: Can<T>,
+    },
+    Both {
+        a: Box<Goal<'a, T>>,
+        b: Box<Goal<'a, T>>,
+    },
+    Either {
+        a: Box<Goal<'a, T>>,
+        b: Box<Goal<'a, T>>,
+    },
+    Lazy(Rc<dyn Fn() -> Goal<'a, T> + 'a>),
     // Custom(Rc<dyn Fn(&State<T>) -> StateIter<T>>),
-    Not(Box<Goal<T>>),
+    Not(Box<Goal<'a, T>>),
     Constrain(Constraint<T>),
 }
 
 pub type StateIter<'a, T> = Box<dyn Iterator<Item = State<T>> + 'a>;
 
-impl<'a, T: CanT + 'a> Goal<T> {
+impl<'a, T: CanT + 'a> Goal<'a, T> {
     pub fn run(self, state: State<T>) -> StateIter<'a, T> {
         match self {
             Goal::Succeed => state.to_iter(),
@@ -44,7 +53,7 @@ impl<'a, T: CanT + 'a> Goal<T> {
     }
 }
 
-impl<T: CanT> fmt::Debug for Goal<T> {
+impl<'a, T: CanT> fmt::Debug for Goal<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Goal::Succeed => write!(f, "Succeed"),

@@ -1,34 +1,34 @@
 use crate::{var, CanT, Goal, LVar};
 use std::rc::Rc;
 
-pub fn lazy<T, F>(func: F) -> Goal<T>
+pub fn lazy<'a, T, F>(func: F) -> Goal<'a, T>
 where
     T: CanT,
-    F: Fn() -> Goal<T> + 'static,
+    F: Fn() -> Goal<'a, T> + 'a,
 {
     Goal::Lazy(Rc::new(func))
 }
 
-pub fn with1<T, F>(func: F) -> Goal<T>
+pub fn with1<'a, T, F>(func: F) -> Goal<'a, T>
 where
     T: CanT,
-    F: Fn(LVar) -> Goal<T> + 'static,
+    F: Fn(LVar) -> Goal<'a, T> + 'a,
 {
     Goal::Lazy(Rc::new(move || func(var())))
 }
 
-pub fn with2<T, F>(func: F) -> Goal<T>
+pub fn with2<'a, T, F>(func: F) -> Goal<'a, T>
 where
     T: CanT,
-    F: Fn(LVar, LVar) -> Goal<T> + 'static,
+    F: Fn(LVar, LVar) -> Goal<'a, T> + 'a,
 {
     Goal::Lazy(Rc::new(move || func(var(), var())))
 }
 
-pub fn with3<'a, T, F>(func: F) -> Goal<T>
+pub fn with3<'a, T, F>(func: F) -> Goal<'a, T>
 where
-    T: CanT + 'static,
-    F: Fn(LVar, LVar, LVar) -> Goal<T> + 'static,
+    T: CanT,
+    F: Fn(LVar, LVar, LVar) -> Goal<'a, T> + 'a,
 {
     Goal::Lazy(Rc::new(move || func(var(), var(), var())))
 }

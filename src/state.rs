@@ -98,7 +98,7 @@ impl<'a, T: CanT + 'a> State<T> {
             Can::Pair { l, r } => pair::resolve(self, l, r, history),
             Can::Vec(v) => vec::resolve(self, v, history),
             Can::Nil => Ok(Can::Nil),
-            Can::Hoc(hoc) => hoc.resolve_in(self, history),
+            // Can::Hoc(hoc) => hoc.resolve_in(self, history),
         }
     }
 
@@ -131,8 +131,8 @@ impl<'a, T: CanT + 'a> State<T> {
                     pair::unify(self, *al, *ar, *bl, *br)
                 }
                 (Can::Vec(a), Can::Vec(b)) => vec::unify(self, a, b),
-                (Can::Hoc(a), b) => a.unify_with(b, self),
-                (a, Can::Hoc(b)) => b.unify_with(a, self),
+                // (Can::Hoc(a), b) => a.unify_with(b, self),
+                // (a, Can::Hoc(b)) => b.unify_with(a, self),
                 _ => empty_iter(),
             }
         })

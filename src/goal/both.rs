@@ -1,14 +1,18 @@
 use crate::{CanT, Goal, State, StateIter};
 use std::iter::once;
 
-pub fn both<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
+pub fn both<'a, T: CanT>(a: Goal<'a, T>, b: Goal<'a, T>) -> Goal<'a, T> {
     Goal::Both {
         a: Box::new(a),
         b: Box::new(b),
     }
 }
 
-pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, a: Goal<T>, b: Goal<T>) -> StateIter<'a, T> {
+pub(crate) fn run<'a, T: CanT + 'a>(
+    state: State<T>,
+    a: Goal<'a, T>,
+    b: Goal<'a, T>,
+) -> StateIter<'a, T> {
     Box::new(
         a.run(state)
             .zip(once(b).cycle())

@@ -1,6 +1,6 @@
 use crate::{Can, CanT, Goal, LVar, State, StateIter};
 
-pub fn equal<T, A, B>(a: A, b: B) -> Goal<T>
+pub fn equal<'a, T, A, B>(a: A, b: B) -> Goal<'a, T>
 where
     T: CanT,
     A: Into<Can<T>>,
@@ -16,24 +16,24 @@ pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, a: Can<T>, b: Can<T>) -> St
     Box::new(state.unify(a, b))
 }
 
-pub trait Equals<T: CanT> {
-    fn equals<I: Into<Can<T>>>(self, value: I) -> Goal<T>;
+pub trait Equals<'a, T: CanT> {
+    fn equals<I: Into<Can<T>>>(self, value: I) -> Goal<'a, T>;
 }
 
-impl<T: CanT> Equals<T> for Can<T> {
-    fn equals<I: Into<Can<T>>>(self, value: I) -> Goal<T> {
+impl<'a, T: CanT> Equals<'a, T> for Can<T> {
+    fn equals<I: Into<Can<T>>>(self, value: I) -> Goal<'a, T> {
         equal(self, value.into())
     }
 }
 
-impl<T: CanT> Equals<T> for &Can<T> {
-    fn equals<I: Into<Can<T>>>(self, value: I) -> Goal<T> {
+impl<'a, T: CanT> Equals<'a, T> for &Can<T> {
+    fn equals<I: Into<Can<T>>>(self, value: I) -> Goal<'a, T> {
         equal(self.clone(), value.into())
     }
 }
 
-impl<T: CanT> Equals<T> for &LVar {
-    fn equals<I: Into<Can<T>>>(self, value: I) -> Goal<T> {
+impl<'a, T: CanT> Equals<'a, T> for &LVar {
+    fn equals<I: Into<Can<T>>>(self, value: I) -> Goal<'a, T> {
         equal(self.can(), value.into())
     }
 }

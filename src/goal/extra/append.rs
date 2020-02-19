@@ -2,7 +2,7 @@ use crate::can::pair::pair;
 use crate::{both, either, equal, with3, Goal};
 use crate::{Can, CanT};
 
-pub fn append<T: CanT + 'static>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<T> {
+pub fn append<'a, T: CanT + 'a>(a: Can<T>, b: Can<T>, c: Can<T>) -> Goal<'a, T> {
     either(
         both(equal(a.clone(), Can::Nil), equal(b.clone(), c.clone())),
         with3(move |first, rest_of_a, rest_of_c| {

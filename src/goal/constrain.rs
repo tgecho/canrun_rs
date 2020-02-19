@@ -26,7 +26,7 @@ impl<'a, T: CanT + 'a> Constraint<T> {
         }
     }
 
-    pub fn evaluate(self, left: T, right: T) -> Goal<T> {
+    pub fn evaluate(self, left: T, right: T) -> Goal<'a, T> {
         let func = self.func;
         if func(left, right) {
             Goal::Succeed
@@ -36,7 +36,7 @@ impl<'a, T: CanT + 'a> Constraint<T> {
     }
 }
 
-pub fn constrain<T: CanT>(a: Can<T>, b: Can<T>, func: fn(T, T) -> bool) -> Goal<T> {
+pub fn constrain<'a, T: CanT>(a: Can<T>, b: Can<T>, func: fn(T, T) -> bool) -> Goal<'a, T> {
     Goal::Constrain(Constraint {
         left: a,
         right: b,

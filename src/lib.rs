@@ -19,8 +19,8 @@ pub use goal::StateIter;
 
 pub use goal::extra::all::all;
 pub use goal::extra::any::any;
-pub use goal::extra::append::append;
-pub use goal::extra::member::member;
+// pub use goal::extra::append::append;
+// pub use goal::extra::member::member;
 
 #[macro_use]
 extern crate log;

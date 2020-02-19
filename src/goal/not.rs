@@ -5,7 +5,7 @@ pub fn not<T: CanT>(goal: Goal<T>) -> Goal<T> {
     Goal::Not(Box::new(goal))
 }
 
-pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, goal: Goal<T>) -> StateIter<'a, T> {
+pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, goal: Goal<'a, T>) -> StateIter<'a, T> {
     if goal.run(state.clone()).nth(0).is_some() {
         empty_iter()
     } else {

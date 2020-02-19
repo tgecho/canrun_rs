@@ -1,29 +1,29 @@
 use crate::{constrain, Can, CanT, Goal, LVar};
 
-pub fn greater_than<T: CanT + PartialOrd>(a: Can<T>, b: Can<T>) -> Goal<T> {
+pub fn greater_than<'a, T: CanT + PartialOrd>(a: Can<T>, b: Can<T>) -> Goal<'a, T> {
     constrain(a, b, |a, b| a > b)
 }
-pub fn less_than<T: CanT + PartialOrd>(a: Can<T>, b: Can<T>) -> Goal<T> {
+pub fn less_than<'a, T: CanT + PartialOrd>(a: Can<T>, b: Can<T>) -> Goal<'a, T> {
     constrain(a, b, |a, b| a < b)
 }
 
-pub trait RelativeComparison<T: CanT + PartialOrd> {
-    fn greater_than(self, other: Can<T>) -> Goal<T>;
-    fn less_than(self, other: Can<T>) -> Goal<T>;
+pub trait RelativeComparison<'a, T: CanT + PartialOrd> {
+    fn greater_than(self, other: Can<T>) -> Goal<'a, T>;
+    fn less_than(self, other: Can<T>) -> Goal<'a, T>;
 }
-impl<T: CanT + PartialOrd> RelativeComparison<T> for Can<T> {
-    fn greater_than(self, other: Can<T>) -> Goal<T> {
+impl<'a, T: CanT + PartialOrd> RelativeComparison<'a, T> for Can<T> {
+    fn greater_than(self, other: Can<T>) -> Goal<'a, T> {
         greater_than(self, other)
     }
-    fn less_than(self, other: Can<T>) -> Goal<T> {
+    fn less_than(self, other: Can<T>) -> Goal<'a, T> {
         less_than(self, other)
     }
 }
-impl<T: CanT + PartialOrd> RelativeComparison<T> for LVar {
-    fn greater_than(self, other: Can<T>) -> Goal<T> {
+impl<'a, T: CanT + PartialOrd> RelativeComparison<'a, T> for LVar {
+    fn greater_than(self, other: Can<T>) -> Goal<'a, T> {
         greater_than(self.can(), other)
     }
-    fn less_than(self, other: Can<T>) -> Goal<T> {
+    fn less_than(self, other: Can<T>) -> Goal<'a, T> {
         less_than(self.can(), other)
     }
 }
@@ -38,7 +38,7 @@ mod tests {
         Can::Val(value)
     }
 
-    fn resolve<T: CanT>(goal: Goal<T>, vars: Vec<LVar>) -> Vec<Vec<Can<T>>> {
+    fn resolve<'a, T: CanT + 'a>(goal: Goal<'a, T>, vars: Vec<LVar>) -> Vec<Vec<Can<T>>> {
         let vars = &vars;
         goal.run(State::new())
             .map(|s| {
@@ -53,9 +53,9 @@ mod tests {
     fn relative_gt() {
         let x = LVar::labeled("x");
 
-        struct Case<T: CanT + 'static> {
+        struct Case<'a, T: CanT> {
             expected: Vec<Vec<Can<T>>>,
-            goals: Vec<Goal<T>>,
+            goals: Vec<Goal<'a, T>>,
         };
 
         let test_cases: Vec<Case<_>> = vec![

@@ -1,14 +1,18 @@
 use crate::{CanT, Goal, State, StateIter};
 use itertools::Itertools;
 
-pub fn either<T: CanT>(a: Goal<T>, b: Goal<T>) -> Goal<T> {
+pub fn either<'a, T: CanT>(a: Goal<'a, T>, b: Goal<'a, T>) -> Goal<'a, T> {
     Goal::Either {
         a: Box::new(a),
         b: Box::new(b),
     }
 }
 
-pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, a: Goal<T>, b: Goal<T>) -> StateIter<'a, T> {
+pub(crate) fn run<'a, T: CanT + 'a>(
+    state: State<T>,
+    a: Goal<'a, T>,
+    b: Goal<'a, T>,
+) -> StateIter<'a, T> {
     Box::new(a.run(state.clone()).interleave(b.run(state)))
 }
 
