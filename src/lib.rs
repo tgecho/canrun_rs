@@ -1,6 +1,7 @@
 pub mod can;
 pub mod goal;
 pub mod state;
+pub(crate) mod util;
 
 pub use can::lvar::{var, LVar};
 pub use can::pair::pair;

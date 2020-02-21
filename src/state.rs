@@ -2,6 +2,8 @@ use crate::can::lvar::LVar;
 use crate::can::{pair, vec, Can, CanT};
 use crate::goal::constrain::Constraint;
 use crate::goal::{Goal, StateIter};
+use crate::util::multikeyvaluemap;
+
 use im::{HashMap, HashSet};
 use std::iter::{empty, once};
 
