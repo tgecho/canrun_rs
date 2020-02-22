@@ -1,5 +1,6 @@
 use crate::state;
-use crate::{Can, CanT, Goal, State, StateIter};
+use crate::util::multikeyvaluemap::Value as MultiMapValue;
+use crate::{Can, CanT, Goal, LVar, State, StateIter};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Constraint<T: CanT> {
@@ -49,6 +50,81 @@ pub fn constrain<'a, T: CanT>(a: Can<T>, b: Can<T>, func: fn(T, T) -> bool) -> G
         right: b,
         func,
     })
+}
+
+impl<'a, T: CanT + 'a> State<T> {
+    pub(crate) fn add_constraint(&self, vars: Vec<LVar>, constraint: Constraint<T>) -> Self {
+        State {
+            values: self.values.clone(),
+            constraints: self.constraints.set(vars, constraint),
+        }
+    }
+
+    pub(crate) fn add_constraint_key(
+        &self,
+        key: LVar,
+        constraint: &MultiMapValue<LVar, Constraint<T>>,
+    ) -> Self {
+        State {
+            values: self.values.clone(),
+            constraints: self.constraints.add_key(key, constraint),
+        }
+    }
+
+    pub(crate) fn remove_constraint(
+        &self,
+        constraint: &MultiMapValue<LVar, Constraint<T>>,
+    ) -> Self {
+        State {
+            values: self.values.clone(),
+            constraints: self.constraints.remove(constraint),
+        }
+    }
+
+    pub(crate) fn check_constraints(self, can: Can<T>) -> StateIter<'a, T> {
+        match can {
+            Can::Var(lvar) => {
+                let constraints = self.constraints.get(&lvar);
+                let satisfied = constraints.iter().try_fold(self.clone(), |state, found| {
+                    let constraint = &found.value;
+                    match (
+                        self.resolve(&constraint.left).ok()?,
+                        self.resolve(&constraint.right).ok()?,
+                    ) {
+                        (Can::Val(left), Can::Val(right)) => {
+                            if constraint.evaluate(left, right) {
+                                Some(state.remove_constraint(found))
+                            } else {
+                                None
+                            }
+                        }
+                        (Can::Var(left), _) => {
+                            if left == lvar {
+                                Some(state)
+                            } else {
+                                Some(state.add_constraint_key(left, found))
+                            }
+                        }
+                        (_, Can::Var(right)) => {
+                            if right == lvar {
+                                Some(state)
+                            } else {
+                                Some(state.add_constraint_key(right, found))
+                            }
+                        }
+                        _ => None,
+                    }
+                });
+                match satisfied {
+                    Some(state) => state.to_iter(),
+                    None => state::empty_iter(),
+                }
+            }
+            // Base is not an LVar. This depends on the correct base LVar being
+            // maintained in the constraint store.
+            _ => self.to_iter(),
+        }
+    }
 }
 
 #[cfg(test)]
