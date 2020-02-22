@@ -1,29 +1,33 @@
 use crate::can::lvar::LVar;
 use crate::can::{pair, vec, Can, CanT};
 use crate::goal::constrain::Constraint;
-use crate::goal::{Goal, StateIter};
-use crate::util::multikeyvaluemap;
+use crate::goal::StateIter;
+use crate::util::multikeyvaluemap::{MultiKeyMultiValueMap as MultiMap, Value as MultiMapValue};
 
 use im::{HashMap, HashSet};
 use std::iter::{empty, once};
 
-#[derive(Clone, PartialEq, Debug, Default)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct State<T: CanT> {
     values: HashMap<LVar, Can<T>>,
-    constraints: HashMap<LVar, Constraint<T>>,
+    constraints: MultiMap<LVar, Constraint<T>>,
 }
 
 impl<'a, T: CanT + 'a> State<T> {
     pub fn new() -> State<T> {
         State {
             values: HashMap::new(),
-            constraints: HashMap::new(),
+            constraints: MultiMap::new(),
         }
     }
 
     pub(crate) fn to_iter(self) -> StateIter<'a, T> {
         Box::new(once(self))
     }
+
+    // pub(crate) fn clone_iter(&self) -> StateIter<'a, T> {
+    //     Box::new(once(self.clone()))
+    // }
 
     pub(crate) fn assign(&self, var: LVar, value: Can<T>) -> Self {
         State {
@@ -32,46 +36,51 @@ impl<'a, T: CanT + 'a> State<T> {
         }
     }
 
-    pub(crate) fn add_constraint(&self, lvar: LVar, constraint: Constraint<T>) -> Self {
+    pub(crate) fn add_constraint(&self, vars: Vec<LVar>, constraint: Constraint<T>) -> Self {
         State {
             values: self.values.clone(),
-            constraints: self.constraints.update(lvar, constraint),
+            constraints: self.constraints.set(vars, constraint),
         }
     }
 
-    pub(crate) fn check_constraint(self, can: Can<T>) -> StateIter<'a, T> {
+    pub(crate) fn remove_constraint(
+        &self,
+        constraint: &MultiMapValue<LVar, Constraint<T>>,
+    ) -> Self {
+        State {
+            values: self.values.clone(),
+            constraints: self.constraints.remove(constraint),
+        }
+    }
+
+    pub(crate) fn check_constraints(self, can: Can<T>) -> StateIter<'a, T> {
         match can {
-            Can::Var(lvar) => match self.constraints.extract(&lvar) {
-                Some((constraint, constraints)) => match self.resolve(&constraint.left) {
-                    Ok(left) => match left {
-                        Can::Var(left) if left == lvar => self.to_iter(),
-                        Can::Var(left) => self.add_constraint(left, constraint).to_iter(),
-                        Can::Val(left) => match self.resolve(&constraint.right) {
-                            Ok(right) => match right {
-                                Can::Var(right) if right == lvar => self.to_iter(),
-                                Can::Var(right) => self.add_constraint(right, constraint).to_iter(),
-                                Can::Val(right) => match constraint.evaluate(left, right) {
-                                    Goal::Fail => empty_iter(),
-                                    goal => goal.run(State {
-                                        values: self.values.clone(),
-                                        constraints: constraints,
-                                    }),
-                                },
-                                // The right var resolves to a non Val (should we support vecs, etc...?)
-                                _ => empty_iter(),
-                            },
-                            // Failed attempting to resolve right var
-                            _ => empty_iter(),
-                        },
-                        // The left var resolves to a non Val (should we support vecs, etc...?)
-                        _ => empty_iter(),
-                    },
-                    // Failed attempting to resolve left var
-                    _ => empty_iter(),
-                },
-                // No constraint found for LVar
-                None => self.to_iter(),
-            },
+            Can::Var(lvar) => {
+                let constraints = self.constraints.get(&lvar);
+                let satisfied = constraints
+                    .iter()
+                    .filter_map(|found| {
+                        let constraint = &found.value;
+                        match (
+                            self.resolve(&constraint.left),
+                            self.resolve(&constraint.right),
+                        ) {
+                            (Ok(Can::Val(left)), Ok(Can::Val(right))) => Some((found, left, right)),
+                            _ => None,
+                        }
+                    })
+                    .try_fold(self.clone(), |state, (found, left, right)| {
+                        if found.value.evaluate(left, right) {
+                            Some(state.remove_constraint(found))
+                        } else {
+                            None
+                        }
+                    });
+                match satisfied {
+                    Some(state) => state.to_iter(),
+                    None => empty_iter(),
+                }
+            }
             // Base is not an LVar. This depends on the correct base LVar being
             // maintained in the constraint store.
             _ => self.to_iter(),
@@ -127,8 +136,8 @@ impl<'a, T: CanT + 'a> State<T> {
             Box::new(once(self.clone())) as StateIter<T>
         } else {
             match (a, b) {
-                (Can::Var(av), bv) => Box::new(self.assign(av, bv).check_constraint(av.can())),
-                (av, Can::Var(bv)) => Box::new(self.assign(bv, av).check_constraint(bv.can())),
+                (Can::Var(av), bv) => Box::new(self.assign(av, bv).check_constraints(av.can())),
+                (av, Can::Var(bv)) => Box::new(self.assign(bv, av).check_constraints(bv.can())),
                 (Can::Pair { l: al, r: ar }, Can::Pair { l: bl, r: br }) => {
                     pair::unify(self, *al, *ar, *bl, *br)
                 }

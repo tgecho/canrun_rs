@@ -1,6 +1,8 @@
 use im::{HashMap, HashSet};
+use std::fmt;
 use std::hash::Hash;
 
+#[derive(Clone)]
 pub struct MultiKeyMultiValueMap<K: Eq + Hash + Clone, V: Clone> {
     current_id: usize,
     keys: HashMap<K, HashSet<usize>>,
@@ -11,7 +13,21 @@ pub struct MultiKeyMultiValueMap<K: Eq + Hash + Clone, V: Clone> {
 pub struct Value<K, V> {
     id: usize,
     keys: Vec<K>,
-    value: V,
+    pub value: V,
+}
+
+impl<K: Eq, V: PartialEq> PartialEq for Value<K, V> {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && self.keys == other.keys && self.value == other.value
+    }
+}
+
+impl<K: Eq + Hash + Clone, V: Clone + PartialEq> PartialEq for MultiKeyMultiValueMap<K, V> {
+    fn eq(&self, other: &Self) -> bool {
+        self.current_id == other.current_id
+            && self.keys == other.keys
+            && self.values == other.values
+    }
 }
 
 impl<K: Eq + Hash + Clone, V: Clone> MultiKeyMultiValueMap<K, V> {
@@ -32,7 +48,7 @@ impl<K: Eq + Hash + Clone, V: Clone> MultiKeyMultiValueMap<K, V> {
             .collect()
     }
 
-    pub fn add(&self, keys: Vec<K>, value: V) -> Self {
+    pub fn set(&self, keys: Vec<K>, value: V) -> Self {
         let id = self.current_id;
         MultiKeyMultiValueMap {
             current_id: id + 1,
@@ -71,6 +87,18 @@ impl<K: Eq + Hash + Clone, V: Clone> MultiKeyMultiValueMap<K, V> {
     }
 }
 
+impl<K: Eq + Hash + Clone, V: Clone> fmt::Debug for MultiKeyMultiValueMap<K, V> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "MultiKeyMultiValueMap {{}}")
+    }
+}
+
+impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone + fmt::Debug> fmt::Debug for Value<K, V> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Value {:?} {:?} {:?}", self.id, self.keys, self.value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::MultiKeyMultiValueMap;
@@ -83,15 +111,15 @@ mod tests {
     }
 
     #[test]
-    fn add() {
-        let map = MultiKeyMultiValueMap::new().add(vec![1, 2], "12");
+    fn set() {
+        let map = MultiKeyMultiValueMap::new().set(vec![1, 2], "12");
         let values: Vec<_> = map.get(&1).iter().map(|v| v.value).collect();
         assert_eq!(values, vec!["12"]);
     }
 
     #[test]
     fn remove() {
-        let map = MultiKeyMultiValueMap::new().add(vec![1, 2], "12");
+        let map = MultiKeyMultiValueMap::new().set(vec![1, 2], "12");
         let map = map.remove(map.get(&1)[0]);
         assert!(map.get(&1).is_empty());
     }

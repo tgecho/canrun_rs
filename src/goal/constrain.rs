@@ -11,28 +11,35 @@ pub struct Constraint<T: CanT> {
 impl<'a, T: CanT + 'a> Constraint<T> {
     pub fn run(self, state: State<T>) -> StateIter<'a, T> {
         match (self.left.clone(), self.right.clone()) {
+            (Can::Var(left), Can::Var(right)) => Box::new(
+                state
+                    .add_constraint(vec![left, right], self)
+                    .check_constraints(left.can()),
+            ),
             (Can::Var(left), _) => Box::new(
                 state
-                    .add_constraint(left, self)
-                    .check_constraint(left.can()),
+                    .add_constraint(vec![left], self)
+                    .check_constraints(left.can()),
             ),
             (_, Can::Var(right)) => Box::new(
                 state
-                    .add_constraint(right, self)
-                    .check_constraint(right.can()),
+                    .add_constraint(vec![right], self)
+                    .check_constraints(right.can()),
             ),
-            (Can::Val(left), Can::Val(right)) => Box::new(self.evaluate(left, right).run(state)),
+            (Can::Val(left), Can::Val(right)) => {
+                if self.evaluate(left, right) {
+                    state.to_iter()
+                } else {
+                    state::empty_iter()
+                }
+            }
             _ => state::empty_iter(),
         }
     }
 
-    pub fn evaluate(self, left: T, right: T) -> Goal<'a, T> {
+    pub fn evaluate(&self, left: T, right: T) -> bool {
         let func = self.func;
-        if func(left, right) {
-            Goal::Succeed
-        } else {
-            Goal::Fail
-        }
+        func(left, right)
     }
 }
 
