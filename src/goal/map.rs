@@ -27,28 +27,24 @@ impl<'a, T: CanT + 'a> Mapping<T> {
             (Can::Var(a), Can::Var(b)) => {
                 Box::new(state.add_mappings(vec![a, b], self).check_mappings(a.can()))
             }
+            (Can::Val(a), b) => self.evaluate_a(a, b).run(state),
+            (a, Can::Val(b)) => self.evaluate_b(b, a).run(state),
             (Can::Var(a), _) => Box::new(state.add_mappings(vec![a], self).check_mappings(a.can())),
             (_, Can::Var(b)) => Box::new(state.add_mappings(vec![b], self).check_mappings(b.can())),
-            // TODO: either side is a val?
-            (Can::Val(a), Can::Val(b)) => {
-                if self.evaluate_a(a) == b {
-                    state.to_iter()
-                } else {
-                    state::empty_iter()
-                }
-            }
             _ => state::empty_iter(),
         }
     }
 
-    pub fn evaluate_a(&self, a: T) -> T {
+    pub fn evaluate_a(self, a: T, b: Can<T>) -> Goal<'a, T> {
         let func = self.a_to_b;
-        func(a)
+        let mapped = func(a);
+        b.equals(Can::Val(mapped))
     }
 
-    pub fn evaluate_b(&self, b: T) -> T {
+    pub fn evaluate_b(self, b: T, a: Can<T>) -> Goal<'a, T> {
         let func = self.b_to_a;
-        func(b)
+        let mapped = func(b);
+        a.equals(Can::Val(mapped))
     }
 }
 
@@ -94,27 +90,15 @@ impl<'a, T: CanT + 'a> State<T> {
                                 self.resolve(&mappings.a).ok()?,
                                 self.resolve(&mappings.b).ok()?,
                             ) {
-                                (Can::Val(a), Can::Val(b)) => {
-                                    if mappings.evaluate_a(a) == b {
-                                        Some((state.remove_mapping(found), goals))
-                                    } else {
-                                        None
-                                    }
-                                }
-                                (Can::Val(val), Can::Var(var)) => {
-                                    let mapped = mappings.evaluate_a(val);
-                                    Some((
-                                        state.remove_mapping(found),
-                                        goals.clone_and_push(var.equals(Can::Val(mapped))),
-                                    ))
-                                }
-                                (Can::Var(var), Can::Val(val)) => {
-                                    let mapped = mappings.evaluate_b(val);
-                                    Some((
-                                        state.remove_mapping(found),
-                                        goals.clone_and_push(var.equals(Can::Val(mapped))),
-                                    ))
-                                }
+                                (Can::Val(a), b) => Some((
+                                    state.remove_mapping(found),
+                                    goals.clone_and_push(mappings.clone().evaluate_a(a, b)),
+                                )),
+                                (a, Can::Val(b)) => Some((
+                                    state.remove_mapping(found),
+                                    goals.clone_and_push(mappings.clone().evaluate_b(b, a)),
+                                )),
+
                                 (Can::Var(a), _) => {
                                     if a == lvar {
                                         Some((state, goals))
