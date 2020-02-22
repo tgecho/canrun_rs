@@ -1,6 +1,7 @@
 use crate::can::lvar::LVar;
 use crate::can::{pair, vec, Can, CanT};
 use crate::goal::constrain::Constraint;
+use crate::goal::map::Mapping;
 use crate::goal::StateIter;
 use crate::util::multikeyvaluemap::MultiKeyMultiValueMap as MultiMap;
 
@@ -11,6 +12,7 @@ use std::iter::{empty, once};
 pub struct State<T: CanT> {
     pub(crate) values: HashMap<LVar, Can<T>>,
     pub(crate) constraints: MultiMap<LVar, Constraint<T>>,
+    pub(crate) mappings: MultiMap<LVar, Mapping<T>>,
 }
 
 impl<'a, T: CanT + 'a> State<T> {
@@ -18,6 +20,7 @@ impl<'a, T: CanT + 'a> State<T> {
         State {
             values: HashMap::new(),
             constraints: MultiMap::new(),
+            mappings: MultiMap::new(),
         }
     }
 
@@ -33,6 +36,7 @@ impl<'a, T: CanT + 'a> State<T> {
         State {
             values: self.values.update(var, value),
             constraints: self.constraints.clone(),
+            mappings: self.mappings.clone(),
         }
     }
 
@@ -85,8 +89,17 @@ impl<'a, T: CanT + 'a> State<T> {
             Box::new(once(self.clone())) as StateIter<T>
         } else {
             match (a, b) {
-                (Can::Var(av), bv) => Box::new(self.assign(av, bv).check_constraints(av.can())),
-                (av, Can::Var(bv)) => Box::new(self.assign(bv, av).check_constraints(bv.can())),
+                // TODO: This check constraints then mappings scheme needs perf work
+                (Can::Var(av), bv) => Box::new(
+                    self.assign(av, bv)
+                        .check_constraints(av.can())
+                        .flat_map(move |s| s.check_mappings(av.can())),
+                ),
+                (av, Can::Var(bv)) => Box::new(
+                    self.assign(bv, av)
+                        .check_constraints(bv.can())
+                        .flat_map(move |s| s.check_mappings(bv.can())),
+                ),
                 (Can::Pair { l: al, r: ar }, Can::Pair { l: bl, r: br }) => {
                     pair::unify(self, *al, *ar, *bl, *br)
                 }

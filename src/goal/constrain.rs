@@ -57,6 +57,7 @@ impl<'a, T: CanT + 'a> State<T> {
         State {
             values: self.values.clone(),
             constraints: self.constraints.set(vars, constraint),
+            mappings: self.mappings.clone(),
         }
     }
 
@@ -68,6 +69,7 @@ impl<'a, T: CanT + 'a> State<T> {
         State {
             values: self.values.clone(),
             constraints: self.constraints.add_key(key, constraint),
+            mappings: self.mappings.clone(),
         }
     }
 
@@ -78,6 +80,7 @@ impl<'a, T: CanT + 'a> State<T> {
         State {
             values: self.values.clone(),
             constraints: self.constraints.remove(constraint),
+            mappings: self.mappings.clone(),
         }
     }
 

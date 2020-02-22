@@ -11,6 +11,7 @@ pub mod either;
 pub mod equal;
 pub mod extra;
 pub mod lazy;
+pub mod map;
 pub mod not;
 
 #[derive(Clone)]
@@ -33,6 +34,7 @@ pub enum Goal<'a, T: CanT> {
     // Custom(Rc<dyn Fn(&State<T>) -> StateIter<T>>),
     Not(Box<Goal<'a, T>>),
     Constrain(Constraint<T>),
+    Map(map::Mapping<T>),
 }
 
 pub type StateIter<'a, T> = Box<dyn Iterator<Item = State<T>> + 'a>;
@@ -49,6 +51,7 @@ impl<'a, T: CanT + 'a> Goal<'a, T> {
             // Goal::Custom(func) => func(&state),
             Goal::Not(goal) => not::run(state, *goal),
             Goal::Constrain(constraint) => constraint.run(state),
+            Goal::Map(mapping) => mapping.run(state),
         }
     }
 }
@@ -65,6 +68,7 @@ impl<'a, T: CanT> fmt::Debug for Goal<'a, T> {
             // Goal::Custom(_) => write!(f, "Custom(?)"),
             Goal::Not(goal) => write!(f, "Not({:?})", goal),
             Goal::Constrain(constraint) => write!(f, "Constrain({:?})", constraint),
+            Goal::Map(mapping) => write!(f, "Map({:?})", mapping),
         }
     }
 }
