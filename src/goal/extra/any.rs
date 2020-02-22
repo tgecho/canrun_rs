@@ -32,6 +32,6 @@ mod tests {
     fn any_fail() {
         let state: State<usize> = State::new();
         let goal = any(vec![equal(Can::Val(5), Can::Val(6)), Goal::Fail]);
-        assert_eq!(goal.run(state).nth(0), None);
+        assert!(goal.run(state).nth(0).is_none());
     }
 }

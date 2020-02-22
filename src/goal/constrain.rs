@@ -10,7 +10,7 @@ pub struct Constraint<T: CanT> {
 }
 
 impl<'a, T: CanT + 'a> Constraint<T> {
-    pub fn run(self, state: State<T>) -> StateIter<'a, T> {
+    pub fn run(self, state: State<'a, T>) -> StateIter<'a, T> {
         match (self.left.clone(), self.right.clone()) {
             (Can::Var(left), Can::Var(right)) => Box::new(
                 state
@@ -52,7 +52,7 @@ pub fn constrain<'a, T: CanT>(a: Can<T>, b: Can<T>, func: fn(T, T) -> bool) -> G
     })
 }
 
-impl<'a, T: CanT + 'a> State<T> {
+impl<'a, T: CanT + 'a> State<'a, T> {
     pub(crate) fn add_constraint(&self, vars: Vec<LVar>, constraint: Constraint<T>) -> Self {
         State {
             values: self.values.clone(),

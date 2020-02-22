@@ -12,7 +12,7 @@ where
     }
 }
 
-pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, a: Can<T>, b: Can<T>) -> StateIter<'a, T> {
+pub(crate) fn run<'a, T: CanT + 'a>(state: State<'a, T>, a: Can<T>, b: Can<T>) -> StateIter<'a, T> {
     Box::new(state.unify(a, b))
 }
 

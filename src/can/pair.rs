@@ -9,8 +9,8 @@ pub fn pair<T: CanT>(l: Can<T>, r: Can<T>) -> Can<T> {
     }
 }
 
-pub fn resolve<T: CanT>(
-    state: &State<T>,
+pub fn resolve<'a, T: CanT + 'a>(
+    state: &State<'a, T>,
     l: &Can<T>,
     r: &Can<T>,
     history: &HashSet<LVar>,
@@ -22,7 +22,7 @@ pub fn resolve<T: CanT>(
 }
 
 pub fn unify<'a, T: CanT + 'a>(
-    state: State<T>,
+    state: State<'a, T>,
     al: Can<T>,
     ar: Can<T>,
     bl: Can<T>,

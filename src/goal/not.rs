@@ -5,7 +5,7 @@ pub fn not<T: CanT>(goal: Goal<T>) -> Goal<T> {
     Goal::Not(Box::new(goal))
 }
 
-pub(crate) fn run<'a, T: CanT + 'a>(state: State<T>, goal: Goal<'a, T>) -> StateIter<'a, T> {
+pub(crate) fn run<'a, T: CanT + 'a>(state: State<'a, T>, goal: Goal<'a, T>) -> StateIter<'a, T> {
     if goal.run(state.clone()).nth(0).is_some() {
         empty_iter()
     } else {
@@ -21,7 +21,7 @@ mod tests {
         let state: State<u32> = State::new();
         let goal = not(equal(Can::Val(5), Can::Val(5)));
         let mut results = goal.run(state);
-        assert_eq!(results.nth(0), None);
+        assert!(results.nth(0).is_none());
     }
     #[test]
     fn not_combined() {

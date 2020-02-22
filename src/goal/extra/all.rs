@@ -32,6 +32,6 @@ mod tests {
             Goal::Succeed,
             Goal::Fail,
         ]);
-        assert_eq!(goal.run(state).nth(0), None);
+        assert!(goal.run(state).nth(0).is_none());
     }
 }

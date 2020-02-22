@@ -2,8 +2,8 @@ use crate::state;
 use crate::{Can, CanT, LVar, ResolveResult, State, StateIter};
 use im::HashSet;
 
-pub fn resolve<T: CanT>(
-    state: &State<T>,
+pub fn resolve<'a, T: CanT + 'a>(
+    state: &State<'a, T>,
     vec: &[Can<T>],
     history: &HashSet<LVar>,
 ) -> ResolveResult<T> {
@@ -15,7 +15,7 @@ pub fn resolve<T: CanT>(
 }
 
 pub fn unify<'a, T: CanT + 'a>(
-    state: State<T>,
+    state: State<'a, T>,
     a: Vec<Can<T>>,
     b: Vec<Can<T>>,
 ) -> StateIter<'a, T> {

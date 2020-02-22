@@ -9,7 +9,7 @@ pub fn both<'a, T: CanT>(a: Goal<'a, T>, b: Goal<'a, T>) -> Goal<'a, T> {
 }
 
 pub(crate) fn run<'a, T: CanT + 'a>(
-    state: State<T>,
+    state: State<'a, T>,
     a: Goal<'a, T>,
     b: Goal<'a, T>,
 ) -> StateIter<'a, T> {

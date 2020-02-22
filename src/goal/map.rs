@@ -1,13 +1,17 @@
 use crate::state;
 use crate::util::multikeyvaluemap::Value as MultiMapValue;
-use crate::{all, Can, CanT, Equals, Goal, LVar, State, StateIter};
+use crate::{all, Can, CanT, Goal, LVar, State, StateIter};
+use std::fmt;
+use std::rc::Rc;
 
-#[derive(Clone, PartialEq, Debug)]
-pub struct Mapping<T: CanT> {
+type MapFn<'a, T> = Rc<dyn Fn(T, Can<T>) -> Goal<'a, T> + 'a>;
+
+#[derive(Clone)]
+pub struct Mapping<'a, T: CanT> {
     pub a: Can<T>,
     pub b: Can<T>,
-    pub a_to_b: fn(T) -> T,
-    pub b_to_a: fn(T) -> T,
+    pub a_to_b: MapFn<'a, T>,
+    pub b_to_a: MapFn<'a, T>,
 }
 
 pub(crate) trait DirtyImmutable<T> {
@@ -21,8 +25,8 @@ impl<T: Clone> DirtyImmutable<T> for Vec<T> {
     }
 }
 
-impl<'a, T: CanT + 'a> Mapping<T> {
-    pub fn run(self, state: State<T>) -> StateIter<'a, T> {
+impl<'a, T: CanT + 'a> Mapping<'a, T> {
+    pub fn run(self, state: State<'a, T>) -> StateIter<'a, T> {
         match (self.a.clone(), self.b.clone()) {
             (Can::Var(a), Can::Var(b)) => {
                 Box::new(state.add_mappings(vec![a, b], self).check_mappings(a.can()))
@@ -37,19 +41,17 @@ impl<'a, T: CanT + 'a> Mapping<T> {
 
     pub fn evaluate_a(self, a: T, b: Can<T>) -> Goal<'a, T> {
         let func = self.a_to_b;
-        let mapped = func(a);
-        b.equals(Can::Val(mapped))
+        func(a, b)
     }
 
     pub fn evaluate_b(self, b: T, a: Can<T>) -> Goal<'a, T> {
         let func = self.b_to_a;
-        let mapped = func(b);
-        a.equals(Can::Val(mapped))
+        func(b, a)
     }
 }
 
-impl<'a, T: CanT + 'a> State<T> {
-    pub(crate) fn add_mappings(&self, vars: Vec<LVar>, mappings: Mapping<T>) -> Self {
+impl<'a, T: CanT + 'a> State<'a, T> {
+    pub(crate) fn add_mappings(&self, vars: Vec<LVar>, mappings: Mapping<'a, T>) -> Self {
         State {
             values: self.values.clone(),
             constraints: self.constraints.clone(),
@@ -60,7 +62,7 @@ impl<'a, T: CanT + 'a> State<T> {
     pub(crate) fn add_mappings_key(
         &self,
         key: LVar,
-        mappings: &MultiMapValue<LVar, Mapping<T>>,
+        mappings: &MultiMapValue<LVar, Mapping<'a, T>>,
     ) -> Self {
         State {
             values: self.values.clone(),
@@ -69,7 +71,7 @@ impl<'a, T: CanT + 'a> State<T> {
         }
     }
 
-    pub(crate) fn remove_mapping(&self, mappings: &MultiMapValue<LVar, Mapping<T>>) -> Self {
+    pub(crate) fn remove_mapping(&self, mappings: &MultiMapValue<LVar, Mapping<'a, T>>) -> Self {
         State {
             values: self.values.clone(),
             constraints: self.constraints.clone(),
@@ -131,8 +133,8 @@ impl<'a, T: CanT + 'a> State<T> {
 pub fn map<'a, T: CanT>(
     a: Can<T>,
     b: Can<T>,
-    a_to_b: fn(T) -> T,
-    b_to_a: fn(T) -> T,
+    a_to_b: MapFn<'a, T>,
+    b_to_a: MapFn<'a, T>,
 ) -> Goal<'a, T> {
     Goal::Map(Mapping {
         a,
@@ -142,14 +144,27 @@ pub fn map<'a, T: CanT>(
     })
 }
 
+impl<'a, T: CanT> fmt::Debug for Mapping<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Constraint({:?}/{:?})", self.a, self.b)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::map;
     use crate::util::test;
-    use crate::{var, Can, Equals, Goal};
+    use crate::{equal, var, Can, Equals, Goal};
+    use std::rc::Rc;
 
     fn increment<'a>(a: Can<usize>, b: Can<usize>) -> Goal<'a, usize> {
-        map(a, b, |a| a + 1, |b| b - 1)
+        // map(a, b, |a| a + 1, |b| b - 1)
+        map(
+            a,
+            b,
+            Rc::new(|a, b| equal(a + 1, b)),
+            Rc::new(|b, a| equal(b - 1, a)),
+        )
     }
 
     #[test]

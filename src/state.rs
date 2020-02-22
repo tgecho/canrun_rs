@@ -8,15 +8,15 @@ use crate::util::multikeyvaluemap::MultiKeyMultiValueMap as MultiMap;
 use im::{HashMap, HashSet};
 use std::iter::{empty, once};
 
-#[derive(Clone, PartialEq, Debug)]
-pub struct State<T: CanT> {
+#[derive(Clone, Debug)]
+pub struct State<'a, T: CanT> {
     pub(crate) values: HashMap<LVar, Can<T>>,
     pub(crate) constraints: MultiMap<LVar, Constraint<T>>,
-    pub(crate) mappings: MultiMap<LVar, Mapping<T>>,
+    pub(crate) mappings: MultiMap<LVar, Mapping<'a, T>>,
 }
 
-impl<'a, T: CanT + 'a> State<T> {
-    pub fn new() -> State<T> {
+impl<'a, T: CanT + 'a> State<'a, T> {
+    pub fn new() -> State<'a, T> {
         State {
             values: HashMap::new(),
             constraints: MultiMap::new(),
@@ -177,7 +177,7 @@ mod tests {
         let state: State<u8> = State::new();
         let x = var();
         let unified = state.clone().unify(x.can(), x.can()).nth(0);
-        assert_eq!(unified.unwrap(), state);
+        assert_eq!(unified.unwrap().values, state.values);
     }
     #[test]
     fn unify_two_vars() {
@@ -190,8 +190,9 @@ mod tests {
                 .clone()
                 .unify(Can::Var(x), Can::Var(y))
                 .nth(0)
-                .unwrap(),
-            state.assign(x, Can::Var(y))
+                .unwrap()
+                .values,
+            state.assign(x, Can::Var(y)).values
         );
     }
     #[test]
@@ -203,22 +204,24 @@ mod tests {
             (state.clone())
                 .unify(Can::Var(x), Can::Val(5))
                 .nth(0)
-                .unwrap(),
-            state.assign(x, Can::Val(5))
+                .unwrap()
+                .values,
+            state.assign(x, Can::Val(5)).values
         );
         assert_eq!(
             (state.clone())
                 .unify(Can::Val(5), Can::Var(x))
                 .nth(0)
-                .unwrap(),
-            state.assign(x, Can::Val(5))
+                .unwrap()
+                .values,
+            state.assign(x, Can::Val(5)).values
         );
     }
     #[test]
     fn unify_already_bound() {
         let x = LVar::new();
         let state: State<u8> = State::new().assign(x, Can::Val(5));
-        let result: Vec<_> = state.unify(Can::Var(x), Can::Val(6)).collect();
-        assert_eq!(result, vec![]);
+        let result = state.unify(Can::Var(x), Can::Val(6)).nth(0);
+        assert!(result.is_none());
     }
 }

@@ -34,13 +34,13 @@ pub enum Goal<'a, T: CanT> {
     // Custom(Rc<dyn Fn(&State<T>) -> StateIter<T>>),
     Not(Box<Goal<'a, T>>),
     Constrain(Constraint<T>),
-    Map(map::Mapping<T>),
+    Map(map::Mapping<'a, T>),
 }
 
-pub type StateIter<'a, T> = Box<dyn Iterator<Item = State<T>> + 'a>;
+pub type StateIter<'a, T> = Box<dyn Iterator<Item = State<'a, T>> + 'a>;
 
 impl<'a, T: CanT + 'a> Goal<'a, T> {
-    pub fn run(self, state: State<T>) -> StateIter<'a, T> {
+    pub fn run(self, state: State<'a, T>) -> StateIter<'a, T> {
         match self {
             Goal::Succeed => state.to_iter(),
             Goal::Fail => empty_iter(),
