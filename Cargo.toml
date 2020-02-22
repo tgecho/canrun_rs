@@ -16,4 +16,3 @@ log = "0.4.8"
 
 [dev-dependencies]
 env_logger = "0.7.1"
-galvanic-test = "0.2.0"

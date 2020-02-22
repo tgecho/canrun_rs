@@ -46,20 +46,14 @@ pub fn constrain<'a, T: CanT>(a: Can<T>, b: Can<T>, func: fn(T, T) -> bool) -> G
 
 #[cfg(test)]
 mod tests {
-    use crate::{all, Can, CanT, Goal, LVar, State};
-    use galvanic_test::test_suite;
+    use crate::{all, constrain, var, Can, CanT, Equals, Goal, LVar, State};
     use itertools::Itertools;
-    use std::iter::once;
 
     fn all_permutations<'a, T: CanT + 'a>(
         goals: Vec<Goal<'a, T>>,
-        vars: Vec<LVar>,
-    ) -> impl Iterator<Item = (Vec<Goal<'a, T>>, Vec<LVar>)> + 'a {
+    ) -> impl Iterator<Item = Vec<Goal<'a, T>>> + 'a {
         let goals_len = goals.len();
-        goals
-            .into_iter()
-            .permutations(goals_len)
-            .zip(once(vars).cycle())
+        goals.into_iter().permutations(goals_len)
     }
 
     fn resolve_to<'a, T: CanT + 'a>(
@@ -75,66 +69,49 @@ mod tests {
             .collect()
     }
 
-    test_suite! {
-        use crate::{constrain, Can, Equals, var,Goal, LVar};
-        use super::{all_permutations, resolve_to};
-
-        fixture success_cases(goals: Vec<Goal<'static, usize>>, vars: Vec<LVar>) -> Vec<Vec<Can<usize>>> {
-            params {
-                let (x, y) = (var(), var());
-                let goals = vec![
-                    constrain(x.can(), y.can(), |x, y| x < y),
-                    x.equals(1),
-                    y.equals(2),
-                ];
-                all_permutations(goals, vec![x, y])
-            }
-            setup(&mut self) {
-                resolve_to(self.goals, self.vars)
-            }
+    #[test]
+    fn should_succeed_one() {
+        let (x, y) = (var(), var());
+        let goals = vec![
+            constrain(x.can(), y.can(), |x, y| x < y),
+            x.equals(1),
+            y.equals(2),
+        ];
+        for goals in all_permutations(goals) {
+            let resolved = resolve_to(&goals, &vec![x, y]);
+            dbg!(goals);
+            assert_eq!(resolved, vec![vec![Can::Val(1), Can::Val(2)]]);
         }
+    }
 
-        test success(success_cases) {
-            assert_eq!(success_cases.val, vec![vec![Can::Val(1), Can::Val(2)]])
+    #[test]
+    fn should_fail_one() {
+        let (x, y) = (var(), var());
+        let goals = vec![
+            constrain(x.can(), y.can(), |x, y| x > y),
+            x.equals(1),
+            y.equals(2),
+        ];
+        for goals in all_permutations(goals) {
+            let resolved = resolve_to(&goals, &vec![x, y]);
+            dbg!(goals);
+            assert!(resolved.is_empty());
         }
+    }
 
-        fixture fail_cases(goals: Vec<Goal<'static, usize>>, vars: Vec<LVar>) -> Vec<Vec<Can<usize>>> {
-            params {
-                let (x, y) = (var(), var());
-                let goals = vec![
-                    constrain(x.can(), y.can(), |x, y| x > y),
-                    x.equals(1),
-                    y.equals(2),
-                ];
-                all_permutations(goals, vec![x, y])
-            }
-            setup(&mut self) {
-                resolve_to(self.goals, self.vars)
-            }
-        }
-
-        test fail(fail_cases) {
-            assert!(fail_cases.val.is_empty())
-        }
-
-        fixture multiple_constraints_cases(goals: Vec<Goal<'static, usize>>, vars: Vec<LVar>) -> Vec<Vec<Can<usize>>> {
-            params {
-                let (x, y) = (var(), var());
-                let goals = vec![
-                    constrain(x.can(), y.can(), |x, y| x < y),
-                    constrain(x.can(), y.can(), |x, y| x > y),
-                    x.equals(1),
-                    y.equals(2),
-                ];
-                all_permutations(goals, vec![x, y])
-            }
-            setup(&mut self) {
-                resolve_to(self.goals, self.vars)
-            }
-        }
-
-        test multiple_constraints(multiple_constraints_cases) {
-            assert!(multiple_constraints_cases.val.is_empty())
+    #[test]
+    fn should_fail_with_multiple_constraints() {
+        let (x, y) = (var(), var());
+        let goals = vec![
+            constrain(x.can(), y.can(), |x, y| x < y),
+            constrain(x.can(), y.can(), |x, y| x > y),
+            x.equals(1),
+            y.equals(2),
+        ];
+        for goals in all_permutations(goals) {
+            let resolved = resolve_to(&goals, &vec![x, y]);
+            dbg!(goals);
+            assert!(resolved.is_empty());
         }
     }
 }
