@@ -139,4 +139,22 @@ mod tests {
             println!("^ passes ^\n");
         }
     }
+
+    #[test]
+    fn should_succeed_with_multi_stepped_vars() {
+        let (x, y, z, w) = (var(), var(), var(), var());
+        let goals = vec![
+            constrain(x.can(), y.can(), |x, y| x < y),
+            z.equals(1),
+            w.equals(2),
+            x.equals(z.can()),
+            y.equals(w.can()),
+        ];
+        for goals in all_permutations(goals) {
+            let resolved = resolve_to(&goals, &vec![x, y]);
+            dbg!(goals);
+            assert_eq!(resolved, vec![vec![Can::Val(1), Can::Val(2)]]);
+            println!("^ passes ^\n");
+        }
+    }
 }
