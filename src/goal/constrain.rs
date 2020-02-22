@@ -121,4 +121,22 @@ mod tests {
             assert!(resolved.is_empty());
         }
     }
+
+    #[test]
+    fn should_fail_with_multi_stepped_vars() {
+        let (x, y, z, w) = (var(), var(), var(), var());
+        let goals = vec![
+            constrain(x.can(), y.can(), |x, y| x > y),
+            z.equals(1),
+            w.equals(2),
+            x.equals(z.can()),
+            y.equals(w.can()),
+        ];
+        for goals in all_permutations(goals) {
+            let resolved = resolve_to(&goals, &vec![x, y]);
+            dbg!(goals);
+            assert!(resolved.is_empty());
+            println!("^ passes ^\n");
+        }
+    }
 }

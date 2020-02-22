@@ -12,7 +12,7 @@ pub struct MultiKeyMultiValueMap<K: Eq + Hash + Clone, V: Clone> {
 #[derive(Clone)]
 pub struct Value<K, V> {
     id: usize,
-    keys: Vec<K>,
+    pub keys: Vec<K>,
     pub value: V,
 }
 
@@ -61,6 +61,18 @@ impl<K: Eq + Hash + Clone, V: Clone> MultiKeyMultiValueMap<K, V> {
                 )
             }),
             values: self.values.update(id, Value { id, keys, value }),
+        }
+    }
+
+    pub fn add_key(&self, key: K, value: &Value<K, V>) -> Self {
+        let id = value.id;
+        MultiKeyMultiValueMap {
+            current_id: self.current_id,
+            keys: self.keys.alter(
+                |existing| Some(existing.map_or_else(|| HashSet::unit(id), |set| set.update(id))),
+                key,
+            ),
+            values: self.values.clone(),
         }
     }
 

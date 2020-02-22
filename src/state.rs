@@ -43,6 +43,17 @@ impl<'a, T: CanT + 'a> State<T> {
         }
     }
 
+    pub(crate) fn add_constraint_key(
+        &self,
+        key: LVar,
+        constraint: &MultiMapValue<LVar, Constraint<T>>,
+    ) -> Self {
+        State {
+            values: self.values.clone(),
+            constraints: self.constraints.add_key(key, constraint),
+        }
+    }
+
     pub(crate) fn remove_constraint(
         &self,
         constraint: &MultiMapValue<LVar, Constraint<T>>,
@@ -57,25 +68,36 @@ impl<'a, T: CanT + 'a> State<T> {
         match can {
             Can::Var(lvar) => {
                 let constraints = self.constraints.get(&lvar);
-                let satisfied = constraints
-                    .iter()
-                    .filter_map(|found| {
-                        let constraint = &found.value;
-                        match (
-                            self.resolve(&constraint.left),
-                            self.resolve(&constraint.right),
-                        ) {
-                            (Ok(Can::Val(left)), Ok(Can::Val(right))) => Some((found, left, right)),
-                            _ => None,
+                let satisfied = constraints.iter().try_fold(self.clone(), |state, found| {
+                    let constraint = &found.value;
+                    match (
+                        self.resolve(&constraint.left).ok()?,
+                        self.resolve(&constraint.right).ok()?,
+                    ) {
+                        (Can::Val(left), Can::Val(right)) => {
+                            if constraint.evaluate(left, right) {
+                                Some(state.remove_constraint(found))
+                            } else {
+                                None
+                            }
                         }
-                    })
-                    .try_fold(self.clone(), |state, (found, left, right)| {
-                        if found.value.evaluate(left, right) {
-                            Some(state.remove_constraint(found))
-                        } else {
-                            None
+                        (Can::Var(left), _) => {
+                            if left == lvar {
+                                Some(state)
+                            } else {
+                                Some(state.add_constraint_key(left, found))
+                            }
                         }
-                    });
+                        (_, Can::Var(right)) => {
+                            if right == lvar {
+                                Some(state)
+                            } else {
+                                Some(state.add_constraint_key(right, found))
+                            }
+                        }
+                        _ => None,
+                    }
+                });
                 match satisfied {
                     Some(state) => state.to_iter(),
                     None => empty_iter(),
