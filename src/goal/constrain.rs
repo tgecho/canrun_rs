@@ -53,28 +53,8 @@ pub fn constrain<'a, T: CanT>(a: Can<T>, b: Can<T>, func: fn(T, T) -> bool) -> G
 
 #[cfg(test)]
 mod tests {
-    use crate::{all, constrain, var, Can, CanT, Equals, Goal, LVar, State};
-    use itertools::Itertools;
-
-    fn all_permutations<'a, T: CanT + 'a>(
-        goals: Vec<Goal<'a, T>>,
-    ) -> impl Iterator<Item = Vec<Goal<'a, T>>> + 'a {
-        let goals_len = goals.len();
-        goals.into_iter().permutations(goals_len)
-    }
-
-    fn resolve_to<'a, T: CanT + 'a>(
-        goals: &Vec<Goal<'a, T>>,
-        vars: &Vec<LVar>,
-    ) -> Vec<Vec<Can<T>>> {
-        all(goals.clone())
-            .run(State::new())
-            .map(|s| {
-                let results = vars.iter().map(|v| s.resolve_var(*v).unwrap());
-                results.collect::<Vec<Can<T>>>()
-            })
-            .collect()
-    }
+    use crate::util::test;
+    use crate::{constrain, var, Can, Equals};
 
     #[test]
     fn should_succeed_one() {
@@ -84,8 +64,8 @@ mod tests {
             x.equals(1),
             y.equals(2),
         ];
-        for goals in all_permutations(goals) {
-            let resolved = resolve_to(&goals, &vec![x, y]);
+        for goals in test::all_permutations(goals) {
+            let resolved = test::resolve_to(&goals, &vec![x, y]);
             dbg!(goals);
             assert_eq!(resolved, vec![vec![Can::Val(1), Can::Val(2)]]);
         }
@@ -99,8 +79,8 @@ mod tests {
             x.equals(1),
             y.equals(2),
         ];
-        for goals in all_permutations(goals) {
-            let resolved = resolve_to(&goals, &vec![x, y]);
+        for goals in test::all_permutations(goals) {
+            let resolved = test::resolve_to(&goals, &vec![x, y]);
             dbg!(goals);
             assert!(resolved.is_empty());
         }
@@ -115,8 +95,8 @@ mod tests {
             x.equals(1),
             y.equals(2),
         ];
-        for goals in all_permutations(goals) {
-            let resolved = resolve_to(&goals, &vec![x, y]);
+        for goals in test::all_permutations(goals) {
+            let resolved = test::resolve_to(&goals, &vec![x, y]);
             dbg!(goals);
             assert!(resolved.is_empty());
         }
@@ -132,11 +112,10 @@ mod tests {
             x.equals(z.can()),
             y.equals(w.can()),
         ];
-        for goals in all_permutations(goals) {
-            let resolved = resolve_to(&goals, &vec![x, y]);
+        for goals in test::all_permutations(goals) {
+            let resolved = test::resolve_to(&goals, &vec![x, y]);
             dbg!(goals);
             assert!(resolved.is_empty());
-            println!("^ passes ^\n");
         }
     }
 
@@ -150,11 +129,10 @@ mod tests {
             x.equals(z.can()),
             y.equals(w.can()),
         ];
-        for goals in all_permutations(goals) {
-            let resolved = resolve_to(&goals, &vec![x, y]);
+        for goals in test::all_permutations(goals) {
+            let resolved = test::resolve_to(&goals, &vec![x, y]);
             dbg!(goals);
             assert_eq!(resolved, vec![vec![Can::Val(1), Can::Val(2)]]);
-            println!("^ passes ^\n");
         }
     }
 }
