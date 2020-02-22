@@ -20,3 +20,14 @@ pub(crate) fn resolve_to<'a, T: CanT + 'a>(
         })
         .collect()
 }
+
+pub(crate) fn all_permutations_resolve_to<'a, T: CanT + 'a>(
+    goals: Vec<Goal<'a, T>>,
+    vars: &Vec<LVar>,
+    expected: Vec<Vec<Can<T>>>,
+) {
+    for permutation in all_permutations(goals) {
+        dbg!(&permutation);
+        assert_eq!(resolve_to(&permutation, vars), expected);
+    }
+}

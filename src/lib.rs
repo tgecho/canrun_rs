@@ -5,7 +5,7 @@ pub(crate) mod util;
 
 pub use can::lvar::{var, LVar};
 pub use can::pair::pair;
-pub use can::{Can, CanT};
+pub use can::{val, Can, CanT};
 pub use state::{ResolveResult, State, UnifyError, UnifyResult};
 
 // Goals

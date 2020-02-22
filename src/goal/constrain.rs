@@ -64,11 +64,8 @@ mod tests {
             x.equals(1),
             y.equals(2),
         ];
-        for goals in test::all_permutations(goals) {
-            let resolved = test::resolve_to(&goals, &vec![x, y]);
-            dbg!(goals);
-            assert_eq!(resolved, vec![vec![Can::Val(1), Can::Val(2)]]);
-        }
+        let expected = vec![vec![Can::Val(1), Can::Val(2)]];
+        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
     }
 
     #[test]
@@ -79,11 +76,8 @@ mod tests {
             x.equals(1),
             y.equals(2),
         ];
-        for goals in test::all_permutations(goals) {
-            let resolved = test::resolve_to(&goals, &vec![x, y]);
-            dbg!(goals);
-            assert!(resolved.is_empty());
-        }
+        let expected = vec![];
+        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
     }
 
     #[test]
@@ -95,11 +89,8 @@ mod tests {
             x.equals(1),
             y.equals(2),
         ];
-        for goals in test::all_permutations(goals) {
-            let resolved = test::resolve_to(&goals, &vec![x, y]);
-            dbg!(goals);
-            assert!(resolved.is_empty());
-        }
+        let expected = vec![];
+        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
     }
 
     #[test]
@@ -112,11 +103,8 @@ mod tests {
             x.equals(z.can()),
             y.equals(w.can()),
         ];
-        for goals in test::all_permutations(goals) {
-            let resolved = test::resolve_to(&goals, &vec![x, y]);
-            dbg!(goals);
-            assert!(resolved.is_empty());
-        }
+        let expected = vec![];
+        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
     }
 
     #[test]
@@ -129,10 +117,7 @@ mod tests {
             x.equals(z.can()),
             y.equals(w.can()),
         ];
-        for goals in test::all_permutations(goals) {
-            let resolved = test::resolve_to(&goals, &vec![x, y]);
-            dbg!(goals);
-            assert_eq!(resolved, vec![vec![Can::Val(1), Can::Val(2)]]);
-        }
+        let expected = vec![vec![Can::Val(1), Can::Val(2)]];
+        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
     }
 }

@@ -51,3 +51,7 @@ impl<T: CanT> fmt::Debug for Can<T> {
         }
     }
 }
+
+pub fn val<T: CanT>(value: T) -> Can<T> {
+    Can::Val(value)
+}
