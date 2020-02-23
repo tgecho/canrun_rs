@@ -5,8 +5,8 @@ use std::fmt;
 use std::rc::Rc;
 
 pub mod both;
-// pub mod custom;
 pub mod constrain;
+pub mod custom;
 pub mod either;
 pub mod equal;
 pub mod extra;
@@ -31,7 +31,7 @@ pub enum Goal<'a, T: CanT> {
         b: Box<Goal<'a, T>>,
     },
     Lazy(Rc<dyn Fn() -> Goal<'a, T> + 'a>),
-    // Custom(Rc<dyn Fn(&State<T>) -> StateIter<T>>),
+    Custom(Rc<dyn Fn(State<'a, T>) -> StateIter<'a, T> + 'a>),
     Not(Box<Goal<'a, T>>),
     Constrain(Constraint<T>),
     Map(map::Mapping<'a, T>),
@@ -48,7 +48,7 @@ impl<'a, T: CanT + 'a> Goal<'a, T> {
             Goal::Both { a, b } => both::run(state, *a, *b),
             Goal::Either { a, b } => either::run(state, *a, *b),
             Goal::Lazy(func) => func().run(state),
-            // Goal::Custom(func) => func(&state),
+            Goal::Custom(func) => func(state),
             Goal::Not(goal) => not::run(state, *goal),
             Goal::Constrain(constraint) => constraint.run(state),
             Goal::Map(mapping) => mapping.run(state),
@@ -65,7 +65,7 @@ impl<'a, T: CanT> fmt::Debug for Goal<'a, T> {
             Goal::Both { a, b } => write!(f, "Both {{ {:?}, {:?} }}", a, b),
             Goal::Either { a, b } => write!(f, "Either {{ {:?}, {:?} }}", a, b),
             Goal::Lazy(func) => write!(f, "Lazy(|| => {:?})", func()),
-            // Goal::Custom(_) => write!(f, "Custom(?)"),
+            Goal::Custom(_) => write!(f, "Custom(?)"),
             Goal::Not(goal) => write!(f, "Not({:?})", goal),
             Goal::Constrain(constraint) => write!(f, "Constrain({:?})", constraint),
             Goal::Map(mapping) => write!(f, "Map({:?})", mapping),

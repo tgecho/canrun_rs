@@ -40,7 +40,7 @@ mod tests {
     #[test]
     fn basic_lazy() {
         let y = var();
-        let goal = lazy(move || {
+        let goal = lazy(|| {
             let x = var();
             both(x.equals(5), x.equals(y.can()))
         });
