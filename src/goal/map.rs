@@ -154,7 +154,7 @@ impl<'a, T: CanT> fmt::Debug for Mapping<'a, T> {
 mod tests {
     use super::map;
     use crate::util::test;
-    use crate::{equal, var, Can, Equals, Goal};
+    use crate::{equal, var, Can, CanT, Equals, Goal};
 
     fn increment<'a>(a: Can<usize>, b: Can<usize>) -> Goal<'a, usize> {
         map(a, b, |a, b| equal(a + 1, b), |b, a| equal(b - 1, a))
@@ -231,28 +231,41 @@ mod tests {
         test::all_permutations_resolve_to(goals, &vec![x, y], expected);
     }
 
-    fn add<'a>(a: Can<usize>, b: Can<usize>, c: Can<usize>) -> Goal<'a, usize> {
+    pub fn map2<'a, T: CanT + 'a>(
+        a: Can<T>,
+        b: Can<T>,
+        c: Can<T>,
+        ab: fn(T, T) -> T,
+        ac: fn(T, T) -> T,
+        bc: fn(T, T) -> T,
+    ) -> Goal<'a, T> {
         let b2 = b.clone();
         map(
             a,
             c,
             move |a, c| {
+                let a2 = a.clone();
                 map(
                     c,
                     b.clone(),
-                    move |c, b| equal(Can::Val(c - a), b),
-                    move |b, c| equal(Can::Val(a + b), c),
+                    move |c, b| equal(Can::Val(ac(a.clone(), c)), b),
+                    move |b, c| equal(Can::Val(ab(a2.clone(), b)), c),
                 )
             },
             move |c, a| {
+                let c2 = c.clone();
                 map(
                     a,
                     b2.clone(),
-                    move |a, b| equal(Can::Val(c - a), b),
-                    move |b, a| equal(Can::Val(c - b), a),
+                    move |a, b| equal(Can::Val(ac(a, c.clone())), b),
+                    move |b, a| equal(Can::Val(bc(b, c2.clone())), a),
                 )
             },
         )
+    }
+
+    fn add<'a>(a: Can<usize>, b: Can<usize>, c: Can<usize>) -> Goal<'a, usize> {
+        map2(a, b, c, |a, b| a + b, |a, c| c - a, |b, c| c - b)
     }
 
     #[test]
