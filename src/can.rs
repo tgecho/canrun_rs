@@ -20,6 +20,15 @@ pub enum Can<T: CanT> {
     // Hoc(Hoc<T>),
 }
 
+impl<T: CanT> Can<T> {
+    pub fn to_var(&self) -> Option<LVar> {
+        match self {
+            Can::Var(var) => Some(var.clone()),
+            _ => None,
+        }
+    }
+}
+
 impl<T: CanT> From<T> for Can<T> {
     fn from(t: T) -> Self {
         Can::Val(t)

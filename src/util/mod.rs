@@ -1,4 +1,4 @@
-pub(crate) mod multikeyvaluemap;
+pub(crate) mod multikeymultivaluemap;
 
 #[cfg(test)]
 pub(crate) mod test;

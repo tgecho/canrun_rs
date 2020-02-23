@@ -1,5 +1,5 @@
 use crate::state;
-use crate::util::multikeyvaluemap::Value as MultiMapValue;
+use crate::util::multikeymultivaluemap::Value as MultiMapValue;
 use crate::{all, Can, CanT, Goal, LVar, State, StateIter};
 use std::fmt;
 use std::rc::Rc;

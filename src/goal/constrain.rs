@@ -1,5 +1,5 @@
 use crate::state;
-use crate::util::multikeyvaluemap::Value as MultiMapValue;
+use crate::util::multikeymultivaluemap::Value as MultiMapValue;
 use crate::{Can, CanT, Goal, LVar, State, StateIter};
 
 #[derive(Clone, PartialEq, Debug)]
