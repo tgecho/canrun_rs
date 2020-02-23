@@ -130,17 +130,17 @@ impl<'a, T: CanT + 'a> State<'a, T> {
     }
 }
 
-pub fn map<'a, T: CanT>(
-    a: Can<T>,
-    b: Can<T>,
-    a_to_b: MapFn<'a, T>,
-    b_to_a: MapFn<'a, T>,
-) -> Goal<'a, T> {
+pub fn map<'a, T, AB, BA>(a: Can<T>, b: Can<T>, a_to_b: AB, b_to_a: BA) -> Goal<'a, T>
+where
+    T: CanT,
+    AB: Fn(T, Can<T>) -> Goal<'a, T> + 'a,
+    BA: Fn(T, Can<T>) -> Goal<'a, T> + 'a,
+{
     Goal::Map(Mapping {
         a,
         b,
-        a_to_b,
-        b_to_a,
+        a_to_b: Rc::new(a_to_b),
+        b_to_a: Rc::new(b_to_a),
     })
 }
 
@@ -155,16 +155,9 @@ mod tests {
     use super::map;
     use crate::util::test;
     use crate::{equal, var, Can, Equals, Goal};
-    use std::rc::Rc;
 
     fn increment<'a>(a: Can<usize>, b: Can<usize>) -> Goal<'a, usize> {
-        // map(a, b, |a| a + 1, |b| b - 1)
-        map(
-            a,
-            b,
-            Rc::new(|a, b| equal(a + 1, b)),
-            Rc::new(|b, a| equal(b - 1, a)),
-        )
+        map(a, b, |a, b| equal(a + 1, b), |b, a| equal(b - 1, a))
     }
 
     #[test]
@@ -236,5 +229,49 @@ mod tests {
         ];
         let expected = vec![];
         test::all_permutations_resolve_to(goals, &vec![x, y], expected);
+    }
+
+    fn add<'a>(a: Can<usize>, b: Can<usize>, c: Can<usize>) -> Goal<'a, usize> {
+        let b2 = b.clone();
+        map(
+            a,
+            c,
+            move |a, c| {
+                map(
+                    c,
+                    b.clone(),
+                    move |c, b| equal(Can::Val(c - a), b),
+                    move |b, c| equal(Can::Val(a + b), c),
+                )
+            },
+            move |c, a| {
+                map(
+                    a,
+                    b2.clone(),
+                    move |a, b| equal(Can::Val(c - a), b),
+                    move |b, a| equal(Can::Val(c - b), a),
+                )
+            },
+        )
+    }
+
+    #[test]
+    fn should_add() {
+        let (x, y, z) = (var(), var(), var());
+        let scenarios = vec![
+            vec![
+                add(x.can(), y.can(), z.can()),
+                x.equals(1),
+                y.equals(2),
+                z.equals(3),
+            ],
+            vec![add(x.can(), y.can(), z.can()), y.equals(2), z.equals(3)],
+            vec![add(x.can(), y.can(), z.can()), x.equals(1), z.equals(3)],
+            vec![add(x.can(), y.can(), z.can()), x.equals(1), y.equals(2)],
+        ];
+        for goals in scenarios {
+            let expected = vec![vec![Can::Val(1), Can::Val(2), Can::Val(3)]];
+            test::all_permutations_resolve_to(goals, &vec![x, y, z], expected);
+        }
     }
 }
