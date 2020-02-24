@@ -7,6 +7,6 @@ probably need to eventually revisit this categorization.
 
 pub mod all;
 pub mod any;
-// pub mod append;
+pub mod append;
 pub mod member;
 pub mod relative;
