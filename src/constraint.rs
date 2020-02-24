@@ -56,6 +56,37 @@ impl<'a, T: CanT + 'a> Constraint<'a, T> {
             Err(vars) => Ok(state.add_constraint(vars, self).to_iter()),
         }
     }
+
+    pub(crate) fn one<F>(a: Can<T>, func: F) -> Constraint<'a, T>
+    where
+        F: Fn(Can<T>) -> ConstraintResult<'a, T> + 'a,
+    {
+        Constraint::One {
+            a,
+            func: Rc::new(func),
+        }
+    }
+    pub(crate) fn two<F>(a: Can<T>, b: Can<T>, func: F) -> Constraint<'a, T>
+    where
+        F: Fn(Can<T>, Can<T>) -> ConstraintResult<'a, T> + 'a,
+    {
+        Constraint::Two {
+            a,
+            b,
+            func: Rc::new(func),
+        }
+    }
+    pub(crate) fn three<F>(a: Can<T>, b: Can<T>, c: Can<T>, func: F) -> Constraint<'a, T>
+    where
+        F: Fn(Can<T>, Can<T>, Can<T>) -> ConstraintResult<'a, T> + 'a,
+    {
+        Constraint::Three {
+            a,
+            b,
+            c,
+            func: Rc::new(func),
+        }
+    }
 }
 
 impl<'a, T: CanT + 'a> State<'a, T> {

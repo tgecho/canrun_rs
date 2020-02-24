@@ -4,21 +4,17 @@ use crate::{
     Can::{Val, Var},
     CanT, Goal,
 };
-use std::rc::Rc;
 
 pub fn constrain_1<'a, T, F>(a: Can<T>, func: F) -> Goal<'a, T>
 where
     T: CanT + 'a,
     F: Fn(T) -> bool + 'a,
 {
-    constrain(Constraint::One {
-        a,
-        func: Rc::new(move |a| match a {
-            Var(a) => Err(vec![a]),
-            Val(a) => Ok(if func(a) { Goal::Succeed } else { Goal::Fail }),
-            _ => Ok(Goal::Fail),
-        }),
-    })
+    constrain(Constraint::one(a, move |a| match a {
+        Var(a) => Err(vec![a]),
+        Val(a) => Ok(if func(a) { Goal::Succeed } else { Goal::Fail }),
+        _ => Ok(Goal::Fail),
+    }))
 }
 
 pub fn constrain_2<'a, T, F>(a: Can<T>, b: Can<T>, func: F) -> Goal<'a, T>
@@ -26,21 +22,17 @@ where
     T: CanT + 'a,
     F: Fn(T, T) -> bool + 'a,
 {
-    constrain(Constraint::Two {
-        a,
-        b,
-        func: Rc::new(move |a, b| match (a, b) {
-            (Val(a), Val(b)) => Ok(if func(a, b) {
-                Goal::Succeed
-            } else {
-                Goal::Fail
-            }),
-            (Var(a), Var(b)) => Err(vec![a, b]),
-            (Var(a), _) => Err(vec![a]),
-            (_, Var(b)) => Err(vec![b]),
-            _ => Ok(Goal::Fail),
+    constrain(Constraint::two(a, b, move |a, b| match (a, b) {
+        (Val(a), Val(b)) => Ok(if func(a, b) {
+            Goal::Succeed
+        } else {
+            Goal::Fail
         }),
-    })
+        (Var(a), Var(b)) => Err(vec![a, b]),
+        (Var(a), _) => Err(vec![a]),
+        (_, Var(b)) => Err(vec![b]),
+        _ => Ok(Goal::Fail),
+    }))
 }
 
 #[cfg(test)]

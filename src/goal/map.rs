@@ -4,7 +4,6 @@ use crate::{
     Can::{Val, Var},
     CanT, Goal,
 };
-use std::rc::Rc;
 
 pub fn map_2<'a, T, AB, BA>(a: Can<T>, b: Can<T>, ab: AB, ba: BA) -> Goal<'a, T>
 where
@@ -12,16 +11,12 @@ where
     AB: Fn(T) -> T + 'a,
     BA: Fn(T) -> T + 'a,
 {
-    constrain(Constraint::Two {
-        a,
-        b,
-        func: Rc::new(move |a, b| match (a, b) {
-            (Val(a), b) => Ok(equal(ab(a), b)),
-            (a, Val(b)) => Ok(equal(a, ba(b))),
-            (Var(a), Var(b)) => Err(vec![a, b]),
-            _ => Ok(Goal::Fail),
-        }),
-    })
+    constrain(Constraint::two(a, b, move |a, b| match (a, b) {
+        (Val(a), b) => Ok(equal(ab(a), b)),
+        (a, Val(b)) => Ok(equal(a, ba(b))),
+        (Var(a), Var(b)) => Err(vec![a, b]),
+        _ => Ok(Goal::Fail),
+    }))
 }
 
 pub fn map_3<'a, T, AB, BC, AC>(
@@ -38,21 +33,16 @@ where
     BC: Fn(T, T) -> T + 'a,
     AC: Fn(T, T) -> T + 'a,
 {
-    constrain(Constraint::Three {
-        a,
-        b,
-        c,
-        func: Rc::new(move |a, b, c| match (a, b, c) {
-            (Val(a), Val(b), c) => Ok(equal(ab(a, b), c)),
-            (a, Val(b), Val(c)) => Ok(equal(a, bc(b, c))),
-            (Val(a), b, Val(c)) => Ok(equal(ac(a, c), b)),
-            (Var(a), Var(b), Var(c)) => Err(vec![a, b, c]),
-            (Var(a), Var(b), _) => Err(vec![a, b]),
-            (_, Var(b), Var(c)) => Err(vec![b, c]),
-            (Var(a), _, Var(c)) => Err(vec![a, c]),
-            _ => Ok(Goal::Fail),
-        }),
-    })
+    constrain(Constraint::three(a, b, c, move |a, b, c| match (a, b, c) {
+        (Val(a), Val(b), c) => Ok(equal(ab(a, b), c)),
+        (a, Val(b), Val(c)) => Ok(equal(a, bc(b, c))),
+        (Val(a), b, Val(c)) => Ok(equal(ac(a, c), b)),
+        (Var(a), Var(b), Var(c)) => Err(vec![a, b, c]),
+        (Var(a), Var(b), _) => Err(vec![a, b]),
+        (_, Var(b), Var(c)) => Err(vec![b, c]),
+        (Var(a), _, Var(c)) => Err(vec![a, c]),
+        _ => Ok(Goal::Fail),
+    }))
 }
 
 #[cfg(test)]

@@ -1,22 +1,17 @@
 use crate::constraint::{constrain, Constraint};
 use crate::{any, equal, Can, CanT, Goal};
-use std::rc::Rc;
 
 pub fn member<'a, T: CanT + 'a>(needle: Can<T>, haystack: Can<T>) -> Goal<'a, T> {
-    constrain(Constraint::Two {
-        a: needle,
-        b: haystack,
-        func: Rc::new(|n, h| match h {
-            Can::Vec(vec) => {
-                let goals = (vec.into_iter()).map(|item| equal(n.clone(), item));
-                Ok(any(goals.collect()))
-            }
-            // Should I be worried about not explicitely constraining the needle var?
-            // What if the vec never resolves and we want to get the needle?
-            Can::Var(var) => Err(vec![var]),
-            _ => Ok(Goal::Fail),
-        }),
-    })
+    constrain(Constraint::two(needle, haystack, |n, h| match h {
+        Can::Vec(vec) => {
+            let goals = (vec.into_iter()).map(|item| equal(n.clone(), item));
+            Ok(any(goals.collect()))
+        }
+        // Should I be worried about not explicitely constraining the needle var?
+        // What if the vec never resolves and we want to get the needle?
+        Can::Var(var) => Err(vec![var]),
+        _ => Ok(Goal::Fail),
+    }))
 }
 
 #[cfg(test)]
