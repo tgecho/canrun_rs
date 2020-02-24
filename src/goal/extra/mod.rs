@@ -8,5 +8,7 @@ probably need to eventually revisit this categorization.
 pub mod all;
 pub mod any;
 pub mod append;
+pub mod constrain;
+pub mod map;
 pub mod member;
 pub mod relative;

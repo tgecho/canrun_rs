@@ -4,13 +4,11 @@ use std::fmt;
 use std::rc::Rc;
 
 pub mod both;
-pub mod constrain;
 pub mod custom;
 pub mod either;
 pub mod equal;
 pub mod extra;
 pub mod lazy;
-pub mod map;
 pub mod not;
 
 #[derive(Clone)]
