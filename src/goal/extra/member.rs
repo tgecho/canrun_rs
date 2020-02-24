@@ -1,31 +1,31 @@
-use crate::can::hoc::hoc_fn;
-use crate::{any, both, equal, Can, CanT, Goal, LVar};
+use crate::constraint::{constrain, Constraint};
+use crate::{any, equal, Can, CanT, Goal};
+use std::rc::Rc;
 
-pub fn member<T: CanT>(needle: Can<T>, haystack: Can<T>) -> Goal<T> {
-    equal(contains(needle), haystack)
-}
-
-fn contains<T: CanT>(needle: Can<T>) -> Can<T> {
-    hoc_fn(needle, unify_contains)
-}
-
-fn unify_contains<'a, T: CanT + 'a>(var: LVar, needle: Can<T>, other: Can<T>) -> Goal<T> {
-    match other.clone() {
-        Can::Vec(haystack) => {
-            let goals = (haystack.into_iter())
-                .map(|can| both(equal(needle.clone(), can), equal(other.clone(), var.can())));
-            any(goals.collect())
-        }
-        _ => Goal::Fail,
-    }
+pub fn member<'a, T: CanT + 'a>(needle: Can<T>, haystack: Can<T>) -> Goal<'a, T> {
+    constrain(Constraint::Two {
+        a: needle,
+        b: haystack,
+        func: Rc::new(|n, h| match h {
+            Can::Vec(vec) => {
+                let goals = (vec.into_iter()).map(|item| equal(n.clone(), item));
+                Ok(any(goals.collect()))
+            }
+            // Should I be worried about not explicitely constraining the needle var?
+            // What if the vec never resolves and we want to get the needle?
+            Can::Var(var) => Err(vec![var]),
+            _ => Ok(Goal::Fail),
+        }),
+    })
 }
 
 #[cfg(test)]
 mod tests {
+    use super::member;
+    use crate::util::test;
     use crate::{
-        all, any, both, either, equal, member, pair, var, Can, CanT, Equals, Goal, LVar, State,
+        any, both, either, equal, pair, var, Can, Can::Val, CanT, Equals, Goal, LVar, State,
     };
-    use itertools::Itertools;
 
     #[test]
     fn basic_member() {
@@ -185,8 +185,8 @@ mod tests {
         );
         let (john, mary, monkey) = get_records();
 
-        struct Case<T: CanT> {
-            goals: Vec<Goal<T>>,
+        struct Case<'a, T: CanT> {
+            goals: Vec<Goal<'a, T>>,
             results: Vec<LVar>,
             expected: Vec<Vec<Can<T>>>,
         };
@@ -225,80 +225,57 @@ mod tests {
             expected,
         } in test_cases
         {
-            let goals_len = goals.len();
-            for permutation in goals.into_iter().permutations(goals_len) {
-                debug!("{:?}", &permutation);
-                assert_eq!(resolve(all(permutation), results.clone()), expected);
-            }
+            test::all_permutations_resolve_to(goals, &results, expected);
         }
-    }
-
-    fn val<T: CanT>(value: T) -> Can<T> {
-        Can::Val(value)
-    }
-
-    fn resolve<T: CanT>(goal: Goal<T>, vars: Vec<LVar>) -> Vec<Vec<Can<T>>> {
-        let vars = &vars;
-        goal.run(State::new())
-            .map(|s| {
-                vars.into_iter()
-                    .map(|v| s.resolve_var(*v).unwrap())
-                    .collect()
-            })
-            .collect()
     }
 
     #[test]
     fn unify_two_contains() {
         let z = LVar::labeled("z");
-        let list = Can::Vec(vec![val(1), val(2), val(3)]);
+        let list = Can::Vec(vec![Val(1), Val(2), Val(3)]);
 
-        struct Case<T: CanT> {
+        struct Case<'a, T: CanT> {
             expected: Vec<Vec<Can<T>>>,
-            goals: Vec<Goal<T>>,
+            goals: Vec<Goal<'a, T>>,
         };
 
         let test_cases: Vec<Case<_>> = vec![
             Case {
                 expected: vec![vec![list.clone()]],
                 goals: vec![
-                    member(val(1), z.can()),
-                    member(val(1), z.can()),
+                    member(Val(1), z.can()),
+                    member(Val(1), z.can()),
                     z.equals(list.clone()),
                 ],
             },
             Case {
                 expected: vec![vec![list.clone()]],
                 goals: vec![
-                    member(val(1), z.can()),
-                    member(val(2), z.can()),
+                    member(Val(1), z.can()),
+                    member(Val(2), z.can()),
                     z.equals(list.clone()),
                 ],
             },
             Case {
                 expected: vec![vec![list.clone()]],
                 goals: vec![
-                    either(member(val(1), z.can()), member(val(4), z.can())),
-                    member(val(2), z.can()),
+                    either(member(Val(1), z.can()), member(Val(4), z.can())),
+                    member(Val(2), z.can()),
                     z.equals(list.clone()),
                 ],
             },
             Case {
                 expected: vec![],
                 goals: vec![
-                    member(val(1), z.can()),
-                    member(val(4), z.can()),
+                    member(Val(1), z.can()),
+                    member(Val(4), z.can()),
                     z.equals(list.clone()),
                 ],
             },
         ];
 
         for Case { goals, expected } in test_cases {
-            let goals_len = goals.len();
-            for permutation in goals.into_iter().permutations(goals_len) {
-                debug!("{:?}", &permutation);
-                assert_eq!(resolve(all(permutation), vec![z]), expected);
-            }
+            test::all_permutations_resolve_to(goals, &vec![z], expected);
         }
     }
 }
