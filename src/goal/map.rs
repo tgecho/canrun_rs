@@ -1,275 +1,107 @@
-use crate::state;
-use crate::util::multikeymultivaluemap::Value as MultiMapValue;
-use crate::{all, Can, CanT, Goal, LVar, State, StateIter};
-use std::fmt;
+use crate::constraint::{constrain, Constraint};
+use crate::{
+    equal, Can,
+    Can::{Val, Var},
+    CanT, Goal,
+};
 use std::rc::Rc;
 
-type MapFn<'a, T> = Rc<dyn Fn(T, Can<T>) -> Goal<'a, T> + 'a>;
-
-#[derive(Clone)]
-pub struct Mapping<'a, T: CanT> {
-    pub a: Can<T>,
-    pub b: Can<T>,
-    pub a_to_b: MapFn<'a, T>,
-    pub b_to_a: MapFn<'a, T>,
-}
-
-pub(crate) trait DirtyImmutable<T> {
-    fn clone_and_push(&self, t: T) -> Self;
-}
-impl<T: Clone> DirtyImmutable<T> for Vec<T> {
-    fn clone_and_push(&self, t: T) -> Self {
-        let mut cloned = self.to_vec();
-        cloned.push(t);
-        cloned
-    }
-}
-
-impl<'a, T: CanT + 'a> Mapping<'a, T> {
-    pub fn run(self, state: State<'a, T>) -> StateIter<'a, T> {
-        match (self.a.clone(), self.b.clone()) {
-            (Can::Var(a), Can::Var(b)) => {
-                Box::new(state.add_mappings(vec![a, b], self).check_mappings(a.can()))
-            }
-            (Can::Val(a), b) => self.evaluate_a(a, b).run(state),
-            (a, Can::Val(b)) => self.evaluate_b(b, a).run(state),
-            (Can::Var(a), _) => Box::new(state.add_mappings(vec![a], self).check_mappings(a.can())),
-            (_, Can::Var(b)) => Box::new(state.add_mappings(vec![b], self).check_mappings(b.can())),
-            _ => state::empty_iter(),
-        }
-    }
-
-    pub fn evaluate_a(self, a: T, b: Can<T>) -> Goal<'a, T> {
-        let func = self.a_to_b;
-        func(a, b)
-    }
-
-    pub fn evaluate_b(self, b: T, a: Can<T>) -> Goal<'a, T> {
-        let func = self.b_to_a;
-        func(b, a)
-    }
-}
-
-impl<'a, T: CanT + 'a> State<'a, T> {
-    pub(crate) fn add_mappings(&self, vars: Vec<LVar>, mappings: Mapping<'a, T>) -> Self {
-        State {
-            values: self.values.clone(),
-            constraints: self.constraints.clone(),
-            mappings: self.mappings.set(vars, mappings),
-        }
-    }
-
-    pub(crate) fn add_mappings_key(
-        &self,
-        key: LVar,
-        mappings: &MultiMapValue<LVar, Mapping<'a, T>>,
-    ) -> Self {
-        State {
-            values: self.values.clone(),
-            constraints: self.constraints.clone(),
-            mappings: self.mappings.add_key(key, mappings),
-        }
-    }
-
-    pub(crate) fn remove_mapping(&self, mappings: &MultiMapValue<LVar, Mapping<'a, T>>) -> Self {
-        State {
-            values: self.values.clone(),
-            constraints: self.constraints.clone(),
-            mappings: self.mappings.remove(mappings),
-        }
-    }
-
-    pub(crate) fn check_mappings(self, can: Can<T>) -> StateIter<'a, T> {
-        match can {
-            Can::Var(lvar) => {
-                let mappings = self.mappings.get(&lvar);
-                let satisfied =
-                    mappings
-                        .iter()
-                        .try_fold((self.clone(), vec![]), |(state, goals), found| {
-                            let mappings = &found.value;
-                            match (
-                                self.resolve(&mappings.a).ok()?,
-                                self.resolve(&mappings.b).ok()?,
-                            ) {
-                                (Can::Val(a), b) => Some((
-                                    state.remove_mapping(found),
-                                    goals.clone_and_push(mappings.clone().evaluate_a(a, b)),
-                                )),
-                                (a, Can::Val(b)) => Some((
-                                    state.remove_mapping(found),
-                                    goals.clone_and_push(mappings.clone().evaluate_b(b, a)),
-                                )),
-
-                                (Can::Var(a), _) => {
-                                    if a == lvar {
-                                        Some((state, goals))
-                                    } else {
-                                        Some((state.add_mappings_key(a, found), goals))
-                                    }
-                                }
-                                (_, Can::Var(b)) => {
-                                    if b == lvar {
-                                        Some((state, goals))
-                                    } else {
-                                        Some((state.add_mappings_key(b, found), goals))
-                                    }
-                                }
-                                _ => None,
-                            }
-                        });
-                match satisfied {
-                    Some((state, goals)) => all(goals).run(state),
-                    None => state::empty_iter(),
-                }
-            }
-            // Base is not an LVar. This depends on the correct base LVar being
-            // maintained in the mappings store.
-            _ => self.to_iter(),
-        }
-    }
-}
-
-pub fn map<'a, T, AB, BA>(a: Can<T>, b: Can<T>, a_to_b: AB, b_to_a: BA) -> Goal<'a, T>
+pub fn map_2<'a, T, AB, BA>(a: Can<T>, b: Can<T>, ab: AB, ba: BA) -> Goal<'a, T>
 where
-    T: CanT,
-    AB: Fn(T, Can<T>) -> Goal<'a, T> + 'a,
-    BA: Fn(T, Can<T>) -> Goal<'a, T> + 'a,
+    T: CanT + 'a,
+    AB: Fn(T) -> T + 'a,
+    BA: Fn(T) -> T + 'a,
 {
-    Goal::Map(Mapping {
+    constrain(Constraint::Two {
         a,
         b,
-        a_to_b: Rc::new(a_to_b),
-        b_to_a: Rc::new(b_to_a),
+        func: Rc::new(move |a, b| match (a, b) {
+            (Val(a), b) => Ok(equal(ab(a), b)),
+            (a, Val(b)) => Ok(equal(a, ba(b))),
+            (Var(a), Var(b)) => Err(vec![a, b]),
+            _ => Ok(Goal::Fail),
+        }),
     })
 }
 
-impl<'a, T: CanT> fmt::Debug for Mapping<'a, T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Constraint({:?}/{:?})", self.a, self.b)
-    }
+pub fn map_3<'a, T, AB, BC, AC>(
+    a: Can<T>,
+    b: Can<T>,
+    c: Can<T>,
+    ab: AB,
+    bc: BC,
+    ac: AC,
+) -> Goal<'a, T>
+where
+    T: CanT + 'a,
+    AB: Fn(T, T) -> T + 'a,
+    BC: Fn(T, T) -> T + 'a,
+    AC: Fn(T, T) -> T + 'a,
+{
+    constrain(Constraint::Three {
+        a,
+        b,
+        c,
+        func: Rc::new(move |a, b, c| match (a, b, c) {
+            (Val(a), Val(b), c) => Ok(equal(ab(a, b), c)),
+            (a, Val(b), Val(c)) => Ok(equal(a, bc(b, c))),
+            (Val(a), b, Val(c)) => Ok(equal(ac(a, c), b)),
+            (Var(a), Var(b), Var(c)) => Err(vec![a, b, c]),
+            (Var(a), Var(b), _) => Err(vec![a, b]),
+            (_, Var(b), Var(c)) => Err(vec![b, c]),
+            (Var(a), _, Var(c)) => Err(vec![a, c]),
+            _ => Ok(Goal::Fail),
+        }),
+    })
 }
 
 #[cfg(test)]
 mod tests {
-    use super::map;
+    use super::{map_2, map_3};
     use crate::util::test;
-    use crate::{equal, var, Can, CanT, Equals, Goal};
+    use crate::{var, Can, Equals, Goal};
 
-    fn increment<'a>(a: Can<usize>, b: Can<usize>) -> Goal<'a, usize> {
-        map(a, b, |a, b| equal(a + 1, b), |b, a| equal(b - 1, a))
+    fn incr(n: usize) -> usize {
+        n + 1
     }
-
+    fn decr(n: usize) -> usize {
+        n - 1
+    }
     #[test]
-    fn should_succeed_all_defined() {
+    fn should_succeed_map_2() {
         let (x, y) = (var(), var());
-        let goals = vec![increment(x.can(), y.can()), x.equals(1), y.equals(2)];
         let expected = vec![vec![Can::Val(1), Can::Val(2)]];
-        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
-    }
 
-    #[test]
-    fn should_succeed_forward() {
-        let (x, y) = (var(), var());
-        let goals = vec![increment(x.can(), y.can()), x.equals(1)];
-        let expected = vec![vec![Can::Val(1), Can::Val(2)]];
-        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
-    }
-
-    #[test]
-    fn should_succeed_backward() {
-        let (x, y) = (var(), var());
-        let goals = vec![increment(x.can(), y.can()), y.equals(2)];
-        let expected = vec![vec![Can::Val(1), Can::Val(2)]];
-        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
-    }
-
-    #[test]
-    fn should_succeed_forward_multiple_steps() {
-        let (x, y, x2, y2) = (var(), var(), var(), var());
         let goals = vec![
-            increment(x.can(), y2.can()),
-            x.equals(x2.can()),
-            x2.equals(1),
-            y.equals(y2.can()),
+            x.equals(1),
+            y.equals(2),
+            map_2(x.can(), y.can(), incr, decr),
         ];
-        let expected = vec![vec![Can::Val(1), Can::Val(2)]];
+        test::all_permutations_resolve_to(goals, &vec![x, y], expected.clone());
+
+        let goals = vec![x.equals(1), map_2(x.can(), y.can(), incr, decr)];
+        test::all_permutations_resolve_to(goals, &vec![x, y], expected.clone());
+
+        let goals = vec![y.equals(2), map_2(x.can(), y.can(), incr, decr)];
         test::all_permutations_resolve_to(goals, &vec![x, y], expected);
     }
-
     #[test]
-    fn should_succeed_backward_multiple_steps() {
-        let (x, y, x2, y2) = (var(), var(), var(), var());
-        let goals = vec![
-            increment(x.can(), y2.can()),
-            x.equals(x2.can()),
-            y2.equals(2),
-            y.equals(y2.can()),
-        ];
-        let expected = vec![vec![Can::Val(1), Can::Val(2)]];
-        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
-    }
-
-    #[test]
-    fn should_fail() {
+    fn should_fail_map_2() {
         let (x, y) = (var(), var());
-        let goals = vec![increment(x.can(), y.can()), x.equals(1), y.equals(3)];
-        let expected = vec![];
-        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
-    }
-    #[test]
-    fn should_fail_multiple_steps() {
-        let (x, y, x2, y2) = (var(), var(), var(), var());
         let goals = vec![
-            increment(x.can(), y2.can()),
-            x.equals(x2.can()),
-            y2.equals(3),
-            x2.equals(1),
-            y.equals(y2.can()),
+            x.equals(2),
+            y.equals(1),
+            map_2(x.can(), y.can(), incr, decr),
         ];
-        let expected = vec![];
-        test::all_permutations_resolve_to(goals, &vec![x, y], expected);
-    }
-
-    pub fn map2<'a, T: CanT + 'a>(
-        a: Can<T>,
-        b: Can<T>,
-        c: Can<T>,
-        ab: fn(T, T) -> T,
-        ac: fn(T, T) -> T,
-        bc: fn(T, T) -> T,
-    ) -> Goal<'a, T> {
-        let b2 = b.clone();
-        map(
-            a,
-            c,
-            move |a, c| {
-                let a2 = a.clone();
-                map(
-                    c,
-                    b.clone(),
-                    move |c, b| equal(Can::Val(ac(a.clone(), c)), b),
-                    move |b, c| equal(Can::Val(ab(a2.clone(), b)), c),
-                )
-            },
-            move |c, a| {
-                let c2 = c.clone();
-                map(
-                    a,
-                    b2.clone(),
-                    move |a, b| equal(Can::Val(ac(a, c.clone())), b),
-                    move |b, a| equal(Can::Val(bc(b, c2.clone())), a),
-                )
-            },
-        )
+        test::all_permutations_resolve_to(goals, &vec![x, y], vec![]);
     }
 
     fn add<'a>(a: Can<usize>, b: Can<usize>, c: Can<usize>) -> Goal<'a, usize> {
-        map2(a, b, c, |a, b| a + b, |a, c| c - a, |b, c| c - b)
+        map_3(a, b, c, |a, b| a + b, |a, c| c - a, |b, c| c - b)
     }
 
     #[test]
-    fn should_add() {
+    fn should_succeed_add() {
         let (x, y, z) = (var(), var(), var());
         let scenarios = vec![
             vec![
