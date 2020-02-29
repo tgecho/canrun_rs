@@ -1,7 +1,5 @@
 use crate::can::lvar::LVar;
 use crate::can::{pair, vec, Can, CanT};
-// use crate::goal::constrain::Constraint;
-// use crate::goal::map::Mapping;
 use crate::constraint::Constraint;
 use crate::goal::StateIter;
 use crate::util::multikeymultivaluemap::MKMVMap as MultiMap;
@@ -13,7 +11,6 @@ use std::iter::{empty, once};
 pub struct State<'a, T: CanT> {
     pub(crate) values: HashMap<LVar, Can<T>>,
     pub(crate) constraints: MultiMap<LVar, Constraint<'a, T>>,
-    // pub(crate) mappings: MultiMap<LVar, Mapping<'a, T>>,
 }
 
 impl<'a, T: CanT + 'a> State<'a, T> {
@@ -21,7 +18,6 @@ impl<'a, T: CanT + 'a> State<'a, T> {
         State {
             values: HashMap::new(),
             constraints: MultiMap::new(),
-            // mappings: MultiMap::new(),
         }
     }
 
@@ -37,7 +33,6 @@ impl<'a, T: CanT + 'a> State<'a, T> {
         State {
             values: self.values.update(var, value),
             constraints: self.constraints.clone(),
-            // mappings: self.mappings.clone(),
         }
     }
 
@@ -63,7 +58,6 @@ impl<'a, T: CanT + 'a> State<'a, T> {
             Can::Pair { l, r } => pair::resolve(self, l, r, history),
             Can::Vec(v) => vec::resolve(self, v, history),
             Can::Nil => Ok(Can::Nil),
-            // Can::Hoc(hoc) => hoc.resolve_in(self, history),
         }
     }
 
@@ -90,19 +84,12 @@ impl<'a, T: CanT + 'a> State<'a, T> {
             Box::new(once(self.clone())) as StateIter<T>
         } else {
             match (a, b) {
-                // TODO: This check constraints then mappings scheme needs perf work
-                (Can::Var(av), bv) => Box::new(
-                    self.assign(av, bv).check_constraints(av), // .flat_map(move |s| s.check_mappings(av.can())),
-                ),
-                (av, Can::Var(bv)) => Box::new(
-                    self.assign(bv, av).check_constraints(bv), // .flat_map(move |s| s.check_mappings(bv.can())),
-                ),
+                (Can::Var(av), bv) => Box::new(self.assign(av, bv).check_constraints(av)),
+                (av, Can::Var(bv)) => Box::new(self.assign(bv, av).check_constraints(bv)),
                 (Can::Pair { l: al, r: ar }, Can::Pair { l: bl, r: br }) => {
                     pair::unify(self, *al, *ar, *bl, *br)
                 }
                 (Can::Vec(a), Can::Vec(b)) => vec::unify(self, a, b),
-                // (Can::Hoc(a), b) => a.unify_with(b, self),
-                // (a, Can::Hoc(b)) => b.unify_with(a, self),
                 _ => empty_iter(),
             }
         })
