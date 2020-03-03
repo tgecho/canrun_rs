@@ -1,5 +1,7 @@
 #![allow(dead_code)]
-
+#![allow(unused_imports)]
+#![allow(unreachable_code)]
+#![allow(unused_variables)]
 use crate::can::lvar::LVar;
 use im::HashMap;
 use std::rc::Rc;
@@ -62,39 +64,21 @@ impl<T: Unify> State<T> {
         */
         todo!()
     }
-
-    fn constrain<Other: Unify>(
-        self,
-        other: &mut State<Other>,
-        constraint: Constraint<T, Other>,
-    ) -> Self {
-        /*
-        This anticipates that it will be possible to store some sort of connection with the other state,
-        but I'm not clear that's actually going to be easy. Is interier mutability with RefCell the answer?
-        - How will that interact with diverging states once we start evaluating?
-        - How do we handle constraints linking to a state that is merged into another?
-        - How do we handle constraints linking to a state that is cloned?
-        */
-        todo!()
-    }
-}
-
-struct Constraint<'c, A: Unify, B: Unify> {
-    a: Val<A>,
-    b: Val<B>,
-    f: Box<dyn Fn(A, B) -> bool + 'c>,
 }
 
 trait MemberOf<'a, T: Unify, C: Unify> {
-    fn member_of(self, haystack: Val<C>) -> Constraint<'a, C, T>;
+    fn member_of(&mut self, needle: Val<T>, haystack: Val<C>) -> &mut Self;
 }
-impl<'a, T, C> MemberOf<'a, T, C> for Val<C>
+impl<'a, D, T> MemberOf<'a, T, Vec<T>> for D
 where
-    T: Unify,
-    C: Unify + IntoIterator<Item = T>,
+    D: Constrain2<T, Vec<T>>,
+    T: Unify + Eq,
 {
-    fn member_of(self, haystack: Val<C>) -> Constraint<'a, C, T> {
-        todo!()
+    fn member_of(&mut self, needle: Val<T>, haystack: Val<Vec<T>>) -> &mut Self {
+        self.constrain2(needle, haystack, |n, h| match (n, h) {
+            (Res(n), Res(h)) => Ok(h.contains(&n)),
+            vars => Err(todo!("need to pull out the actual lvars?")),
+        })
     }
 }
 
@@ -126,7 +110,25 @@ impl Domain {
             None => todo!("remove this constraint?"),
         }
     }
+
+    // fn run(&self) -> impl Iterator<Item = ()> {
+    //     // do we have some sort of proxy object with per type query fns?
+    //     todo!()
+    // }
 }
+
+/*
+"Pending" vs "Resolved" state: We start with a Pending state and continue returning/updating as constraints are added.
+Crucially, any goals that cause the state to diverge may not be fully explored.
+
+In order to query for the current value of a variable, the state needs to be Resolved. Calling run (or just iter?) returns
+an iterator of Resolved states, where each potential branch has been explored. Constraints can be added to a Resolved state,
+though it will switch it back to a Pending state.
+
+Maybe a discrete "Impossible" state might make sense. As soon as we determine that a state is unresolvable, we can basically
+ignore future constraints and automatically return an empty iterator. It can support everything that other states do. I'm not
+sure if this might complicate traits.
+*/
 
 trait Constrain1<A: Unify> {
     type Constraints;
@@ -191,7 +193,7 @@ impl_constrain!(Vec<i32>, i32);
 
 fn main() {
     let (a, b, c) = (lvar().val(), lvar().val(), lvar().val());
-    let mut numbers = State::new()
+    let numbers = State::new()
         .equal(a.clone(), r(1))
         .either(
             State::new().equal(b.clone(), r(2)),
@@ -199,20 +201,26 @@ fn main() {
         )
         .equal(c.clone(), r(3));
 
-    let (x) = (lvar().val());
+    let x = lvar().val();
     let vecs = State::new().equal(x.clone(), r(vec![1, 2, 3]));
     // .constrain(&mut numbers, a.val().member_of(x.val()));
 
     let mut domain = Domain::new();
     domain.constrain2(a.clone(), x.clone(), |a, x| match (a, x) {
-        (Res(a), Res(x)) => Ok(x.contains(&a)),
+        (Res(a), Res(x)) => {
+            // ugh... I think this is a bad sign for my use of Rc<T>
+            Ok((&x).iter().find(|i| **i == *a).is_some())
+        }
         vars => Err(todo!("need to pull out the actual lvars?")),
     });
     // proves that we can reverse the constraint trait
-    domain.constrain2(x, a, |a, x| match (a, x) {
+    domain.constrain2(x.clone(), a.clone(), |a, x| match (a, x) {
         (Res(a), Res(x)) => Ok(a.contains(&x)),
         vars => Err(todo!("need to pull out the actual lvars?")),
     });
+
+    // proves that we can probably abstract these constraints into a tidy trait
+    domain.member_of(a.clone(), x.clone());
 
     // shows the pretty reasonable type error message we get for a type not in the domain
     // let w: Val<&'static str> = lvar().val();
@@ -220,4 +228,7 @@ fn main() {
     //     (Res(w)) => Ok(w == "wat"),
     //     vars => Err(todo!("need to pull out the actual lvars?")),
     // });
+
+    // this isn't going to work... what is the actual return type??!
+    // let query = domain.query(a).and(x);
 }
