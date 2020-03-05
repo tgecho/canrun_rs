@@ -28,28 +28,22 @@ impl<'a, D: Domain + 'a> State<'a, D> {
             Some(fork) => Box::new(fork(state).flat_map(|s| s.run())),
         }
     }
-}
 
-pub(crate) trait Resolve<T> {
-    fn resolve<'a>(&'a self, key: &'a Val<T>) -> &'a Val<T>;
-}
-
-impl<'s, T, D: DomainType<T>> Resolve<T> for State<'s, D> {
-    fn resolve<'a>(&'a self, key: &'a Val<T>) -> &'a Val<T> {
+    pub(crate) fn resolve<'r, T>(&'r self, key: &'r Val<T>) -> &'r Val<T>
+    where
+        D: DomainType<T>,
+    {
         match key {
             Val::Var(var) => self.domain.values_as_ref().get(var).unwrap_or(key),
             value => value,
         }
     }
-}
 
-pub(crate) trait Unify<'a, T>: Sized {
-    fn unify(self, a: Val<T>, b: Val<T>) -> Option<Self>;
-    fn watch(self, func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>) -> Option<Self>;
-}
-
-impl<'a, T: PartialEq + 'a, D: DomainType<T> + 'a> Unify<'a, T> for State<'a, D> {
-    fn unify(mut self, a: Val<T>, b: Val<T>) -> Option<Self> {
+    pub(crate) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
+    where
+        T: PartialEq,
+        D: DomainType<T>,
+    {
         let a = self.resolve(&a);
         let b = self.resolve(&b);
         match (a, b) {
@@ -72,7 +66,10 @@ impl<'a, T: PartialEq + 'a, D: DomainType<T> + 'a> Unify<'a, T> for State<'a, D>
         }
     }
 
-    fn watch(self, func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>) -> Option<Self> {
+    pub(crate) fn watch<T>(self, func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>) -> Option<Self>
+    where
+        D: DomainType<T>,
+    {
         match func(self) {
             WatchResult::Done(state) => state,
             WatchResult::Waiting(state, vars) => {
@@ -80,6 +77,15 @@ impl<'a, T: PartialEq + 'a, D: DomainType<T> + 'a> Unify<'a, T> for State<'a, D>
                 Some(state)
             }
         }
+    }
+
+    pub(crate) fn fork<T, F>(mut self, func: F) -> Option<Self>
+    where
+        D: DomainType<T>,
+        F: Fn(Self) -> StateIter<'a, Self> + 'a,
+    {
+        self.forks.push_back(Rc::new(func));
+        Some(self)
     }
 }
 
@@ -90,14 +96,3 @@ pub(crate) enum WatchResult<State> {
 }
 
 pub type StateIter<'s, State> = Box<dyn Iterator<Item = State> + 's>;
-
-pub(crate) trait Fork<'a, T>: Unify<'a, T> {
-    fn fork<F: Fn(Self) -> StateIter<'a, Self> + 'a>(self, func: F) -> Option<Self>;
-}
-
-impl<'a, T: PartialEq + 'a, D: DomainType<T> + 'a> Fork<'a, T> for State<'a, D> {
-    fn fork<F: Fn(Self) -> StateIter<'a, Self> + 'a>(mut self, func: F) -> Option<Self> {
-        self.forks.push_back(Rc::new(func));
-        Some(self)
-    }
-}
