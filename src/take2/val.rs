@@ -12,7 +12,7 @@ pub fn val<T>(t: T) -> Val<T> {
 }
 
 // I don't actually understand why derive(Clone) doesn't seem to work
-// without T: Clone but this does
+// without T: Clone but this seems to work
 impl<T> Clone for Val<T> {
     fn clone(&self) -> Self {
         match self {

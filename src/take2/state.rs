@@ -4,6 +4,7 @@ use crate::take2::val::{Val, Val::Var};
 use crate::util::multikeymultivaluemap::MKMVMap;
 use std::rc::Rc;
 
+#[derive(Clone)]
 pub(crate) struct State<'a, D: Domain> {
     domain: D,
     watches: MKMVMap<LVar, Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>>,
@@ -19,8 +20,13 @@ impl<'a, D: Domain + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn to_iter(self) -> StateIter<'a, Self> {
-        Box::new(std::iter::once(self))
+    pub(crate) fn run(&self) -> StateIter<'a, Self> {
+        let mut state = self.clone();
+        let fork = state.forks.pop_front();
+        match fork {
+            None => Box::new(std::iter::once(state)),
+            Some(fork) => Box::new(fork(state).flat_map(|s| s.run())),
+        }
     }
 }
 
