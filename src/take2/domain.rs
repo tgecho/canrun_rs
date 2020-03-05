@@ -1,5 +1,7 @@
-use super::goals::Goal;
 use super::val::Val;
+use crate::LVar;
+use im::HashMap;
+
 pub trait Domain {
     fn new() -> Self;
 }
@@ -9,25 +11,20 @@ pub trait DomainType<T>: Domain {
     fn values_as_mut(&mut self) -> &mut HashMap<LVar, Val<T>>;
 }
 
-use crate::LVar;
-use im::HashMap;
-
-// #[derive(Clone)]
-pub struct Just<'a, T> {
+#[derive(Clone)]
+pub struct Just<T> {
     values: HashMap<LVar, Val<T>>,
-    goals: Vec<Box<dyn Goal<'a, T> + 'a>>,
 }
 
-impl<T> Domain for Just<T> {
+impl<'a, T> Domain for Just<T> {
     fn new() -> Self {
         Just {
             values: HashMap::new(),
-            goals: Vec::new(),
         }
     }
 }
 
-impl<T> DomainType<T> for Just<T> {
+impl<'a, T> DomainType<T> for Just<T> {
     fn values_as_ref(&self) -> &HashMap<LVar, Val<T>> {
         &self.values
     }

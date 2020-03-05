@@ -7,7 +7,7 @@ pub enum Val<T: ?Sized> {
     Resolved(Rc<T>),
 }
 
-pub fn r<T>(t: T) -> Val<T> {
+pub fn val<T>(t: T) -> Val<T> {
     Val::Resolved(Rc::new(t))
 }
 

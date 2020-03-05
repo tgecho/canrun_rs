@@ -3,7 +3,7 @@ use std::fmt;
 use std::hash::Hash;
 
 #[derive(Clone, Debug)]
-pub(crate) struct MKMVMap<K: Eq + Hash + Clone + fmt::Debug, V: Clone + fmt::Debug> {
+pub(crate) struct MKMVMap<K: Eq + Hash + Clone + fmt::Debug, V: Clone> {
     current_id: usize,
     keys: HashMap<K, HashSet<usize>>,
     values: HashMap<usize, Value<K, V>>,
@@ -32,7 +32,7 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone + PartialEq + fmt::Debug> Parti
     }
 }
 
-impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone + fmt::Debug> MKMVMap<K, V> {
+impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
     pub(crate) fn new() -> MKMVMap<K, V> {
         MKMVMap {
             current_id: 0,
@@ -91,9 +91,9 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone + fmt::Debug> MKMVMap<K, V> {
     }
 }
 
-impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone + fmt::Debug> fmt::Debug for Value<K, V> {
+impl<K: Eq + Hash + Clone + fmt::Debug, V> fmt::Debug for Value<K, V> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Value {:?} {:?} {:?}", self.id, self.keys, self.value)
+        write!(f, "Value {:?} {:?}", self.id, self.keys)
     }
 }
 
