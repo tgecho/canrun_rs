@@ -39,7 +39,7 @@ impl<'a, D: Domain + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
+    pub(crate) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Result<Self, Self>
     where
         T: PartialEq,
         D: DomainType<T>,
@@ -47,9 +47,9 @@ impl<'a, D: Domain + 'a> State<'a, D> {
         let a = self.resolve(&a);
         let b = self.resolve(&b);
         match (a, b) {
-            (a, b) if a == b => Some(self),
+            (a, b) if a == b => Ok(self),
             (Var(var), val) | (val, Var(var)) => {
-                let key = var.clone();
+                let key = *var;
                 let value = val.clone();
 
                 // TODO: Add occurs check?
@@ -62,11 +62,14 @@ impl<'a, D: Domain + 'a> State<'a, D> {
                 self.watches = watches;
                 (extracted.into_iter()).try_fold(self, |state, func| state.watch(func))
             }
-            _ => None,
+            _ => Err(self),
         }
     }
 
-    pub(crate) fn watch<T>(self, func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>) -> Option<Self>
+    pub(crate) fn watch<T>(
+        self,
+        func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>,
+    ) -> Result<Self, Self>
     where
         D: DomainType<T>,
     {
@@ -74,24 +77,24 @@ impl<'a, D: Domain + 'a> State<'a, D> {
             WatchResult::Done(state) => state,
             WatchResult::Waiting(state, vars) => {
                 state.watches.add(vars, func);
-                Some(state)
+                Ok(state)
             }
         }
     }
 
-    pub(crate) fn fork<T, F>(mut self, func: F) -> Option<Self>
+    pub(crate) fn fork<T, F>(mut self, func: F) -> Result<Self, Self>
     where
         D: DomainType<T>,
         F: Fn(Self) -> StateIter<'a, Self> + 'a,
     {
         self.forks.push_back(Rc::new(func));
-        Some(self)
+        Ok(self)
     }
 }
 
 // TODO: Naming?
 pub(crate) enum WatchResult<State> {
-    Done(Option<State>),
+    Done(Result<State, State>),
     Waiting(State, Vec<LVar>), // TODO: does this need to be by T row?
 }
 

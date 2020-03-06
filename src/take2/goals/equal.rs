@@ -4,12 +4,12 @@ mod tests {
     use crate::take2::state::{State, StateIter};
     use crate::take2::val::val;
 
-    fn run<'a, D: Domain + 'a, F: Fn(State<D>) -> Option<State<D>>>(
+    fn run<'a, D: Domain + 'a, F: Fn(State<D>) -> Result<State<D>, State<D>>>(
         func: F,
     ) -> StateIter<'a, State<'a, D>> {
         match func(State::new()) {
-            None => Box::new(std::iter::empty()),
-            Some(state) => state.run(),
+            Err(_) => Box::new(std::iter::empty()),
+            Ok(state) => state.run(),
         }
     }
 
