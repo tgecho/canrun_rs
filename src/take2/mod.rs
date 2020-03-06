@@ -1,4 +1,2 @@
-mod domain;
+mod core;
 mod goals;
-mod state;
-mod val;

@@ -1,18 +1,34 @@
+use super::domain::{Domain, DomainType};
+use super::val::{Val, Val::Var};
 use crate::can::lvar::LVar;
-use crate::take2::domain::{Domain, DomainType};
-use crate::take2::val::{Val, Val::Var};
 use crate::util::multikeymultivaluemap::MKMVMap;
 use std::rc::Rc;
 
+pub type StateIter<'s, State> = Box<dyn Iterator<Item = State> + 's>;
+
 #[derive(Clone)]
-pub(crate) struct State<'a, D: Domain> {
+pub struct State<'a, D: Domain> {
     domain: D,
     watches: MKMVMap<LVar, Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>>,
     forks: im::Vector<Rc<dyn Fn(Self) -> StateIter<'a, Self> + 'a>>,
 }
 
+pub(crate) enum WatchResult<State> {
+    Done(Result<State, State>),
+    Waiting(State, Vec<LVar>), // TODO: does this need to be by T row?
+}
+
+pub fn run<'a, D: Domain + 'a, F: Fn(State<D>) -> Result<State<D>, State<D>>>(
+    func: F,
+) -> StateIter<'a, State<'a, D>> {
+    match func(State::new()) {
+        Err(_) => Box::new(std::iter::empty()),
+        Ok(state) => state.iter(),
+    }
+}
+
 impl<'a, D: Domain + 'a> State<'a, D> {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         State {
             domain: D::new(),
             watches: MKMVMap::new(),
@@ -20,12 +36,19 @@ impl<'a, D: Domain + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn run(&self) -> StateIter<'a, Self> {
+    pub fn apply<F>(self, func: F) -> Result<Self, Self>
+    where
+        F: Fn(Self) -> Result<Self, Self>,
+    {
+        func(self)
+    }
+
+    pub(crate) fn iter(&self) -> StateIter<'a, Self> {
         let mut state = self.clone();
         let fork = state.forks.pop_front();
         match fork {
             None => Box::new(std::iter::once(state)),
-            Some(fork) => Box::new(fork(state).flat_map(|s| s.run())),
+            Some(fork) => Box::new(fork(state).flat_map(|s| s.iter())),
         }
     }
 
@@ -91,11 +114,3 @@ impl<'a, D: Domain + 'a> State<'a, D> {
         Ok(self)
     }
 }
-
-// TODO: Naming?
-pub(crate) enum WatchResult<State> {
-    Done(Result<State, State>),
-    Waiting(State, Vec<LVar>), // TODO: does this need to be by T row?
-}
-
-pub type StateIter<'s, State> = Box<dyn Iterator<Item = State> + 's>;
