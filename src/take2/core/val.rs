@@ -11,6 +11,10 @@ pub fn val<T>(t: T) -> Val<T> {
     Val::Resolved(Rc::new(t))
 }
 
+pub fn var<T>() -> Val<T> {
+    Val::Var(LVar::new())
+}
+
 // I don't actually understand why derive(Clone) doesn't seem to work
 // without T: Clone but this seems to work
 impl<T> Clone for Val<T> {
