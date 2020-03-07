@@ -1,4 +1,4 @@
-use super::super::domain::{Domain, DomainType, Just};
+use super::super::domain::{DomainType, Just};
 use super::super::goal::Goal;
 use super::super::state::{State, WatchResult};
 use super::super::val::{val, var, Val};
