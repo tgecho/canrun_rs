@@ -1,6 +1,8 @@
-use super::super::domain::{DomainType, Just};
+use super::super::domain::{Domain, DomainType, Just};
+use super::super::goal::Goal;
 use super::super::state::{State, WatchResult};
 use super::super::val::{val, var, Val};
+use super::utils;
 use std::rc::Rc;
 
 fn assert<'a, T, D, F>(
@@ -19,41 +21,29 @@ where
 }
 
 #[test]
-fn basic_watch_after_succeeds() {
-    let s: State<Just<i32>> = State::new();
-    let s = s.apply(|s| {
-        let x = var();
-        s.unify(val(2), x.clone())?.watch(assert(x, |x| x > &1))
-    });
-    assert!(s.is_ok());
+fn basic_watch_succeeds() {
+    let x = var();
+    let goals = vec![
+        Goal::thunk(|s| s.unify(val(2), x.clone())),
+        Goal::thunk(|s| s.watch(assert(x.clone(), |x| x > &1))),
+    ];
+    for goals in utils::all_permutations(goals) {
+        let s: State<Just<i32>> = State::new();
+        let result = Goal::All(goals).apply(s);
+        assert!(result.is_ok());
+    }
 }
 
 #[test]
-fn basic_watch_after_fails() {
-    let s: State<Just<i32>> = State::new();
-    let s = s.apply(|s| {
-        let x = var();
-        s.unify(val(2), x.clone())?.watch(assert(x, |x| x < &1))
-    });
-    assert!(s.is_err());
-}
-
-#[test]
-fn basic_watch_before_succeeds() {
-    let s: State<Just<i32>> = State::new();
-    let s = s.apply(|s| {
-        let x = var();
-        s.watch(assert(x.clone(), |x| x > &1))?.unify(val(2), x)
-    });
-    assert!(s.is_ok());
-}
-
-#[test]
-fn basic_watch_before_fails() {
-    let s: State<Just<i32>> = State::new();
-    let s = s.apply(|s| {
-        let x = var();
-        s.watch(assert(x.clone(), |x| x < &1))?.unify(val(2), x)
-    });
-    assert!(s.is_err());
+fn basic_watch_fails() {
+    let x = var();
+    let goals = vec![
+        Goal::thunk(|s| s.unify(val(2), x.clone())),
+        Goal::thunk(|s| s.watch(assert(x.clone(), |x| x > &2))),
+    ];
+    for goals in utils::all_permutations(goals) {
+        let s: State<Just<i32>> = State::new();
+        let result = Goal::All(goals).apply(s);
+        assert!(result.is_err());
+    }
 }
