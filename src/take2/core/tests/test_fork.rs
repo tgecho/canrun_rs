@@ -1,39 +1,47 @@
 use super::super::domain::{Domain, Just};
 use super::super::state::{State, StateIter};
-use super::super::val::{val, var, Val};
-use std::iter::repeat;
+use super::super::val::val;
 use std::rc::Rc;
 
-fn any<'a, D>(
-    funcs: Vec<Rc<dyn Fn(State<'a, D>) -> Result<State<'a, D>, State<'a, D>>>>,
-) -> Rc<dyn Fn(State<'a, D>) -> StateIter<'a, State<'a, D>> + 'a>
+fn either<'a, D, A, B>(a: A, b: B) -> Rc<dyn Fn(State<'a, D>) -> StateIter<'a, State<'a, D>> + 'a>
 where
     D: Domain + 'a,
+    A: Fn(State<'a, D>) -> Result<State<'a, D>, State<'a, D>> + 'a,
+    B: Fn(State<'a, D>) -> Result<State<'a, D>, State<'a, D>> + 'a,
 {
-    Rc::new(move |s: State<D>| {
-        Box::new(
-            funcs
-                .clone()
-                .into_iter()
-                .zip(repeat(s))
-                .filter_map(|(f, s)| f(s).ok()),
-        )
+    Rc::new(move |s| {
+        let a = a(s.clone()).into_iter();
+        let b = b(s).into_iter();
+        Box::new(a.chain(b))
     })
 }
 
 #[test]
-fn basic_fork() {
-    let s: State<Just<i32>> = State::new();
-    let s = s.fork(Rc::new(|s| Box::new(s.unify(val(2), val(2)).into_iter())));
-    assert_eq!(1, s.unwrap().iter().count());
+fn basic_fork_first_success() {
+    let state: State<Just<i32>> = State::new();
+    let state = state.fork(either(
+        |s| s.unify(val(2), val(2)),
+        |s| s.unify(val(1), val(2)),
+    ));
+    assert_eq!(1, state.unwrap().iter().count());
 }
 
 #[test]
-fn basic_fork_either() {
-    let s: State<Just<i32>> = State::new();
-    let first = s.fork(any(vec![
-        Rc::new(|s: State<Just<i32>>| s.unify(val(2), val(2))),
-        Rc::new(|s: State<Just<i32>>| s.unify(val(1), val(2))),
-    ]));
-    assert_eq!(1, first.unwrap().iter().count());
+fn basic_fork_second_success() {
+    let state: State<Just<i32>> = State::new();
+    let state = state.fork(either(
+        |s| s.unify(val(1), val(2)),
+        |s| s.unify(val(2), val(2)),
+    ));
+    assert_eq!(1, state.unwrap().iter().count());
+}
+
+#[test]
+fn basic_fork_both_success() {
+    let state: State<Just<i32>> = State::new();
+    let state = state.fork(either(
+        |s| s.unify(val(1), val(1)),
+        |s| s.unify(val(2), val(2)),
+    ));
+    assert_eq!(2, state.unwrap().iter().count());
 }
