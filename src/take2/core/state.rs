@@ -13,6 +13,7 @@ pub struct State<'a, D: Domain> {
     forks: im::Vector<Rc<dyn Fn(Self) -> StateIter<'a, Self> + 'a>>,
 }
 
+#[derive(Debug)]
 pub(crate) enum WatchResult<State> {
     Done(Result<State, State>),
     Waiting(State, Vec<LVar>), // TODO: does this need to be by T row?
@@ -83,19 +84,19 @@ impl<'a, D: Domain + 'a> State<'a, D> {
                 // check watches matching newly assigned lvar
                 let (watches, extracted) = self.watches.extract(&key);
                 self.watches = watches;
-                (extracted.into_iter()).try_fold(self, |state, func| state.watch(func))
+                dbg!(extracted.len());
+                extracted
+                    .into_iter()
+                    .try_fold(self, |state, func| state.watch(func))
             }
             _ => Err(self),
         }
     }
 
-    pub(crate) fn watch<T>(
+    pub(crate) fn watch(
         self,
         func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>,
-    ) -> Result<Self, Self>
-    where
-        D: DomainType<T>,
-    {
+    ) -> Result<Self, Self> {
         match func(self) {
             WatchResult::Done(state) => state,
             WatchResult::Waiting(state, vars) => {
@@ -105,12 +106,18 @@ impl<'a, D: Domain + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn fork<T, F>(mut self, func: F) -> Result<Self, Self>
-    where
-        D: DomainType<T>,
-        F: Fn(Self) -> StateIter<'a, Self> + 'a,
-    {
-        self.forks.push_back(Rc::new(func));
+    pub(crate) fn fork(
+        mut self,
+        func: Rc<dyn Fn(Self) -> StateIter<'a, Self> + 'a>,
+    ) -> Result<Self, Self> {
+        self.forks.push_back(func);
         Ok(self)
+    }
+}
+
+use std::fmt;
+impl<'a, D: Domain> fmt::Debug for State<'a, D> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "State ??")
     }
 }

@@ -1,6 +1,13 @@
-use crate::take2::core::domain::Just;
-use crate::take2::core::state::State;
-use crate::take2::core::val::{val, var};
+use super::super::domain::Just;
+use super::super::state::{run, State};
+use super::super::val::{val, var};
+
+fn results<'a, F>(func: F) -> Vec<State<'a, Just<i32>>>
+where
+    F: Fn(State<Just<i32>>) -> Result<State<Just<i32>>, State<Just<i32>>>,
+{
+    run(func).collect()
+}
 
 #[test]
 fn basic_unifying_literals() {

@@ -7,6 +7,17 @@ pub enum Val<T: ?Sized> {
     Resolved(Rc<T>),
 }
 
+use Val::{Resolved, Var};
+
+impl<T> Val<T> {
+    pub(crate) fn resolved(&self) -> Result<&T, LVar> {
+        match self {
+            Resolved(x) => Ok(&*x),
+            Var(x) => Err(*x),
+        }
+    }
+}
+
 pub fn val<T>(t: T) -> Val<T> {
     Val::Resolved(Rc::new(t))
 }
