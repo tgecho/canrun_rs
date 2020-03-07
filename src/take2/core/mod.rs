@@ -6,4 +6,5 @@ pub mod val;
 mod tests {
     mod test_fork;
     mod test_unify;
+    mod test_watch;
 }

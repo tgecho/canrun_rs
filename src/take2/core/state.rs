@@ -82,12 +82,13 @@ impl<'a, D: Domain + 'a> State<'a, D> {
                 self.domain.values_as_mut().insert(key, value);
 
                 // check watches matching newly assigned lvar
-                let (watches, extracted) = self.watches.extract(&key);
-                self.watches = watches;
-                dbg!(extracted.len());
-                extracted
-                    .into_iter()
-                    .try_fold(self, |state, func| state.watch(func))
+                if let Some(watches) = self.watches.extract(&key) {
+                    watches
+                        .into_iter()
+                        .try_fold(self, |state, func| state.watch(func))
+                } else {
+                    Ok(self)
+                }
             }
             _ => Err(self),
         }
@@ -99,7 +100,7 @@ impl<'a, D: Domain + 'a> State<'a, D> {
     ) -> Result<Self, Self> {
         match func(self) {
             WatchResult::Done(state) => state,
-            WatchResult::Waiting(state, vars) => {
+            WatchResult::Waiting(mut state, vars) => {
                 state.watches.add(vars, func);
                 Ok(state)
             }
