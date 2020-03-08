@@ -2,16 +2,16 @@ use super::domain::{Domain, DomainType};
 use super::state::IterResolved;
 use super::val::Val;
 
-pub trait StateQuery<'a, D: Domain> {
+pub trait StateQuery<'a, D: Domain + 'a> {
     fn query<Q: QueryState<'a, D>>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>;
 }
-impl<'a, D: Domain, S: IterResolved<'a, D>> StateQuery<'a, D> for S {
+impl<'a, D: Domain + 'a, S: IterResolved<'a, D>> StateQuery<'a, D> for S {
     fn query<Q: QueryState<'a, D>>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a> {
         query.query(self)
     }
 }
 
-pub trait QueryState<'a, D: Domain> {
+pub trait QueryState<'a, D: Domain + 'a> {
     type Result;
     fn query<S: IterResolved<'a, D>>(self, state: S)
         -> Box<dyn Iterator<Item = Self::Result> + 'a>;

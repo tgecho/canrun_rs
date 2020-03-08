@@ -1,12 +1,13 @@
 use super::domain::Domain;
 use super::state::{State, WatchResult};
+use std::fmt;
 use std::iter::repeat;
 use std::rc::Rc;
 
 #[derive(Clone)]
-pub struct Thunk<'a, D: Domain>(Rc<dyn Fn(State<'a, D>) -> Option<State<'a, D>> + 'a>);
+pub struct Thunk<'a, D: Domain + 'a>(Rc<dyn Fn(State<'a, D>) -> Option<State<'a, D>> + 'a>);
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Goal<'a, D: Domain> {
     Both(Box<Goal<'a, D>>, Box<Goal<'a, D>>),
     All(Vec<Goal<'a, D>>),
@@ -40,5 +41,11 @@ impl<'a, D: Domain + 'a> Goal<'a, D> {
 
     pub(crate) fn thunk<F: Fn(State<'a, D>) -> Option<State<'a, D>> + 'a>(f: F) -> Goal<'a, D> {
         Goal::Thunk(Thunk(Rc::new(f)))
+    }
+}
+
+impl<'a, D: Domain> fmt::Debug for Thunk<'a, D> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Thunk ??")
     }
 }

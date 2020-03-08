@@ -23,27 +23,19 @@ where
 #[test]
 fn basic_watch_succeeds() {
     let x = var();
-    let goals = vec![
+    let goals: Vec<Goal<Just<i32>>> = vec![
         Goal::thunk(|s| s.unify(val(2), x.clone())),
         Goal::thunk(|s| s.watch(assert(x.clone(), |x| x > &1))),
     ];
-    for goals in utils::all_permutations(goals) {
-        let s: State<Just<i32>> = State::new();
-        let result = Goal::All(goals).apply(s);
-        assert!(result.is_some());
-    }
+    utils::all_permutations_resolve_to(goals, &x, vec![2]);
 }
 
 #[test]
 fn basic_watch_fails() {
     let x = var();
-    let goals = vec![
+    let goals: Vec<Goal<Just<i32>>> = vec![
         Goal::thunk(|s| s.unify(val(2), x.clone())),
         Goal::thunk(|s| s.watch(assert(x.clone(), |x| x > &2))),
     ];
-    for goals in utils::all_permutations(goals) {
-        let s: State<Just<i32>> = State::new();
-        let result = Goal::All(goals).apply(s);
-        assert!(result.is_none());
-    }
+    utils::all_permutations_resolve_to(goals, &x, vec![]);
 }
