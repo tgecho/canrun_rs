@@ -15,7 +15,7 @@ where
     F: Fn(&T) -> bool + 'a,
 {
     Rc::new(move |s| match s.resolve(&val).resolved() {
-        Ok(x) => WatchResult::Done(if func(x) { Ok(s) } else { Err(s) }),
+        Ok(x) => WatchResult::Done(if func(x) { Some(s) } else { None }),
         Err(x) => WatchResult::Waiting(s, vec![x]),
     })
 }
@@ -30,7 +30,7 @@ fn basic_watch_succeeds() {
     for goals in utils::all_permutations(goals) {
         let s: State<Just<i32>> = State::new();
         let result = Goal::All(goals).apply(s);
-        assert!(result.is_ok());
+        assert!(result.is_some());
     }
 }
 
@@ -44,6 +44,6 @@ fn basic_watch_fails() {
     for goals in utils::all_permutations(goals) {
         let s: State<Just<i32>> = State::new();
         let result = Goal::All(goals).apply(s);
-        assert!(result.is_err());
+        assert!(result.is_none());
     }
 }

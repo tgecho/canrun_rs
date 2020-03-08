@@ -65,7 +65,7 @@ impl<'a, D: Domain + 'a> IterResolved<'a, D> for State<'a, D> {
         }))
     }
 }
-impl<'a, D: Domain + 'a> IterResolved<'a, D> for Result<State<'a, D>, State<'a, D>> {
+impl<'a, D: Domain + 'a> IterResolved<'a, D> for Option<State<'a, D>> {
     fn resolved_iter(self) -> ResolvedIter<'a, D> {
         Box::new(self.into_iter().flat_map(|s| s.resolved_iter()))
     }
@@ -78,7 +78,7 @@ impl<'a, D: Domain + 'a> IterResolved<'a, D> for Vec<ResolvedState<'a, D>> {
 
 #[derive(Debug)]
 pub(crate) enum WatchResult<State> {
-    Done(Result<State, State>),
+    Done(Option<State>),
     Waiting(State, Vec<LVar>),
 }
 
@@ -100,9 +100,9 @@ impl<'a, D: Domain + 'a> State<'a, D> {
         }
     }
 
-    pub fn apply<F>(self, func: F) -> Result<Self, Self>
+    pub fn apply<F>(self, func: F) -> Option<Self>
     where
-        F: Fn(Self) -> Result<Self, Self>,
+        F: Fn(Self) -> Option<Self>,
     {
         func(self)
     }
@@ -125,7 +125,7 @@ impl<'a, D: Domain + 'a> State<'a, D> {
         }
     }
 
-    pub(super) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Result<Self, Self>
+    pub(super) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
     where
         T: PartialEq,
         D: DomainType<T>,
@@ -133,7 +133,7 @@ impl<'a, D: Domain + 'a> State<'a, D> {
         let a = self.resolve(&a);
         let b = self.resolve(&b);
         match (a, b) {
-            (a, b) if a == b => Ok(self),
+            (a, b) if a == b => Some(self),
             (Var(var), val) | (val, Var(var)) => {
                 let key = *var;
                 let value = val.clone();
@@ -149,32 +149,26 @@ impl<'a, D: Domain + 'a> State<'a, D> {
                         .into_iter()
                         .try_fold(self, |state, func| state.watch(func))
                 } else {
-                    Ok(self)
+                    Some(self)
                 }
             }
-            _ => Err(self),
+            _ => None,
         }
     }
 
-    pub(super) fn watch(
-        self,
-        func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>,
-    ) -> Result<Self, Self> {
+    pub(super) fn watch(self, func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>) -> Option<Self> {
         match func(self) {
             WatchResult::Done(state) => state,
             WatchResult::Waiting(mut state, vars) => {
                 state.watches.add(vars, func);
-                Ok(state)
+                Some(state)
             }
         }
     }
 
-    pub(super) fn fork(
-        mut self,
-        func: Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>,
-    ) -> Result<Self, Self> {
+    pub(super) fn fork(mut self, func: Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>) -> Option<Self> {
         self.forks.push_back(func);
-        Ok(self)
+        Some(self)
     }
 }
 

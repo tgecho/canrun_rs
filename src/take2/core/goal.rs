@@ -4,9 +4,7 @@ use std::iter::repeat;
 use std::rc::Rc;
 
 #[derive(Clone)]
-pub struct Thunk<'a, D: Domain>(
-    Rc<dyn Fn(State<'a, D>) -> Result<State<'a, D>, State<'a, D>> + 'a>,
-);
+pub struct Thunk<'a, D: Domain>(Rc<dyn Fn(State<'a, D>) -> Option<State<'a, D>> + 'a>);
 
 #[derive(Clone)]
 pub enum Goal<'a, D: Domain> {
@@ -18,7 +16,7 @@ pub enum Goal<'a, D: Domain> {
 }
 
 impl<'a, D: Domain + 'a> Goal<'a, D> {
-    pub(crate) fn apply(self, state: State<'a, D>) -> Result<State<'a, D>, State<'a, D>> {
+    pub(crate) fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
         match self {
             Goal::Both(a, b) => a.apply(state).and_then(|s| b.apply(s)),
             Goal::All(goals) => goals.into_iter().try_fold(state, |s, g| g.apply(s)),
@@ -40,9 +38,7 @@ impl<'a, D: Domain + 'a> Goal<'a, D> {
         }
     }
 
-    pub(crate) fn thunk<F: Fn(State<'a, D>) -> Result<State<'a, D>, State<'a, D>> + 'a>(
-        f: F,
-    ) -> Goal<'a, D> {
+    pub(crate) fn thunk<F: Fn(State<'a, D>) -> Option<State<'a, D>> + 'a>(f: F) -> Goal<'a, D> {
         Goal::Thunk(Thunk(Rc::new(f)))
     }
 }
