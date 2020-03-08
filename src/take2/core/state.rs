@@ -6,7 +6,7 @@ use std::iter::once;
 use std::rc::Rc;
 
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
-pub type ResolvedStateIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<'s, D>> + 's>;
+pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<'s, D>> + 's>;
 type WatchFns<'s, D> = MKMVMap<LVar, Rc<dyn Fn(State<'s, D>) -> WatchResult<State<'s, D>> + 's>>;
 
 #[derive(Clone)]
@@ -55,10 +55,10 @@ impl<'a, D: Domain> ResolvedState<'a, D> {
 }
 
 pub trait IterResolved<'a, D: Domain> {
-    fn iter_resolved(self) -> ResolvedStateIter<'a, D>;
+    fn resolved_iter(self) -> ResolvedIter<'a, D>;
 }
 impl<'a, D: Domain + 'a> IterResolved<'a, D> for State<'a, D> {
-    fn iter_resolved(self) -> ResolvedStateIter<'a, D> {
+    fn resolved_iter(self) -> ResolvedIter<'a, D> {
         Box::new(self.iter_forks().map(|s| ResolvedState {
             domain: s.domain,
             watches: s.watches,
@@ -66,8 +66,13 @@ impl<'a, D: Domain + 'a> IterResolved<'a, D> for State<'a, D> {
     }
 }
 impl<'a, D: Domain + 'a> IterResolved<'a, D> for Result<State<'a, D>, State<'a, D>> {
-    fn iter_resolved(self) -> ResolvedStateIter<'a, D> {
-        Box::new(self.into_iter().flat_map(|s| s.iter_resolved()))
+    fn resolved_iter(self) -> ResolvedIter<'a, D> {
+        Box::new(self.into_iter().flat_map(|s| s.resolved_iter()))
+    }
+}
+impl<'a, D: Domain + 'a> IterResolved<'a, D> for Vec<ResolvedState<'a, D>> {
+    fn resolved_iter(self) -> ResolvedIter<'a, D> {
+        Box::new(self.into_iter())
     }
 }
 
@@ -79,10 +84,10 @@ pub(crate) enum WatchResult<State> {
 
 // pub fn run<'a, D: Domain + 'a, F: Fn(State<D>) -> Result<State<D>, State<D>>>(
 //     func: F,
-// ) -> ResolvedStateIter<'a, D> {
+// ) -> ResolvedIter<'a, D> {
 //     match func(State::new()) {
 //         Err(_) => Box::new(std::iter::empty()),
-//         Ok(state) => state.iter_resolved(),
+//         Ok(state) => state.resolved_iter(),
 //     }
 // }
 

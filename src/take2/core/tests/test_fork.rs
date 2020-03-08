@@ -23,7 +23,7 @@ fn basic_fork_first_success() {
         |s| s.unify(val(2), val(2)),
         |s| s.unify(val(1), val(2)),
     ));
-    let results: Vec<_> = state.iter_resolved().collect();
+    let results: Vec<_> = state.resolved_iter().collect();
     assert_eq!(1, results.len());
 }
 
@@ -34,7 +34,7 @@ fn basic_fork_second_success() {
         |s| s.unify(val(1), val(2)),
         |s| s.unify(val(2), val(2)),
     ));
-    assert_eq!(1, state.iter_resolved().count());
+    assert_eq!(1, state.resolved_iter().count());
 }
 
 #[test]
@@ -44,5 +44,5 @@ fn basic_fork_both_success() {
         |s| s.unify(val(1), val(1)),
         |s| s.unify(val(2), val(2)),
     ));
-    assert_eq!(2, state.iter_resolved().count());
+    assert_eq!(2, state.resolved_iter().count());
 }

@@ -1,49 +1,60 @@
 use super::domain::{Domain, DomainType};
-use super::state::{IterResolved, ResolvedState};
+use super::state::IterResolved;
 use super::val::Val;
 
-pub trait QueryState<'a, D: Domain> {
-    type ResultType;
-    fn resolve_in<S: IterResolved<'a, D>>(
-        &'a self,
-        state: S,
-    ) -> Box<dyn Iterator<Item = Self::ResultType> + 'a>;
+pub trait QueryState<'a, D: Domain, R> {
+    type Query;
+    type Result;
+    fn query(self, query: Self::Query) -> Box<dyn Iterator<Item = Self::Result> + 'a>;
 }
 
-fn resolve_with<'a, D, S, F, R>(state: S, func: F) -> Box<dyn Iterator<Item = R> + 'a>
+impl<'a, D, S, T> QueryState<'a, D, (T,)> for S
 where
-    S: IterResolved<'a, D>,
-    D: Domain + 'a,
-    F: Fn(ResolvedState<'a, D>) -> Option<R> + 'a,
-{
-    Box::new(state.iter_resolved().filter_map(func))
-}
-
-impl<'a, D, T> QueryState<'a, D> for Val<T>
-where
-    T: Clone + 'a,
     D: Domain + DomainType<T> + 'a,
+    S: IterResolved<'a, D> + 'a,
+    T: Clone + 'a,
 {
-    type ResultType = T;
-    fn resolve_in<S: IterResolved<'a, D>>(
-        &'a self,
-        state: S,
-    ) -> Box<dyn Iterator<Item = Self::ResultType> + 'a> {
-        resolve_with(state, move |r| r.get(self))
+    type Query = (Val<T>,);
+    type Result = (T,);
+    fn query(self, query: Self::Query) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
+        Box::new(
+            self.resolved_iter()
+                .filter_map(move |r| Some((r.get(&query.0)?,))),
+        )
     }
 }
 
-impl<'a, D, T1, T2> QueryState<'a, D> for (Val<T1>, Val<T2>)
+impl<'a, D, S, T1, T2> QueryState<'a, D, (T1, T2)> for S
 where
+    D: Domain + DomainType<T1> + DomainType<T2> + 'a,
+    S: IterResolved<'a, D> + 'a,
     T1: Clone + 'a,
     T2: Clone + 'a,
-    D: Domain + DomainType<T1> + DomainType<T2> + 'a,
 {
-    type ResultType = (T1, T2);
-    fn resolve_in<S: IterResolved<'a, D>>(
-        &'a self,
-        state: S,
-    ) -> Box<dyn Iterator<Item = Self::ResultType> + 'a> {
-        resolve_with(state, move |r| Some((r.get(&self.0)?, r.get(&self.1)?)))
+    type Query = (Val<T1>, Val<T2>);
+    type Result = (T1, T2);
+    fn query(self, query: Self::Query) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
+        Box::new(
+            self.resolved_iter()
+                .filter_map(move |r| Some((r.get(&query.0)?, r.get(&query.1)?))),
+        )
+    }
+}
+
+impl<'a, D, S, T1, T2, T3> QueryState<'a, D, (T1, T2, T3)> for S
+where
+    D: Domain + DomainType<T1> + DomainType<T2> + DomainType<T3> + 'a,
+    S: IterResolved<'a, D> + 'a,
+    T1: Clone + 'a,
+    T2: Clone + 'a,
+    T3: Clone + 'a,
+{
+    type Query = (Val<T1>, Val<T2>, Val<T3>);
+    type Result = (T1, T2, T3);
+    fn query(self, query: Self::Query) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
+        Box::new(
+            self.resolved_iter()
+                .filter_map(move |r| Some((r.get(&query.0)?, r.get(&query.1)?, r.get(&query.2)?))),
+        )
     }
 }
