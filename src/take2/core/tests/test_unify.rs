@@ -1,5 +1,6 @@
 use super::super::domain::Just;
-use super::super::state::{IterResolved, ResolvedState, State};
+use super::super::query::QueryState;
+use super::super::state::{IterResolved, State};
 use super::super::val::{val, var};
 
 #[test]
@@ -21,7 +22,7 @@ fn unifying_var_success() {
     let s: State<Just<i32>> = State::new();
     let x = &var();
     let s = s.apply(|s| s.unify(x.clone(), val(1))?.unify(val(1), x.clone()));
-    let results: Vec<i32> = s.iter_resolved().filter_map(|r| r.get(x)).collect();
+    let results: Vec<_> = x.resolve_in(s).collect();
     assert_eq!(results, vec![1]);
 }
 
