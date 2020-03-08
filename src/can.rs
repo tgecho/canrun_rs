@@ -1,7 +1,7 @@
 // pub mod hoc;
 pub mod lvar;
-pub mod pair;
-pub mod vec;
+// pub mod pair;
+// pub mod vec;
 
 // use crate::can::hoc::Hoc;
 use lvar::LVar;

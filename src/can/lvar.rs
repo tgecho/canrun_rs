@@ -1,4 +1,4 @@
-use crate::{Can, CanT};
+// use crate::{Can, CanT};
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -38,9 +38,9 @@ impl LVar {
         }
     }
 
-    pub fn can<T: CanT>(&self) -> Can<T> {
-        Can::Var(*self)
-    }
+    // pub fn can<T: CanT>(&self) -> Can<T> {
+    //     Can::Var(*self)
+    // }
 }
 
 impl Hash for LVar {
@@ -58,30 +58,30 @@ impl fmt::Debug for LVar {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::{var, Can, LVar};
+// #[cfg(test)]
+// mod tests {
+//     use crate::{var, Can, LVar};
 
-    #[test]
-    fn lvar_equality() {
-        let x = var();
-        assert_eq!(x, x);
-        assert_ne!(x, var());
-    }
-    #[test]
-    fn lvar_labels() {
-        let a = LVar::labeled("a");
-        let av: Can<()> = Can::Var(a);
-        // Matching labels do not make them equal
-        assert_ne!(av, Can::Var(LVar::labeled("a")));
-        // Mismatched labels do not negate matching ids
-        // (though you shouldn't do this)
-        assert_eq!(
-            av,
-            Can::Var(LVar {
-                id: a.id,
-                label: Some("b")
-            })
-        );
-    }
-}
+//     #[test]
+//     fn lvar_equality() {
+//         let x = var();
+//         assert_eq!(x, x);
+//         assert_ne!(x, var());
+//     }
+//     #[test]
+//     fn lvar_labels() {
+//         let a = LVar::labeled("a");
+//         let av: Can<()> = Can::Var(a);
+//         // Matching labels do not make them equal
+//         assert_ne!(av, Can::Var(LVar::labeled("a")));
+//         // Mismatched labels do not negate matching ids
+//         // (though you shouldn't do this)
+//         assert_eq!(
+//             av,
+//             Can::Var(LVar {
+//                 id: a.id,
+//                 label: Some("b")
+//             })
+//         );
+//     }
+// }
