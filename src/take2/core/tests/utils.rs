@@ -9,7 +9,7 @@ pub(crate) fn all_permutations<'a, D>(
     goals: Vec<Goal<'a, D>>,
 ) -> impl Iterator<Item = Vec<Goal<'a, D>>> + 'a
 where
-    D: Domain + 'a,
+    D: Domain<'a> + 'a,
 {
     let goals_len = goals.len();
     goals.into_iter().permutations(goals_len)
@@ -17,7 +17,7 @@ where
 
 pub(crate) fn goals_resolve_to<'a, D, Q>(goals: &Vec<Goal<'a, D>>, query: Q) -> Vec<Q::Result>
 where
-    D: Domain + 'a,
+    D: Domain<'a> + 'a,
     Q: QueryState<'a, D>,
 {
     let goal = Goal::All(goals.clone());
@@ -30,7 +30,7 @@ pub(crate) fn all_permutations_resolve_to<'a, D, Q>(
     query: Q,
     expected: Vec<Q::Result>,
 ) where
-    D: Domain + Debug + 'a,
+    D: Domain<'a> + Debug + 'a,
     Q: QueryState<'a, D> + Clone,
     Q::Result: Eq + Debug,
 {

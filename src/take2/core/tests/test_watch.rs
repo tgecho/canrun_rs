@@ -11,7 +11,7 @@ fn assert<'a, T, D, F>(
 ) -> Rc<dyn Fn(State<'a, D>) -> WatchResult<State<'a, D>> + 'a>
 where
     T: 'a,
-    D: DomainType<T> + 'a,
+    D: DomainType<'a, T> + 'a,
     F: Fn(&T) -> bool + 'a,
 {
     Rc::new(move |s| match s.resolve(&val).resolved() {

@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 fn either<'a, D, A, B>(a: A, b: B) -> Rc<dyn Fn(State<'a, D>) -> StateIter<'a, D> + 'a>
 where
-    D: Domain + 'a,
+    D: Domain<'a> + 'a,
     A: Fn(State<'a, D>) -> Option<State<'a, D>> + 'a,
     B: Fn(State<'a, D>) -> Option<State<'a, D>> + 'a,
 {

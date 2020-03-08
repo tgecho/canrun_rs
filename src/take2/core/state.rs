@@ -10,22 +10,22 @@ pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<'s, D>> + '
 type WatchFns<'s, D> = MKMVMap<LVar, Rc<dyn Fn(State<'s, D>) -> WatchResult<State<'s, D>> + 's>>;
 
 #[derive(Clone)]
-pub struct State<'a, D: Domain> {
+pub struct State<'a, D: Domain<'a> + 'a> {
     domain: D,
     watches: WatchFns<'a, D>,
     forks: im::Vector<Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>>,
 }
 
 #[derive(Clone)]
-pub struct ResolvedState<'a, D: Domain> {
+pub struct ResolvedState<'a, D: Domain<'a> + 'a> {
     domain: D,
     watches: WatchFns<'a, D>,
 }
 
-impl<'a, D: Domain> ResolvedState<'a, D> {
+impl<'a, D: Domain<'a> + 'a> ResolvedState<'a, D> {
     pub fn get_rc<T>(&self, key: &Val<T>) -> Option<Rc<T>>
     where
-        D: DomainType<T>,
+        D: DomainType<'a, T>,
     {
         match key {
             Val::Var(var) => self
@@ -40,7 +40,7 @@ impl<'a, D: Domain> ResolvedState<'a, D> {
     pub fn get<T>(&self, key: &Val<T>) -> Option<T>
     where
         T: Clone,
-        D: DomainType<T>,
+        D: DomainType<'a, T>,
     {
         self.get_rc(key).map(|rc| (*rc).clone())
     }
@@ -54,10 +54,10 @@ impl<'a, D: Domain> ResolvedState<'a, D> {
     }
 }
 
-pub trait IterResolved<'a, D: Domain> {
+pub trait IterResolved<'a, D: Domain<'a> + 'a> {
     fn resolved_iter(self) -> ResolvedIter<'a, D>;
 }
-impl<'a, D: Domain + 'a> IterResolved<'a, D> for State<'a, D> {
+impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for State<'a, D> {
     fn resolved_iter(self) -> ResolvedIter<'a, D> {
         Box::new(self.iter_forks().map(|s| ResolvedState {
             domain: s.domain,
@@ -65,12 +65,12 @@ impl<'a, D: Domain + 'a> IterResolved<'a, D> for State<'a, D> {
         }))
     }
 }
-impl<'a, D: Domain + 'a> IterResolved<'a, D> for Option<State<'a, D>> {
+impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Option<State<'a, D>> {
     fn resolved_iter(self) -> ResolvedIter<'a, D> {
         Box::new(self.into_iter().flat_map(|s| s.resolved_iter()))
     }
 }
-impl<'a, D: Domain + 'a> IterResolved<'a, D> for Vec<ResolvedState<'a, D>> {
+impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Vec<ResolvedState<'a, D>> {
     fn resolved_iter(self) -> ResolvedIter<'a, D> {
         Box::new(self.into_iter())
     }
@@ -82,7 +82,7 @@ pub(crate) enum WatchResult<State> {
     Waiting(State, Vec<LVar>),
 }
 
-// pub fn run<'a, D: Domain + 'a, F: Fn(State<D>) -> Result<State<D>, State<D>>>(
+// pub fn run<'a, D: Domain<'a>, F: Fn(State<D>) -> Result<State<D>, State<D>>>(
 //     func: F,
 // ) -> ResolvedIter<'a, D> {
 //     match func(State::new()) {
@@ -91,7 +91,7 @@ pub(crate) enum WatchResult<State> {
 //     }
 // }
 
-impl<'a, D: Domain + 'a> State<'a, D> {
+impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     pub fn new() -> Self {
         State {
             domain: D::new(),
@@ -117,7 +117,7 @@ impl<'a, D: Domain + 'a> State<'a, D> {
 
     pub(super) fn resolve<'r, T>(&'r self, key: &'r Val<T>) -> &'r Val<T>
     where
-        D: DomainType<T>,
+        D: DomainType<'a, T>,
     {
         match key {
             Val::Var(var) => self.domain.values_as_ref().get(var).unwrap_or(key),
@@ -128,7 +128,7 @@ impl<'a, D: Domain + 'a> State<'a, D> {
     pub(super) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
     where
         T: PartialEq,
-        D: DomainType<T>,
+        D: DomainType<'a, T>,
     {
         let a = self.resolve(&a);
         let b = self.resolve(&b);
@@ -173,7 +173,7 @@ impl<'a, D: Domain + 'a> State<'a, D> {
 }
 
 use std::fmt;
-impl<'a, D: Domain> fmt::Debug for State<'a, D> {
+impl<'a, D: Domain<'a> + 'a> fmt::Debug for State<'a, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "State ??")
     }

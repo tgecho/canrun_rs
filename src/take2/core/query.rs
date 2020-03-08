@@ -2,16 +2,16 @@ use super::domain::{Domain, DomainType};
 use super::state::IterResolved;
 use super::val::Val;
 
-pub trait StateQuery<'a, D: Domain + 'a> {
+pub trait StateQuery<'a, D: Domain<'a> + 'a> {
     fn query<Q: QueryState<'a, D>>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>;
 }
-impl<'a, D: Domain + 'a, S: IterResolved<'a, D>> StateQuery<'a, D> for S {
+impl<'a, D: Domain<'a> + 'a, S: IterResolved<'a, D>> StateQuery<'a, D> for S {
     fn query<Q: QueryState<'a, D>>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a> {
         query.query(self)
     }
 }
 
-pub trait QueryState<'a, D: Domain + 'a> {
+pub trait QueryState<'a, D: Domain<'a> + 'a> {
     type Result;
     fn query<S: IterResolved<'a, D>>(self, state: S)
         -> Box<dyn Iterator<Item = Self::Result> + 'a>;
@@ -19,7 +19,7 @@ pub trait QueryState<'a, D: Domain + 'a> {
 
 impl<'a, D, T> QueryState<'a, D> for &'a Val<T>
 where
-    D: Domain + DomainType<T> + 'a,
+    D: Domain<'a> + DomainType<'a, T> + 'a,
     T: Clone + 'a,
 {
     type Result = T;
@@ -33,7 +33,7 @@ where
 
 impl<'a, D, T1, T2> QueryState<'a, D> for (Val<T1>, Val<T2>)
 where
-    D: Domain + DomainType<T1> + DomainType<T2> + 'a,
+    D: Domain<'a> + DomainType<'a, T1> + DomainType<'a, T2> + 'a,
     T1: Clone + 'a,
     T2: Clone + 'a,
 {
@@ -52,7 +52,7 @@ where
 
 impl<'a, D, T1, T2, T3> QueryState<'a, D> for (Val<T1>, Val<T2>, Val<T3>)
 where
-    D: Domain + DomainType<T1> + DomainType<T2> + DomainType<T3> + 'a,
+    D: Domain<'a> + DomainType<'a, T1> + DomainType<'a, T2> + DomainType<'a, T3> + 'a,
     T1: Clone + 'a,
     T2: Clone + 'a,
     T3: Clone + 'a,
