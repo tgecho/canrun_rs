@@ -1,4 +1,4 @@
-use crate::can::lvar::LVar;
+use super::lvar::LVar;
 use std::rc::Rc;
 
 #[derive(Debug)]

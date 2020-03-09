@@ -1,9 +1,9 @@
 use super::domain::{Domain, DomainType, Unified, UnifyIn};
-use super::val::{
+use super::lvar::LVar;
+use super::value::{
     Val,
     Val::{Resolved, Var},
 };
-use crate::can::lvar::LVar;
 use crate::util::multikeymultivaluemap::MKMVMap;
 use std::iter::once;
 use std::rc::Rc;

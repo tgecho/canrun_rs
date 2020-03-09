@@ -1,7 +1,7 @@
 use super::super::domain::Just;
 use super::super::query::{QueryState, StateQuery};
 use super::super::state::State;
-use super::super::val::{val, var};
+use super::super::value::{val, var};
 
 #[test]
 fn basic_unifying_literals() {

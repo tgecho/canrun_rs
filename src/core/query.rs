@@ -1,6 +1,6 @@
 use super::domain::{Domain, DomainType};
 use super::state::IterResolved;
-use super::val::Val;
+use super::value::Val;
 
 pub trait StateQuery<'a, D: Domain<'a> + 'a> {
     fn query<Q: QueryState<'a, D>>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>;

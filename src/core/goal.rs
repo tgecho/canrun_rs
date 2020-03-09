@@ -1,6 +1,6 @@
 use super::domain::{Domain, IntoDomainVal, UnifyIn};
 use super::state::{State, WatchResult};
-use super::val::Val;
+use super::value::Val;
 use std::fmt;
 use std::iter::repeat;
 use std::rc::Rc;

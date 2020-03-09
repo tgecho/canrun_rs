@@ -1,4 +1,4 @@
-pub mod can;
+// pub mod can;
 // pub mod constraint;
 // pub mod goal;
 // pub mod state;
@@ -6,7 +6,7 @@ pub(crate) mod util;
 
 mod core;
 
-pub use can::lvar::{var, LVar};
+// pub use can::lvar::{var, LVar};
 // pub use can::pair::pair;
 // pub use can::{val, Can, CanT};
 // pub use state::{ResolveResult, State, UnifyError, UnifyResult};
