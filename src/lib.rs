@@ -2,7 +2,7 @@
 // pub mod constraint;
 // pub mod goal;
 // pub mod state;
-pub(crate) mod util;
+// pub(crate) mod util;
 
 mod core;
 

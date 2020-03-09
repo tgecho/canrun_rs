@@ -1,10 +1,10 @@
 use super::domain::{Domain, DomainType, Unified, UnifyIn};
 use super::lvar::LVar;
+use super::util::multikeymultivaluemap::MKMVMap;
 use super::value::{
     Val,
     Val::{Resolved, Var},
 };
-use crate::util::multikeymultivaluemap::MKMVMap;
 use std::iter::once;
 use std::rc::Rc;
 

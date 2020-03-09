@@ -3,6 +3,7 @@ pub mod goal;
 pub mod lvar;
 pub mod query;
 pub mod state;
+mod util;
 pub mod value;
 
 #[cfg(test)]
