@@ -2,11 +2,10 @@ use super::super::domain::{Domain, IntoDomainVal};
 use super::super::state::State;
 use super::Goal;
 
-pub(super) fn run<'a, D: Domain<'a>>(
-    state: State<'a, D>,
-    a: D::Value,
-    b: D::Value,
-) -> Option<State<'a, D>> {
+pub(super) fn run<'a, D>(state: State<'a, D>, a: D::Value, b: D::Value) -> Option<State<'a, D>>
+where
+    D: Domain<'a>,
+{
     D::unify_domain_values(state, a, b)
 }
 

@@ -4,6 +4,7 @@ use std::fmt;
 use std::iter::repeat;
 use std::rc::Rc;
 
+pub mod both;
 pub mod unify;
 
 #[derive(Clone)]
@@ -23,7 +24,7 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     pub(crate) fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
         match self {
             Goal::Unify(a, b) => unify::run(state, a, b),
-            Goal::Both(a, b) => a.apply(state).and_then(|s| b.apply(s)),
+            Goal::Both(a, b) => both::run(state, *a, *b),
             Goal::All(goals) => goals.into_iter().try_fold(state, |s, g| g.apply(s)),
             Goal::Either(a, b) => state.fork(Rc::new(move |s| {
                 let a = a.clone().apply(s.clone()).into_iter();
