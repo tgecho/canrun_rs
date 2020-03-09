@@ -1,5 +1,5 @@
-use super::super::domain::Just;
 use super::super::state::State;
+use crate::domain::Just;
 use crate::query::{QueryState, StateQuery};
 use crate::value::{val, var};
 

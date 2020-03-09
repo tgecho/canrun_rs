@@ -1,6 +1,6 @@
 use super::Goal;
-use crate::core::domain::Domain;
 use crate::core::state::State;
+use crate::domain::Domain;
 use std::fmt;
 use std::rc::Rc;
 
@@ -36,8 +36,8 @@ impl<'a, D: Domain<'a>> fmt::Debug for Lazy<'a, D> {
 mod tests {
     use super::lazy;
     use crate::core::tests::util;
-    use crate::value::{val, var};
     use crate::goal::unify::unify;
+    use crate::value::{val, var};
 
     #[test]
     fn succeeds() {

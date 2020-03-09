@@ -1,5 +1,5 @@
-use crate::core::domain::{Domain, DomainType};
 use crate::core::state::IterResolved;
+use crate::domain::{Domain, DomainType};
 use crate::value::Val;
 
 pub trait StateQuery<'a, D: Domain<'a> + 'a> {

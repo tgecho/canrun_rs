@@ -1,5 +1,5 @@
-use super::super::domain::{Domain, Just};
 use super::super::state::{IterResolved, State, StateIter};
+use crate::domain::{Domain, Just};
 use crate::value::val;
 use std::rc::Rc;
 

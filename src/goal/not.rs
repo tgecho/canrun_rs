@@ -1,7 +1,7 @@
 use super::Goal;
-use crate::core::domain::Domain;
 use crate::core::state::IterResolved;
 use crate::core::state::State;
+use crate::domain::Domain;
 
 pub(crate) fn run<'a, D>(state: State<'a, D>, goal: Goal<'a, D>) -> Option<State<'a, D>>
 where

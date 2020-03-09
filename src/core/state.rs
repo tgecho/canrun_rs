@@ -1,5 +1,5 @@
-use super::domain::{Domain, DomainType, Unified, UnifyIn};
 use super::util::multikeymultivaluemap::MKMVMap;
+use crate::domain::{Domain, DomainType, Unified, UnifyIn};
 use crate::value::{
     LVar, Val,
     Val::{Resolved, Var},

@@ -1,6 +1,6 @@
-use super::super::domain::{DomainType, Just};
 use super::super::state::{State, WatchResult};
 use super::util;
+use crate::domain::{DomainType, Just};
 use crate::goal::custom::custom;
 use crate::goal::unify::unify;
 use crate::goal::Goal;

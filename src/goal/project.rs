@@ -1,7 +1,7 @@
 use super::Goal;
-use crate::core::domain::Domain;
 use crate::core::state::State;
 use crate::core::state::WatchResult;
+use crate::domain::Domain;
 use std::fmt;
 use std::rc::Rc;
 

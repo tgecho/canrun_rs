@@ -1,5 +1,5 @@
-use crate::core::domain::Domain;
 use crate::core::state::State;
+use crate::domain::Domain;
 
 pub mod all;
 pub mod any;

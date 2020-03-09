@@ -1,6 +1,6 @@
 use super::Goal;
-use crate::core::domain::Domain;
 use crate::core::state::State;
+use crate::domain::Domain;
 use std::fmt;
 use std::rc::Rc;
 
