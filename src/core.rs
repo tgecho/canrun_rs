@@ -1,6 +1,5 @@
 pub mod domain;
 pub mod lvar;
-pub mod query;
 pub mod state;
 mod util;
 pub mod value;

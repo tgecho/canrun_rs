@@ -1,7 +1,7 @@
 use super::super::domain::Domain;
-use super::super::query::{QueryState, StateQuery};
 use super::super::state::State;
 use crate::goal::Goal;
+use crate::query::{QueryState, StateQuery};
 use itertools::Itertools;
 use std::fmt::Debug;
 
