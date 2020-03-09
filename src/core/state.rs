@@ -80,7 +80,7 @@ impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Vec<ResolvedState<'a, D>> {
 }
 
 #[derive(Debug)]
-pub(crate) enum WatchResult<State> {
+pub enum WatchResult<State> {
     Done(Option<State>),
     Waiting(State, Vec<LVar>),
 }

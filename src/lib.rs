@@ -4,7 +4,7 @@
 // pub mod state;
 // pub(crate) mod util;
 
-mod core;
+pub mod core;
 
 // pub use can::lvar::{var, LVar};
 // pub use can::pair::pair;

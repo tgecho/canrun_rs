@@ -7,9 +7,9 @@ mod util;
 pub mod value;
 
 #[cfg(test)]
-mod tests {
-    mod test_fork;
-    mod test_unify;
-    mod test_watch;
-    pub(crate) mod util;
+pub(crate) mod tests {
+    pub mod test_fork;
+    pub mod test_unify;
+    pub mod test_watch;
+    pub mod util;
 }
