@@ -121,7 +121,7 @@ impl Domain {
 "Pending" vs "Resolved" state: We start with a Pending state and continue returning/updating as constraints are added.
 Crucially, any goals that cause the state to diverge may not be fully explored.
 
-In order to query for the current value of a variable, the state needs to be Resolved. Calling run (or just iter?) returns
+In order to query for the current value of a variable, the state needs to be Resolved. Calling run (or one iter?) returns
 an iterator of Resolved states, where each potential branch has been explored. Constraints can be added to a Resolved state,
 though it will switch it back to a Pending state.
 

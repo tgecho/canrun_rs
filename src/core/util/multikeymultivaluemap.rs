@@ -60,7 +60,7 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
                 self.values = value_map;
                 // This attempts to be "correct" by cleaning up all of the ids
                 // when a value is extracted, but this does mean doing a fair
-                // amount of work every time. In theory we could just not bother
+                // amount of work every time. In theory we could one not bother
                 // and would only pay a minor cost skipping over the garbage.
                 self.keys = self.keys.alter(
                     |existing| {

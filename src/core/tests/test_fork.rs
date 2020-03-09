@@ -1,5 +1,5 @@
 use super::super::state::{IterResolved, State, StateIter};
-use crate::domain::{Domain, Just};
+use crate::domain::{one::OfOne, Domain};
 use crate::value::val;
 use std::rc::Rc;
 
@@ -18,7 +18,7 @@ where
 
 #[test]
 fn basic_fork_first_success() {
-    let state: State<Just<i32>> = State::new();
+    let state: State<OfOne<i32>> = State::new();
     let state = state.fork(either(
         |s| s.unify(val(2), val(2)),
         |s| s.unify(val(1), val(2)),
@@ -29,7 +29,7 @@ fn basic_fork_first_success() {
 
 #[test]
 fn basic_fork_second_success() {
-    let state: State<Just<i32>> = State::new();
+    let state: State<OfOne<i32>> = State::new();
     let state = state.fork(either(
         |s| s.unify(val(1), val(2)),
         |s| s.unify(val(2), val(2)),
@@ -39,7 +39,7 @@ fn basic_fork_second_success() {
 
 #[test]
 fn basic_fork_both_success() {
-    let state: State<Just<i32>> = State::new();
+    let state: State<OfOne<i32>> = State::new();
     let state = state.fork(either(
         |s| s.unify(val(1), val(1)),
         |s| s.unify(val(2), val(2)),
