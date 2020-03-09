@@ -1,6 +1,6 @@
-use super::super::domain::{Domain, IntoDomainVal};
-use super::super::state::State;
 use super::Goal;
+use crate::core::domain::{Domain, IntoDomainVal};
+use crate::core::state::State;
 
 pub(super) fn run<'a, D>(state: State<'a, D>, a: D::Value, b: D::Value) -> Option<State<'a, D>>
 where

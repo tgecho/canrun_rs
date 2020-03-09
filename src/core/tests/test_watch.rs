@@ -1,10 +1,10 @@
 use super::super::domain::{DomainType, Just};
-use super::super::goal::custom::custom;
-use super::super::goal::unify::unify;
-use super::super::goal::Goal;
 use super::super::state::{State, WatchResult};
 use super::super::value::{val, var, Val};
 use super::util;
+use crate::goal::custom::custom;
+use crate::goal::unify::unify;
+use crate::goal::Goal;
 use std::rc::Rc;
 
 pub(crate) fn assert<'a, T, D, F>(

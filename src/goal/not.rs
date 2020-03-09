@@ -1,7 +1,7 @@
-use super::super::domain::Domain;
-use super::super::state::State;
 use super::Goal;
+use crate::core::domain::Domain;
 use crate::core::state::IterResolved;
+use crate::core::state::State;
 
 pub(crate) fn run<'a, D>(state: State<'a, D>, goal: Goal<'a, D>) -> Option<State<'a, D>>
 where
@@ -24,11 +24,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::super::both::both;
-    use super::super::unify::unify;
     use super::not;
     use crate::core::tests::util;
     use crate::core::value::{val, var};
+    use crate::goal::both::both;
+    use crate::goal::unify::unify;
 
     #[test]
     fn succeeds() {

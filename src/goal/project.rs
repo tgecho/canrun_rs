@@ -1,6 +1,6 @@
-use super::super::domain::Domain;
-use super::super::state::State;
 use super::Goal;
+use crate::core::domain::Domain;
+use crate::core::state::State;
 use crate::core::state::WatchResult;
 use std::fmt;
 use std::rc::Rc;
@@ -34,11 +34,11 @@ impl<'a, D: Domain<'a>> fmt::Debug for Project<'a, D> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::unify::unify;
     use super::project;
     use super::WatchResult;
     use crate::core::tests::util;
     use crate::core::value::{val, var};
+    use crate::goal::unify::unify;
 
     #[test]
     fn succeeds() {
@@ -46,6 +46,7 @@ mod tests {
         let x = &x;
         let goals = vec![
             unify(val(2), x.clone()),
+            // TODO: Need a more ergonomic public .resolve() option
             project(|s| match s.resolve(x).resolved() {
                 Ok(x) => WatchResult::Done(if x > &1 { Some(s) } else { None }),
                 Err(x) => WatchResult::Waiting(s, vec![x]),

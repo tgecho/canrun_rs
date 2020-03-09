@@ -1,6 +1,6 @@
-use super::super::domain::{Domain, IntoDomainVal};
-use super::super::state::State;
 use super::Goal;
+use crate::core::domain::{Domain, IntoDomainVal};
+use crate::core::state::State;
 use std::rc::Rc;
 
 pub(crate) fn run<'a, D>(
@@ -27,10 +27,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::super::unify::unify;
     use super::either;
     use crate::core::tests::util;
     use crate::core::value::{val, var};
+    use crate::goal::unify::unify;
 
     #[test]
     fn either_both_succeeds() {

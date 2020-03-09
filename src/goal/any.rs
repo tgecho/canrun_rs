@@ -1,6 +1,6 @@
-use super::super::domain::Domain;
-use super::super::state::State;
 use super::Goal;
+use crate::core::domain::Domain;
+use crate::core::state::State;
 use std::iter::repeat;
 use std::rc::Rc;
 
@@ -28,10 +28,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::super::unify::unify;
     use super::any;
     use crate::core::tests::util;
     use crate::core::value::{val, var};
+    use crate::goal::unify::unify;
 
     #[test]
     fn both_succeeds() {

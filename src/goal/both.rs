@@ -1,6 +1,6 @@
-use super::super::domain::Domain;
-use super::super::state::State;
 use super::Goal;
+use crate::core::domain::Domain;
+use crate::core::state::State;
 
 pub(crate) fn run<'a, D>(
     state: State<'a, D>,
@@ -22,10 +22,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::super::unify::unify;
     use super::both;
     use crate::core::tests::util;
     use crate::core::value::{val, var};
+    use crate::goal::unify::unify;
 
     #[test]
     fn succeeds() {

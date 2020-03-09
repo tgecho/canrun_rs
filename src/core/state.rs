@@ -118,7 +118,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(super) fn resolve<'r, T>(&'r self, key: &'r Val<T>) -> &'r Val<T>
+    pub(crate) fn resolve<'r, T>(&'r self, key: &'r Val<T>) -> &'r Val<T>
     where
         D: DomainType<'a, T>,
     {
@@ -128,7 +128,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(super) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
+    pub(crate) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
     where
         T: UnifyIn<'a, D>,
         D: DomainType<'a, T>,
@@ -163,7 +163,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(super) fn watch(self, func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>) -> Option<Self> {
+    pub(crate) fn watch(self, func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>) -> Option<Self> {
         match func(self) {
             WatchResult::Done(state) => state,
             WatchResult::Waiting(mut state, vars) => {
@@ -173,7 +173,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(super) fn fork(mut self, func: Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>) -> Option<Self> {
+    pub(crate) fn fork(mut self, func: Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>) -> Option<Self> {
         self.forks.push_back(func);
         Some(self)
     }

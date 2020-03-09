@@ -1,46 +1,48 @@
-use super::super::domain::Domain;
-use super::super::state::State;
 use super::Goal;
+use crate::core::domain::Domain;
+use crate::core::state::State;
 use std::fmt;
 use std::rc::Rc;
 
 #[derive(Clone)]
-pub struct Custom<'a, D: Domain<'a>>(Rc<dyn Fn(State<'a, D>) -> Option<State<'a, D>> + 'a>);
+pub struct Lazy<'a, D: Domain<'a>>(Rc<dyn Fn() -> Goal<'a, D> + 'a>);
 
-impl<'a, D: Domain<'a>> Custom<'a, D> {
+impl<'a, D: Domain<'a>> Lazy<'a, D> {
     pub(crate) fn run(self, state: State<'a, D>) -> Option<State<'a, D>>
     where
         D: Domain<'a>,
     {
         let func = self.0;
-        func(state)
+        let goal = func();
+        goal.apply(state)
     }
 }
 
-pub fn custom<'a, D, F>(func: F) -> Goal<'a, D>
+pub fn lazy<'a, D, F>(func: F) -> Goal<'a, D>
 where
     D: Domain<'a>,
-    F: Fn(State<'a, D>) -> Option<State<'a, D>> + 'a,
+    F: Fn() -> Goal<'a, D> + 'a,
 {
-    Goal::Custom(Custom(Rc::new(func)))
+    Goal::Lazy(Lazy(Rc::new(func)))
 }
 
-impl<'a, D: Domain<'a>> fmt::Debug for Custom<'a, D> {
+impl<'a, D: Domain<'a>> fmt::Debug for Lazy<'a, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Custom ??")
+        write!(f, "Lazy ??")
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::custom;
+    use super::lazy;
     use crate::core::tests::util;
     use crate::core::value::{val, var};
+    use crate::goal::unify::unify;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goal = custom(|s| s.unify(x.clone(), val(1)));
+        let goal = lazy(|| unify(x.clone(), val(1)));
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![1]);
     }
