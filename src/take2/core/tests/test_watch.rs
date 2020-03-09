@@ -24,7 +24,7 @@ where
 fn basic_watch_succeeds() {
     let x = var();
     let goals: Vec<Goal<Just<i32>>> = vec![
-        Goal::thunk(|s| s.unify(val(2), x.clone())),
+        Goal::unify(val(2), x.clone()),
         Goal::thunk(|s| s.watch(assert(x.clone(), |x| x > &1))),
     ];
     utils::all_permutations_resolve_to(goals, &x, vec![2]);
@@ -34,7 +34,7 @@ fn basic_watch_succeeds() {
 fn basic_watch_fails() {
     let x = var();
     let goals: Vec<Goal<Just<i32>>> = vec![
-        Goal::thunk(|s| s.unify(val(2), x.clone())),
+        Goal::unify(val(2), x.clone()),
         Goal::thunk(|s| s.watch(assert(x.clone(), |x| x > &2))),
     ];
     utils::all_permutations_resolve_to(goals, &x, vec![]);

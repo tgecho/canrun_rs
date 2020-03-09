@@ -1,7 +1,7 @@
 use crate::can::lvar::LVar;
 use std::rc::Rc;
 
-#[derive(PartialEq)]
+#[derive(Debug)]
 pub enum Val<T: ?Sized> {
     Var(LVar),
     Resolved(Rc<T>),

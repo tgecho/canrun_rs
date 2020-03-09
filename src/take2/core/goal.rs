@@ -1,4 +1,4 @@
-use super::domain::{Domain, IntoDomainVal};
+use super::domain::{Domain, IntoDomainVal, Unify};
 use super::state::{State, WatchResult};
 use super::val::Val;
 use std::fmt;

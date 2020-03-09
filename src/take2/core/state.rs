@@ -1,5 +1,8 @@
-use super::domain::{Domain, DomainType};
-use super::val::{Val, Val::Var};
+use super::domain::{Domain, DomainType, Unified, Unify};
+use super::val::{
+    Val,
+    Val::{Resolved, Var},
+};
 use crate::can::lvar::LVar;
 use crate::util::multikeymultivaluemap::MKMVMap;
 use std::iter::once;
@@ -127,13 +130,18 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
 
     pub(super) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
     where
-        T: PartialEq,
+        T: Unify,
         D: DomainType<'a, T>,
     {
         let a = self.resolve(&a);
         let b = self.resolve(&b);
         match (a, b) {
-            (a, b) if a == b => Some(self),
+            (Resolved(a), Resolved(b)) => match a.unify_with(b) {
+                Unified::Success => Some(self),
+                Unified::Failed => None,
+                Unified::Conditional(func) => func(self),
+            },
+            (Var(a), Var(b)) if a == b => Some(self),
             (Var(var), val) | (val, Var(var)) => {
                 let key = *var;
                 let value = val.clone();
@@ -152,7 +160,6 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
                     Some(self)
                 }
             }
-            _ => None,
         }
     }
 
