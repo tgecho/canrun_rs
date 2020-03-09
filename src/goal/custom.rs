@@ -35,7 +35,7 @@ impl<'a, D: Domain<'a>> fmt::Debug for Custom<'a, D> {
 mod tests {
     use super::custom;
     use crate::core::tests::util;
-    use crate::core::value::{val, var};
+    use crate::value::{val, var};
 
     #[test]
     fn succeeds() {

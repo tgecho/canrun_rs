@@ -29,7 +29,7 @@ where
 mod tests {
     use super::either;
     use crate::core::tests::util;
-    use crate::core::value::{val, var};
+    use crate::value::{val, var};
     use crate::goal::unify::unify;
 
     #[test]

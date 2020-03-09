@@ -36,7 +36,7 @@ impl<'a, D: Domain<'a>> fmt::Debug for Lazy<'a, D> {
 mod tests {
     use super::lazy;
     use crate::core::tests::util;
-    use crate::core::value::{val, var};
+    use crate::value::{val, var};
     use crate::goal::unify::unify;
 
     #[test]

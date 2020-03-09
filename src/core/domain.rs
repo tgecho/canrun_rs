@@ -1,6 +1,5 @@
-use super::lvar::LVar;
 use super::state::State;
-use super::value::Val;
+use crate::value::{LVar, Val};
 use im::HashMap;
 use std::fmt::Debug;
 

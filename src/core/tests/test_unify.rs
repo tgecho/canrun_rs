@@ -1,7 +1,7 @@
 use super::super::domain::Just;
 use super::super::state::State;
-use super::super::value::{val, var};
 use crate::query::{QueryState, StateQuery};
+use crate::value::{val, var};
 
 #[test]
 fn basic_unifying_literals() {

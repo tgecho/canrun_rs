@@ -21,7 +21,7 @@ where
 mod tests {
     use super::unify;
     use crate::core::tests::util;
-    use crate::core::value::{val, var};
+    use crate::value::{val, var};
 
     #[test]
     fn basic_unify_succeeds() {

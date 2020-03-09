@@ -26,9 +26,9 @@ where
 mod tests {
     use super::not;
     use crate::core::tests::util;
-    use crate::core::value::{val, var};
     use crate::goal::both::both;
     use crate::goal::unify::unify;
+    use crate::value::{val, var};
 
     #[test]
     fn succeeds() {

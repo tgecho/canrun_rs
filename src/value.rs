@@ -1,4 +1,6 @@
-use super::lvar::LVar;
+pub mod lvar;
+
+pub use lvar::LVar;
 use std::rc::Rc;
 
 #[derive(Debug)]

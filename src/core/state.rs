@@ -1,8 +1,7 @@
 use super::domain::{Domain, DomainType, Unified, UnifyIn};
-use super::lvar::LVar;
 use super::util::multikeymultivaluemap::MKMVMap;
-use super::value::{
-    Val,
+use crate::value::{
+    LVar, Val,
     Val::{Resolved, Var},
 };
 use std::iter::once;

@@ -1,6 +1,6 @@
 use super::super::domain::{Domain, Just};
 use super::super::state::{IterResolved, State, StateIter};
-use super::super::value::val;
+use crate::value::val;
 use std::rc::Rc;
 
 fn either<'a, D, A, B>(a: A, b: B) -> Rc<dyn Fn(State<'a, D>) -> StateIter<'a, D> + 'a>

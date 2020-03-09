@@ -1,8 +1,6 @@
 pub mod domain;
-pub mod lvar;
 pub mod state;
 mod util;
-pub mod value;
 
 #[cfg(test)]
 pub(crate) mod tests {
