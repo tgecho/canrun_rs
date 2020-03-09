@@ -1,15 +1,24 @@
 use crate::core::state::State;
 use crate::domain::Domain;
 
-pub mod all;
-pub mod any;
-pub mod both;
-pub mod custom;
-pub mod either;
-pub mod lazy;
-pub mod not;
-pub mod project;
-pub mod unify;
+mod all;
+mod any;
+mod both;
+mod custom;
+mod either;
+mod lazy;
+mod not;
+mod project;
+mod unify;
+pub use all::all;
+pub use any::any;
+pub use both::both;
+pub use custom::custom;
+pub use either::either;
+pub use lazy::lazy;
+pub use not::not;
+pub use project::project;
+pub use unify::unify;
 
 #[derive(Clone, Debug)]
 pub enum Goal<'a, D: Domain<'a>> {

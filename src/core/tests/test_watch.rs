@@ -1,8 +1,8 @@
 use super::super::state::{State, WatchResult};
 use super::util;
 use crate::domain::{one::OfOne, DomainType};
-use crate::goal::custom::custom;
-use crate::goal::unify::unify;
+use crate::goal::custom;
+use crate::goal::unify;
 use crate::goal::Goal;
 use crate::value::{val, var, Val};
 use std::rc::Rc;

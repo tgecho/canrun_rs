@@ -3,13 +3,13 @@ use crate::core::state::State;
 use crate::value::{LVar, Val};
 use im::HashMap;
 use std::fmt::Debug;
+use std::marker::PhantomData;
 
 #[derive(Debug)]
 pub struct OfOne<T> {
     values: HashMap<LVar, Val<T>>,
 }
 
-use std::marker::PhantomData;
 #[derive(Debug)]
 pub struct OfOneVal<'a, T: UnifyIn<'a, OfOne<T>>>(Val<T>, PhantomData<&'a T>);
 

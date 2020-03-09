@@ -1,4 +1,4 @@
-pub mod lvar;
+mod lvar;
 
 pub use lvar::LVar;
 use std::rc::Rc;
