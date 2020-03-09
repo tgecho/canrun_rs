@@ -11,5 +11,5 @@ mod tests {
     mod test_fork;
     mod test_unify;
     mod test_watch;
-    mod utils;
+    pub(crate) mod util;
 }

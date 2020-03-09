@@ -28,7 +28,7 @@ pub trait DomainType<'a, T>: Domain<'a> {
     fn values_as_mut(&mut self) -> &mut HashMap<LVar, Val<T>>;
 }
 
-pub(crate) trait IntoDomainVal<'a, D: Domain<'a>> {
+pub trait IntoDomainVal<'a, D: Domain<'a>> {
     fn into_domain_val(self) -> D::Value;
 }
 

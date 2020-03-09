@@ -21,6 +21,14 @@ where
     Q: QueryState<'a, D>,
 {
     let goal = Goal::All(goals.clone());
+    goal_resolves_to(goal, query)
+}
+
+pub(crate) fn goal_resolves_to<'a, D, Q>(goal: Goal<'a, D>, query: Q) -> Vec<Q::Result>
+where
+    D: Domain<'a> + 'a,
+    Q: QueryState<'a, D>,
+{
     let state = goal.apply(State::new());
     state.query(query).collect()
 }

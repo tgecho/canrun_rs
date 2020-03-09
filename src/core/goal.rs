@@ -1,9 +1,10 @@
-use super::domain::{Domain, IntoDomainVal, UnifyIn};
-use super::state::{State, WatchResult};
-use super::value::Val;
+use super::domain::{Domain, IntoDomainVal};
+use super::state::State;
 use std::fmt;
 use std::iter::repeat;
 use std::rc::Rc;
+
+pub mod unify;
 
 #[derive(Clone)]
 pub struct Thunk<'a, D: Domain<'a>>(Rc<dyn Fn(State<'a, D>) -> Option<State<'a, D>> + 'a>);
@@ -21,7 +22,7 @@ pub enum Goal<'a, D: Domain<'a>> {
 impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     pub(crate) fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
         match self {
-            Goal::Unify(a, b) => D::unify_domain_values(state, a, b),
+            Goal::Unify(a, b) => unify::run(state, a, b),
             Goal::Both(a, b) => a.apply(state).and_then(|s| b.apply(s)),
             Goal::All(goals) => goals.into_iter().try_fold(state, |s, g| g.apply(s)),
             Goal::Either(a, b) => state.fork(Rc::new(move |s| {
@@ -47,13 +48,6 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
         F: Fn(State<'a, D>) -> Option<State<'a, D>> + 'a,
     {
         Goal::Thunk(Thunk(Rc::new(f)))
-    }
-
-    pub(crate) fn unify<V>(a: V, b: V) -> Goal<'a, D>
-    where
-        V: IntoDomainVal<'a, D>,
-    {
-        Goal::Unify(a.into_domain_val(), b.into_domain_val())
     }
 }
 
