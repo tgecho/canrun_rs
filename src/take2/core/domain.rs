@@ -2,17 +2,15 @@ use super::state::State;
 use super::val::Val;
 use crate::LVar;
 use im::HashMap;
-use std::fmt;
 use std::fmt::Debug;
-use std::rc::Rc;
 
 pub enum Unified<'a, D: Domain<'a>> {
     Success,
     Failed,
     Conditional(Box<dyn Fn(State<D>) -> Option<State<D>> + 'a>),
 }
-pub trait Unify: Debug {
-    fn unify_with<'a, D: Domain<'a>>(&self, other: &Self) -> Unified<'a, D>;
+pub trait UnifyIn<'a, D: Domain<'a>>: Debug {
+    fn unify_with(&self, other: &Self) -> Unified<'a, D>;
 }
 
 pub trait Domain<'a>: Clone + Debug {
@@ -39,12 +37,13 @@ pub struct Just<T> {
     values: HashMap<LVar, Val<T>>,
 }
 
+use std::marker::PhantomData;
 #[derive(Debug)]
-pub struct JustVal<T: Unify>(Val<T>);
+pub struct JustVal<'a, T: UnifyIn<'a, Just<T>>>(Val<T>, PhantomData<&'a T>);
 
-impl<'a, T: Unify + 'a> IntoDomainVal<'a, Just<T>> for Val<T> {
-    fn into_domain_val(self) -> JustVal<T> {
-        JustVal(self)
+impl<'a, T: UnifyIn<'a, Just<T>> + 'a> IntoDomainVal<'a, Just<T>> for Val<T> {
+    fn into_domain_val(self) -> JustVal<'a, T> {
+        JustVal(self, PhantomData)
     }
 }
 
@@ -55,14 +54,14 @@ impl<'a, T> Clone for Just<T> {
         }
     }
 }
-impl<'a, T: Unify> Clone for JustVal<T> {
+impl<'a, T: UnifyIn<'a, Just<T>> + 'a> Clone for JustVal<'a, T> {
     fn clone(&self) -> Self {
-        JustVal(self.0.clone())
+        JustVal(self.0.clone(), PhantomData)
     }
 }
 
-impl<'a, T: Unify + 'a> Domain<'a> for Just<T> {
-    type Value = JustVal<T>;
+impl<'a, T: UnifyIn<'a, Just<T>> + 'a> Domain<'a> for Just<T> {
+    type Value = JustVal<'a, T>;
     fn new() -> Self {
         Just {
             values: HashMap::new(),
@@ -74,12 +73,12 @@ impl<'a, T: Unify + 'a> Domain<'a> for Just<T> {
         b: Self::Value,
     ) -> Option<State<Self>> {
         match (a, b) {
-            (JustVal(a), JustVal(b)) => state.unify(a, b),
+            (JustVal(a, _), JustVal(b, _)) => state.unify(a, b),
         }
     }
 }
 
-impl<'a, T: Unify + 'a> DomainType<'a, T> for Just<T> {
+impl<'a, T: UnifyIn<'a, Just<T>> + 'a> DomainType<'a, T> for Just<T> {
     fn values_as_ref(&self) -> &HashMap<LVar, Val<T>> {
         &self.values
     }
@@ -88,8 +87,8 @@ impl<'a, T: Unify + 'a> DomainType<'a, T> for Just<T> {
     }
 }
 
-impl<T: PartialEq + Debug> Unify for T {
-    fn unify_with<'a, D: Domain<'a>>(&self, other: &Self) -> Unified<'a, D> {
+impl<'a, T: PartialEq + Debug + 'a> UnifyIn<'a, Just<T>> for T {
+    fn unify_with(&self, other: &Self) -> Unified<'a, Just<T>> {
         if self == other {
             Unified::Success
         } else {

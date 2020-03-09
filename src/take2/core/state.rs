@@ -1,4 +1,4 @@
-use super::domain::{Domain, DomainType, Unified, Unify};
+use super::domain::{Domain, DomainType, Unified, UnifyIn};
 use super::val::{
     Val,
     Val::{Resolved, Var},
@@ -130,7 +130,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
 
     pub(super) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
     where
-        T: Unify,
+        T: UnifyIn<'a, D>,
         D: DomainType<'a, T>,
     {
         let a = self.resolve(&a);
