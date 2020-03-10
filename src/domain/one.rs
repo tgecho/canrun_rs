@@ -13,12 +13,6 @@ pub struct OfOne<T> {
 #[derive(Debug)]
 pub struct OfOneVal<'a, T: UnifyIn<'a, OfOne<T>>>(Val<T>, PhantomData<&'a T>);
 
-// impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a> IntoDomainVal<'a, OfOne<T>> for Val<T> {
-//     fn into_domain_val(self) -> OfOneVal<'a, T> {
-//         OfOneVal(self, PhantomData)
-//     }
-// }
-
 impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a, V: IntoVal<T>> IntoDomainVal<'a, OfOne<T>> for V {
     fn into_domain_val(self) -> OfOneVal<'a, T> {
         OfOneVal(self.into_val(), PhantomData)

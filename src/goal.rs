@@ -34,7 +34,7 @@ pub enum Goal<'a, D: Domain<'a>> {
 }
 
 impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
-    pub(crate) fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
+    pub fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
         match self {
             Goal::Unify(a, b) => unify::run(state, a, b),
             Goal::Both(a, b) => both::run(state, *a, *b),

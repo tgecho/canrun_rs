@@ -45,7 +45,6 @@ mod tests {
         let x = var();
         let goals = vec![
             unify(2, x),
-            // TODO: Need a more ergonomic public .resolve() option
             project(|s| match s.resolve_val(&Val::Var(x)).resolved() {
                 Ok(x) => Watch::done(if x > &1 { Some(s) } else { None }),
                 Err(x) => Watch::watch(s, x),

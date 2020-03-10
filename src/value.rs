@@ -13,6 +13,7 @@ pub enum Val<T: ?Sized> {
 use Val::{Resolved, Var};
 
 impl<T> Val<T> {
+    // TODO: Need a more ergonomic public .resolve() option
     pub(crate) fn resolved(&self) -> Result<&T, LVar<T>> {
         match self {
             Resolved(x) => Ok(&*x),
