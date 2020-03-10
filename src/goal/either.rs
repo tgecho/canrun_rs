@@ -1,6 +1,6 @@
 use super::Goal;
 use crate::core::state::State;
-use crate::domain::{Domain, IntoDomainVal};
+use crate::domain::Domain;
 use std::rc::Rc;
 
 pub(crate) fn run<'a, D>(
@@ -30,12 +30,12 @@ mod tests {
     use super::either;
     use crate::core::tests::util;
     use crate::goal::unify::unify;
-    use crate::value::{val, var};
+    use crate::value::var;
 
     #[test]
     fn either_both_succeeds() {
         let x = var();
-        let goal = either(unify(x.clone(), val(5)), unify(x.clone(), val(7)));
+        let goal = either(unify(x, 5), unify(x, 7));
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![5, 7]);
     }
@@ -43,19 +43,19 @@ mod tests {
     #[test]
     fn either_one_succeeds() {
         let x = var();
-        let bad = unify(val(6), val(5));
+        let bad = unify(6, 5);
 
-        let first = util::goal_resolves_to(either(unify(x.clone(), val(1)), bad.clone()), &x);
+        let first = util::goal_resolves_to(either(unify(x, 1), bad.clone()), &x);
         assert_eq!(first, vec![1]);
 
-        let second = util::goal_resolves_to(either(bad, unify(x.clone(), val(2))), &x);
+        let second = util::goal_resolves_to(either(bad, unify(x, 2)), &x);
         assert_eq!(second, vec![2]);
     }
 
     #[test]
     fn either_both_fail() {
         let x = var();
-        let goal = either(unify(val(6), val(5)), unify(val(1), val(2)));
+        let goal = either(unify(6, 5), unify(1, 2));
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![]);
     }

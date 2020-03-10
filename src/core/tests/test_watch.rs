@@ -1,24 +1,28 @@
-use super::super::state::{State, WatchResult};
+use super::super::state::{State, Watch};
 use super::util;
 use crate::domain::{one::OfOne, DomainType};
 use crate::goal::custom;
 use crate::goal::unify;
 use crate::goal::Goal;
-use crate::value::{val, var, Val};
+use crate::value::{val, var, IntoVal};
 use std::rc::Rc;
 
-pub(crate) fn assert<'a, T, D, F>(
-    val: Val<T>,
+pub(crate) fn assert<'a, T, V, D, F>(
+    val: V,
     func: F,
-) -> Rc<dyn Fn(State<'a, D>) -> WatchResult<State<'a, D>> + 'a>
+) -> Rc<dyn Fn(State<'a, D>) -> Watch<State<'a, D>> + 'a>
 where
     T: 'a,
+    V: IntoVal<T> + Clone + 'a,
     D: DomainType<'a, T> + 'a,
     F: Fn(&T) -> bool + 'a,
 {
-    Rc::new(move |s| match s.resolve(&val).resolved() {
-        Ok(x) => WatchResult::Done(if func(x) { Some(s) } else { None }),
-        Err(x) => WatchResult::Waiting(s, vec![x]),
+    Rc::new(move |s| {
+        let val = val.clone().into_val();
+        match s.resolve_val(&val).resolved() {
+            Ok(x) => Watch::Done(if func(x) { Some(s) } else { None }),
+            Err(x) => Watch::watch(s, x),
+        }
     })
 }
 
@@ -26,8 +30,9 @@ where
 fn basic_watch_succeeds() {
     let x = var();
     let goals: Vec<Goal<OfOne<i32>>> = vec![
-        unify(val(2), x.clone()),
-        custom(|s| s.watch(assert(x.clone(), |x| x > &1))),
+        unify(2, x),
+        custom(|s| s.watch(assert(x, |x| x > &1))),
+        custom(|s| s.watch(assert(x, |x| x > &0))),
     ];
     util::all_permutations_resolve_to(goals, &x, vec![2]);
 }
@@ -37,7 +42,8 @@ fn basic_watch_fails() {
     let x = var();
     let goals: Vec<Goal<OfOne<i32>>> = vec![
         unify(val(2), x.clone()),
-        custom(|s| s.watch(assert(x.clone(), |x| x > &2))),
+        custom(|s| s.watch(assert(x.clone(), |x| x > &1))),
+        custom(|s| s.watch(assert(x, |x| x > &3))),
     ];
     util::all_permutations_resolve_to(goals, &x, vec![]);
 }

@@ -1,7 +1,7 @@
 use super::util::multikeymultivaluemap::MKMVMap;
 use crate::domain::{Domain, DomainType, Unified, UnifyIn};
 use crate::value::{
-    LVar, Val,
+    IntoVal, LVar, LVarId, Val,
     Val::{Resolved, Var},
 };
 use std::iter::once;
@@ -9,7 +9,7 @@ use std::rc::Rc;
 
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
 pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<'s, D>> + 's>;
-type WatchFns<'s, D> = MKMVMap<LVar, Rc<dyn Fn(State<'s, D>) -> WatchResult<State<'s, D>> + 's>>;
+type WatchFns<'s, D> = MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Watch<State<'s, D>> + 's>>;
 
 #[derive(Clone)]
 pub struct State<'a, D: Domain<'a> + 'a> {
@@ -25,26 +25,23 @@ pub struct ResolvedState<'a, D: Domain<'a> + 'a> {
 }
 
 impl<'a, D: Domain<'a> + 'a> ResolvedState<'a, D> {
-    pub fn get_rc<T>(&self, key: &Val<T>) -> Option<Rc<T>>
+    pub fn get_rc<T>(&self, var: &LVar<T>) -> Option<Rc<T>>
     where
         D: DomainType<'a, T>,
     {
-        match key {
-            Val::Var(var) => self
-                .domain
-                .values_as_ref()
-                .get(var)
-                .and_then(|k| self.get_rc(k)),
+        let val = self.domain.values_as_ref().get(var)?;
+        match val {
+            Val::Var(var) => self.get_rc(var),
             Val::Resolved(resolved) => Some(resolved.clone()),
         }
     }
 
-    pub fn get<T>(&self, key: &Val<T>) -> Option<T>
+    pub fn get<T>(&self, var: &LVar<T>) -> Option<T>
     where
         T: Clone,
         D: DomainType<'a, T>,
     {
-        self.get_rc(key).map(|rc| (*rc).clone())
+        self.get_rc(var).map(|rc| (*rc).clone())
     }
 
     pub fn reopen(self) -> State<'a, D> {
@@ -79,9 +76,31 @@ impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Vec<ResolvedState<'a, D>> {
 }
 
 #[derive(Debug)]
-pub enum WatchResult<State> {
+pub struct WatchList(Vec<LVarId>);
+
+#[derive(Debug)]
+pub enum Watch<State> {
     Done(Option<State>),
-    Waiting(State, Vec<LVar>),
+    Waiting(State, WatchList),
+}
+
+impl<S> Watch<S> {
+    pub fn done(state: Option<S>) -> Self {
+        Watch::Done(state)
+    }
+    pub fn watch<T>(state: S, var: LVar<T>) -> Watch<S> {
+        Watch::Waiting(state, WatchList(vec![var.id]))
+    }
+    pub fn and<T>(self, var: LVar<T>) -> Watch<S> {
+        match self {
+            Watch::Done(Some(state)) => Watch::watch(state, var),
+            Watch::Done(None) => self,
+            Watch::Waiting(state, mut list) => {
+                list.0.push(var.id);
+                Watch::Waiting(state, list)
+            }
+        }
+    }
 }
 
 // pub fn run<'a, D: Domain<'a>, F: Fn(State<D>) -> Result<State<D>, State<D>>>(
@@ -117,23 +136,27 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn resolve<'r, T>(&'r self, key: &'r Val<T>) -> &'r Val<T>
+    pub(crate) fn resolve_val<'r, T>(&'r self, val: &'r Val<T>) -> &'r Val<T>
     where
         D: DomainType<'a, T>,
     {
-        match key {
-            Val::Var(var) => self.domain.values_as_ref().get(var).unwrap_or(key),
+        match val {
+            Val::Var(var) => self.domain.values_as_ref().get(var).unwrap_or(val),
             value => value,
         }
     }
 
-    pub(crate) fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
+    pub(crate) fn unify<T, A, B>(mut self, a: A, b: B) -> Option<Self>
     where
         T: UnifyIn<'a, D>,
+        A: IntoVal<T>,
+        B: IntoVal<T>,
         D: DomainType<'a, T>,
     {
-        let a = self.resolve(&a);
-        let b = self.resolve(&b);
+        let a_val = a.into_val();
+        let b_val = b.into_val();
+        let a = self.resolve_val(&a_val);
+        let b = self.resolve_val(&b_val);
         match (a, b) {
             (Resolved(a), Resolved(b)) => match a.unify_with(b) {
                 Unified::Success => Some(self),
@@ -151,7 +174,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
                 self.domain.values_as_mut().insert(key, value);
 
                 // check watches matching newly assigned lvar
-                if let Some(watches) = self.watches.extract(&key) {
+                if let Some(watches) = self.watches.extract(&key.id) {
                     watches
                         .into_iter()
                         .try_fold(self, |state, func| state.watch(func))
@@ -162,10 +185,10 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn watch(self, func: Rc<dyn Fn(Self) -> WatchResult<Self> + 'a>) -> Option<Self> {
+    pub(crate) fn watch(self, func: Rc<dyn Fn(Self) -> Watch<Self> + 'a>) -> Option<Self> {
         match func(self) {
-            WatchResult::Done(state) => state,
-            WatchResult::Waiting(mut state, vars) => {
+            Watch::Done(state) => state,
+            Watch::Waiting(mut state, WatchList(vars)) => {
                 state.watches.add(vars, func);
                 Some(state)
             }

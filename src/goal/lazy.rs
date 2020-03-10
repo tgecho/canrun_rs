@@ -37,12 +37,12 @@ mod tests {
     use super::lazy;
     use crate::core::tests::util;
     use crate::goal::unify::unify;
-    use crate::value::{val, var};
+    use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goal = lazy(|| unify(x.clone(), val(1)));
+        let goal = lazy(|| unify(x, 1));
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![1]);
     }

@@ -1,12 +1,17 @@
 use crate::core::state::IterResolved;
 use crate::domain::{Domain, DomainType};
-use crate::value::Val;
+use crate::value::LVar;
 
 pub trait StateQuery<'a, D: Domain<'a> + 'a> {
-    fn query<Q: QueryState<'a, D>>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>;
+    fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>
+    where
+        Q: QueryState<'a, D>;
 }
 impl<'a, D: Domain<'a> + 'a, S: IterResolved<'a, D>> StateQuery<'a, D> for S {
-    fn query<Q: QueryState<'a, D>>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a> {
+    fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>
+    where
+        Q: QueryState<'a, D>,
+    {
         query.query(self)
     }
 }
@@ -17,7 +22,7 @@ pub trait QueryState<'a, D: Domain<'a> + 'a> {
         -> Box<dyn Iterator<Item = Self::Result> + 'a>;
 }
 
-impl<'a, D, T> QueryState<'a, D> for &'a Val<T>
+impl<'a, D, T> QueryState<'a, D> for &'a LVar<T>
 where
     D: Domain<'a> + DomainType<'a, T> + 'a,
     T: Clone + 'a,
@@ -31,7 +36,7 @@ where
     }
 }
 
-impl<'a, D, T1, T2> QueryState<'a, D> for (&'a Val<T1>, &'a Val<T2>)
+impl<'a, D, T1, T2> QueryState<'a, D> for (&'a LVar<T1>, &'a LVar<T2>)
 where
     D: Domain<'a> + DomainType<'a, T1> + DomainType<'a, T2> + 'a,
     T1: Clone + 'a,
@@ -50,7 +55,7 @@ where
     }
 }
 
-impl<'a, D, T1, T2, T3> QueryState<'a, D> for (&'a Val<T1>, &'a Val<T2>, &'a Val<T3>)
+impl<'a, D, T1, T2, T3> QueryState<'a, D> for (&'a LVar<T1>, &'a LVar<T2>, &'a LVar<T3>)
 where
     D: Domain<'a> + DomainType<'a, T1> + DomainType<'a, T2> + DomainType<'a, T3> + 'a,
     T1: Clone + 'a,

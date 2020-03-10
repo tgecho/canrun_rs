@@ -1,21 +1,27 @@
 use super::{Domain, DomainType, IntoDomainVal, Unified, UnifyIn};
 use crate::core::state::State;
-use crate::value::{LVar, Val};
+use crate::value::{IntoVal, LVar, Val};
 use im::HashMap;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
 #[derive(Debug)]
 pub struct OfOne<T> {
-    values: HashMap<LVar, Val<T>>,
+    values: HashMap<LVar<T>, Val<T>>,
 }
 
 #[derive(Debug)]
 pub struct OfOneVal<'a, T: UnifyIn<'a, OfOne<T>>>(Val<T>, PhantomData<&'a T>);
 
-impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a> IntoDomainVal<'a, OfOne<T>> for Val<T> {
+// impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a> IntoDomainVal<'a, OfOne<T>> for Val<T> {
+//     fn into_domain_val(self) -> OfOneVal<'a, T> {
+//         OfOneVal(self, PhantomData)
+//     }
+// }
+
+impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a, V: IntoVal<T>> IntoDomainVal<'a, OfOne<T>> for V {
     fn into_domain_val(self) -> OfOneVal<'a, T> {
-        OfOneVal(self, PhantomData)
+        OfOneVal(self.into_val(), PhantomData)
     }
 }
 
@@ -51,10 +57,10 @@ impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a> Domain<'a> for OfOne<T> {
 }
 
 impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a> DomainType<'a, T> for OfOne<T> {
-    fn values_as_ref(&self) -> &HashMap<LVar, Val<T>> {
+    fn values_as_ref(&self) -> &HashMap<LVar<T>, Val<T>> {
         &self.values
     }
-    fn values_as_mut(&mut self) -> &mut HashMap<LVar, Val<T>> {
+    fn values_as_mut(&mut self) -> &mut HashMap<LVar<T>, Val<T>> {
         &mut self.values
     }
 }

@@ -35,7 +35,7 @@ mod tests {
     #[test]
     fn fails() {
         let x = var();
-        let goal = all(vec![unify(x.clone(), val(5)), unify(x.clone(), val(7))]);
+        let goal = all(vec![unify(x, 5), unify(x, 7)]);
         let result = util::goal_resolves_to(goal.clone(), &x);
         assert_eq!(result, vec![]);
     }

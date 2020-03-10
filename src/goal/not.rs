@@ -28,12 +28,12 @@ mod tests {
     use crate::core::tests::util;
     use crate::goal::both::both;
     use crate::goal::unify::unify;
-    use crate::value::{val, var};
+    use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goal = both(unify(x.clone(), val(1)), not(unify(x.clone(), val(2))));
+        let goal = both(unify(x, 1), not(unify(x, 2)));
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![1]);
     }
@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn fails() {
         let x = var();
-        let goal = both(unify(x.clone(), val(5)), not(unify(x.clone(), val(5))));
+        let goal = both(unify(x, 5), not(unify(x, 5)));
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![]);
     }

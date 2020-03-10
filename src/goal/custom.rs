@@ -35,12 +35,12 @@ impl<'a, D: Domain<'a>> fmt::Debug for Custom<'a, D> {
 mod tests {
     use super::custom;
     use crate::core::tests::util;
-    use crate::value::{val, var};
+    use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goal = custom(|s| s.unify(x.clone(), val(1)));
+        let goal = custom(|s| s.unify(x, 1));
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![1]);
     }

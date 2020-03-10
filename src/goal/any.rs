@@ -31,12 +31,12 @@ mod tests {
     use super::any;
     use crate::core::tests::util;
     use crate::goal::unify::unify;
-    use crate::value::{val, var};
+    use crate::value::var;
 
     #[test]
     fn both_succeeds() {
         let x = var();
-        let goal = any(vec![unify(x.clone(), val(5)), unify(x.clone(), val(7))]);
+        let goal = any(vec![unify(x, 5), unify(x, 7)]);
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![5, 7]);
     }
@@ -44,19 +44,19 @@ mod tests {
     #[test]
     fn one_succeeds() {
         let x = var();
-        let bad = unify(val(6), val(5));
+        let bad = unify(6, 5);
 
-        let first = util::goal_resolves_to(any(vec![unify(x.clone(), val(1)), bad.clone()]), &x);
+        let first = util::goal_resolves_to(any(vec![unify(x, 1), bad.clone()]), &x);
         assert_eq!(first, vec![1]);
 
-        let second = util::goal_resolves_to(any(vec![bad, unify(x.clone(), val(2))]), &x);
+        let second = util::goal_resolves_to(any(vec![bad, unify(x, 2)]), &x);
         assert_eq!(second, vec![2]);
     }
 
     #[test]
     fn both_fail() {
         let x = var();
-        let goal = any(vec![unify(val(6), val(5)), unify(val(1), val(2))]);
+        let goal = any(vec![unify(6, 5), unify(1, 2)]);
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![]);
     }
