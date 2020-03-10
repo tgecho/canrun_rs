@@ -1,5 +1,5 @@
-use crate::core::state::State;
 use crate::domain::Domain;
+use crate::state::State;
 
 mod all;
 mod any;

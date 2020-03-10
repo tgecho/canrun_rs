@@ -1,4 +1,4 @@
-use crate::core::state::IterResolved;
+use crate::state::IterResolved;
 use crate::domain::{Domain, DomainType};
 use crate::value::LVar;
 

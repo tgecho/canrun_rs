@@ -1,6 +1,6 @@
 use super::Goal;
-use crate::core::state::State;
-use crate::core::state::Watch;
+use crate::state::State;
+use crate::state::Watch;
 use crate::domain::Domain;
 use std::fmt;
 use std::rc::Rc;
@@ -36,7 +36,7 @@ impl<'a, D: Domain<'a>> fmt::Debug for Project<'a, D> {
 mod tests {
     use super::project;
     use super::Watch;
-    use crate::core::tests::util;
+    use crate::tests::util;
     use crate::goal::unify::unify;
     use crate::value::{var, Val};
 

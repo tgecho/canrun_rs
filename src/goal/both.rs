@@ -1,5 +1,5 @@
 use super::Goal;
-use crate::core::state::State;
+use crate::state::State;
 use crate::domain::Domain;
 
 pub(crate) fn run<'a, D>(
@@ -23,7 +23,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::both;
-    use crate::core::tests::util;
+    use crate::tests::util;
     use crate::goal::unify::unify;
     use crate::value::var;
 

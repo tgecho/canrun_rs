@@ -1,6 +1,6 @@
 use super::Goal;
-use crate::core::state::State;
 use crate::domain::Domain;
+use crate::state::State;
 
 pub(crate) fn run<'a, D>(state: State<'a, D>, goals: Vec<Goal<'a, D>>) -> Option<State<'a, D>>
 where
@@ -19,8 +19,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::all;
-    use crate::core::tests::util;
     use crate::goal::unify::unify;
+    use crate::tests::util;
     use crate::value::{val, var};
 
     #[test]

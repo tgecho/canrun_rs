@@ -1,6 +1,6 @@
 use super::Goal;
-use crate::core::state::State;
 use crate::domain::Domain;
+use crate::state::State;
 use std::fmt;
 use std::rc::Rc;
 
@@ -34,7 +34,7 @@ impl<'a, D: Domain<'a>> fmt::Debug for Custom<'a, D> {
 #[cfg(test)]
 mod tests {
     use super::custom;
-    use crate::core::tests::util;
+    use crate::tests::util;
     use crate::value::var;
 
     #[test]

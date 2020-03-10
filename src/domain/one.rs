@@ -1,5 +1,5 @@
 use super::{Domain, DomainType, IntoDomainVal, Unified, UnifyIn};
-use crate::core::state::State;
+use crate::state::State;
 use crate::value::{IntoVal, LVar, Val};
 use im::HashMap;
 use std::fmt::Debug;

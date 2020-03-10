@@ -1,5 +1,5 @@
 use super::Goal;
-use crate::core::state::State;
+use crate::state::State;
 use crate::domain::Domain;
 use std::rc::Rc;
 
@@ -28,7 +28,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::either;
-    use crate::core::tests::util;
+    use crate::tests::util;
     use crate::goal::unify::unify;
     use crate::value::var;
 

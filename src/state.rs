@@ -1,6 +1,6 @@
 mod impls;
-pub mod iter_resolved;
-pub mod resolved;
+mod iter_resolved;
+mod resolved;
 
 use super::util::multikeymultivaluemap::MKMVMap;
 use crate::domain::{Domain, DomainType, Unified, UnifyIn};
@@ -9,6 +9,7 @@ use crate::value::{
     Val::{Resolved, Var},
 };
 pub use iter_resolved::IterResolved;
+pub use resolved::ResolvedState;
 use std::iter::once;
 use std::rc::Rc;
 
