@@ -1,14 +1,18 @@
+mod impls;
+pub mod iter_resolved;
+pub mod resolved;
+
 use super::util::multikeymultivaluemap::MKMVMap;
 use crate::domain::{Domain, DomainType, Unified, UnifyIn};
 use crate::value::{
     IntoVal, LVar, LVarId, Val,
     Val::{Resolved, Var},
 };
+pub use iter_resolved::IterResolved;
 use std::iter::once;
 use std::rc::Rc;
 
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
-pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<'s, D>> + 's>;
 type WatchFns<'s, D> = MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Watch<State<'s, D>> + 's>>;
 
 #[derive(Clone)]
@@ -16,63 +20,6 @@ pub struct State<'a, D: Domain<'a> + 'a> {
     domain: D,
     watches: WatchFns<'a, D>,
     forks: im::Vector<Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>>,
-}
-
-#[derive(Clone)]
-pub struct ResolvedState<'a, D: Domain<'a> + 'a> {
-    domain: D,
-    watches: WatchFns<'a, D>,
-}
-
-impl<'a, D: Domain<'a> + 'a> ResolvedState<'a, D> {
-    pub fn get_rc<T>(&self, var: &LVar<T>) -> Option<Rc<T>>
-    where
-        D: DomainType<'a, T>,
-    {
-        let val = self.domain.values_as_ref().get(var)?;
-        match val {
-            Val::Var(var) => self.get_rc(var),
-            Val::Resolved(resolved) => Some(resolved.clone()),
-        }
-    }
-
-    pub fn get<T>(&self, var: &LVar<T>) -> Option<T>
-    where
-        T: Clone,
-        D: DomainType<'a, T>,
-    {
-        self.get_rc(var).map(|rc| (*rc).clone())
-    }
-
-    pub fn reopen(self) -> State<'a, D> {
-        State {
-            domain: self.domain,
-            watches: self.watches,
-            forks: im::Vector::new(),
-        }
-    }
-}
-
-pub trait IterResolved<'a, D: Domain<'a> + 'a> {
-    fn resolved_iter(self) -> ResolvedIter<'a, D>;
-}
-impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for State<'a, D> {
-    fn resolved_iter(self) -> ResolvedIter<'a, D> {
-        Box::new(self.iter_forks().map(|s| ResolvedState {
-            domain: s.domain,
-            watches: s.watches,
-        }))
-    }
-}
-impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Option<State<'a, D>> {
-    fn resolved_iter(self) -> ResolvedIter<'a, D> {
-        Box::new(self.into_iter().flat_map(|s| s.resolved_iter()))
-    }
-}
-impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Vec<ResolvedState<'a, D>> {
-    fn resolved_iter(self) -> ResolvedIter<'a, D> {
-        Box::new(self.into_iter())
-    }
 }
 
 #[derive(Debug)]
@@ -102,15 +49,6 @@ impl<S> Watch<S> {
         }
     }
 }
-
-// pub fn run<'a, D: Domain<'a>, F: Fn(State<D>) -> Result<State<D>, State<D>>>(
-//     func: F,
-// ) -> ResolvedIter<'a, D> {
-//     match func(State::new()) {
-//         Err(_) => Box::new(std::iter::empty()),
-//         Ok(state) => state.resolved_iter(),
-//     }
-// }
 
 impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     pub fn new() -> Self {
@@ -198,12 +136,5 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     pub(crate) fn fork(mut self, func: Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>) -> Option<Self> {
         self.forks.push_back(func);
         Some(self)
-    }
-}
-
-use std::fmt;
-impl<'a, D: Domain<'a> + 'a> fmt::Debug for State<'a, D> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "State ??")
     }
 }
