@@ -1,7 +1,7 @@
 use super::Goal;
+use crate::domain::Domain;
 use crate::state::State;
 use crate::state::Watch;
-use crate::domain::Domain;
 use std::fmt;
 use std::rc::Rc;
 
@@ -36,14 +36,16 @@ impl<'a, D: Domain<'a>> fmt::Debug for Project<'a, D> {
 mod tests {
     use super::project;
     use super::Watch;
-    use crate::tests::util;
+    use crate::domain::one::OfOne;
     use crate::goal::unify::unify;
+    use crate::goal::Goal;
+    use crate::tests::util;
     use crate::value::{var, Val};
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goals = vec![
+        let goals: Vec<Goal<OfOne<i32>>> = vec![
             unify(2, x),
             project(|s| match s.resolve_val(&Val::Var(x)).resolved() {
                 Ok(x) => Watch::done(if x > &1 { Some(s) } else { None }),

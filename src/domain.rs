@@ -30,6 +30,6 @@ pub trait DomainType<'a, T>: Domain<'a> {
     fn values_as_mut(&mut self) -> &mut HashMap<LVar<T>, Val<T>>;
 }
 
-pub trait IntoDomainVal<'a, D: Domain<'a>> {
-    fn into_domain_val(self) -> D::Value;
+pub trait IntoDomainVal<'a, T>: Domain<'a> {
+    fn into_domain_val(val: Val<T>) -> Self::Value;
 }

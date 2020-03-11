@@ -1,6 +1,6 @@
 use super::Goal;
-use crate::state::State;
 use crate::domain::Domain;
+use crate::state::State;
 use std::fmt;
 use std::rc::Rc;
 
@@ -35,14 +35,16 @@ impl<'a, D: Domain<'a>> fmt::Debug for Lazy<'a, D> {
 #[cfg(test)]
 mod tests {
     use super::lazy;
-    use crate::tests::util;
+    use crate::domain::one::OfOne;
     use crate::goal::unify::unify;
+    use crate::goal::Goal;
+    use crate::tests::util;
     use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goal = lazy(|| unify(x, 1));
+        let goal: Goal<OfOne<i32>> = lazy(|| unify(x, 1));
         let results = util::goal_resolves_to(goal, &x);
         assert_eq!(results, vec![1]);
     }

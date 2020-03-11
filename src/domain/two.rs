@@ -1,39 +1,37 @@
 use super::{Domain, DomainType, IntoDomainVal, Unified, UnifyIn};
 use crate::state::State;
-use crate::value::{IntoVal, LVar, Val};
+use crate::value::{LVar, Val};
 use im::HashMap;
 use std::fmt::Debug;
-use std::marker::PhantomData;
+
+type T1 = i32;
+type T2 = Vec<i32>;
 
 #[derive(Debug)]
-pub struct OfTwo<T1, T2> {
+pub struct OfTwo {
     t1: HashMap<LVar<T1>, Val<T1>>,
     t2: HashMap<LVar<T2>, Val<T2>>,
 }
 
 #[derive(Debug)]
-pub enum OfTwoVal<'a, T1: UnifyIn<'a, OfTwo<T1, T2>>, T2: UnifyIn<'a, OfTwo<T1, T2>>> {
-    T1(Val<T1>, PhantomData<&'a T1>),
-    T2(Val<T2>, PhantomData<&'a T2>),
+pub enum OfTwoVal {
+    T1(Val<T1>),
+    T2(Val<T2>),
 }
 
-impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>>, T2: UnifyIn<'a, OfTwo<T1, T2>> + 'a, V: IntoVal<T1>>
-    IntoDomainVal<'a, OfTwo<T1, T2>> for V
-{
-    fn into_domain_val(self) -> OfTwoVal<'a, T1, T2> {
-        OfTwoVal::T1(self.into_val(), PhantomData)
+impl<'a> IntoDomainVal<'a, T1> for OfTwo {
+    fn into_domain_val(val: Val<T1>) -> OfTwoVal {
+        OfTwoVal::T1(val)
     }
 }
 
-impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>>, T2: UnifyIn<'a, OfTwo<T1, T2>> + 'a, V: IntoVal<T2>>
-    IntoDomainVal<'a, OfTwo<T1, T2>> for V
-{
-    fn into_domain_val(self) -> OfTwoVal<'a, T1, T2> {
-        OfTwoVal::T2(self.into_val(), PhantomData)
+impl<'a> IntoDomainVal<'a, T2> for OfTwo {
+    fn into_domain_val(val: Val<T2>) -> OfTwoVal {
+        OfTwoVal::T2(val)
     }
 }
 
-impl<'a, T1, T2> Clone for OfTwo<T1, T2> {
+impl<'a> Clone for OfTwo {
     fn clone(&self) -> Self {
         OfTwo {
             t1: self.t1.clone(),
@@ -41,9 +39,7 @@ impl<'a, T1, T2> Clone for OfTwo<T1, T2> {
         }
     }
 }
-impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>>, T2: UnifyIn<'a, OfTwo<T1, T2>> + 'a> Clone
-    for OfTwoVal<'a, T1, T2>
-{
+impl Clone for OfTwoVal {
     fn clone(&self) -> Self {
         match self {
             OfTwoVal::T1(val) => OfTwoVal::T1(val.clone()),
@@ -52,10 +48,8 @@ impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>>, T2: UnifyIn<'a, OfTwo<T1, T2>> + 'a> Cl
     }
 }
 
-impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>> + 'a, T2: UnifyIn<'a, OfTwo<T1, T2>> + 'a> Domain<'a>
-    for OfTwo<T1, T2>
-{
-    type Value = OfTwoVal<'a, T1, T2>;
+impl<'a> Domain<'a> for OfTwo {
+    type Value = OfTwoVal;
     fn new() -> Self {
         OfTwo {
             t1: HashMap::new(),
@@ -67,17 +61,15 @@ impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>> + 'a, T2: UnifyIn<'a, OfTwo<T1, T2>> + '
         a: Self::Value,
         b: Self::Value,
     ) -> Option<State<Self>> {
-        use OfTwoVal::*;
-
         match (a, b) {
-            (T1(a), T1(b)) => state.unify(a, b),
+            (OfTwoVal::T1(a), OfTwoVal::T1(b)) => state.unify::<T1, Val<T1>, Val<T1>>(a, b),
+            (OfTwoVal::T2(a), OfTwoVal::T2(b)) => state.unify::<T2, Val<T2>, Val<T2>>(a, b),
+            _ => None, // This should only happen if a DomainVal constructor allows two values with different types.
         }
     }
 }
 
-impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>> + 'a, T2: UnifyIn<'a, OfTwo<T1, T2>> + 'a>
-    DomainType<'a, T1> for OfTwo<T1, T2>
-{
+impl<'a> DomainType<'a, T1> for OfTwo {
     fn values_as_ref(&self) -> &HashMap<LVar<T1>, Val<T1>> {
         &self.t1
     }
@@ -86,9 +78,7 @@ impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>> + 'a, T2: UnifyIn<'a, OfTwo<T1, T2>> + '
     }
 }
 
-impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>> + 'a, T2: UnifyIn<'a, OfTwo<T1, T2>> + 'a>
-    DomainType<'a, T2> for OfTwo<T1, T2>
-{
+impl<'a> DomainType<'a, T2> for OfTwo {
     fn values_as_ref(&self) -> &HashMap<LVar<T2>, Val<T2>> {
         &self.t2
     }
@@ -97,12 +87,55 @@ impl<'a, T1: UnifyIn<'a, OfTwo<T1, T2>> + 'a, T2: UnifyIn<'a, OfTwo<T1, T2>> + '
     }
 }
 
-impl<'a, T1: PartialEq + Debug + 'a, T2: PartialEq + Debug + 'a> UnifyIn<'a, OfTwo<T1, T2>> for T1 {
-    fn unify_with(&self, other: &Self) -> Unified<'a, OfTwo<T1, T2>> {
+impl<'a> UnifyIn<'a, OfTwo> for T1 {
+    fn unify_with(&self, other: &Self) -> Unified<'a, OfTwo> {
         if self == other {
             Unified::Success
         } else {
             Unified::Failed
         }
+    }
+}
+impl<'a> UnifyIn<'a, OfTwo> for T2 {
+    fn unify_with(&self, other: &Self) -> Unified<'a, OfTwo> {
+        if self == other {
+            Unified::Success
+        } else {
+            Unified::Failed
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::OfTwo;
+    use crate::goal::{all, project, unify, Goal};
+    use crate::state::{State, Watch};
+    use crate::tests::util;
+    use crate::value::{var, Val};
+
+    #[test]
+    fn succeeds() {
+        let x = var::<Vec<i32>>();
+        let y = var::<i32>();
+        let goal: Goal<OfTwo> = all::<OfTwo>(vec![
+            unify(x, vec![1, 2, 3]),
+            unify(y, 1),
+            project(|s: State<OfTwo>| {
+                // This is pretty gnarly
+                let x = Val::Var(x);
+                let x = s.resolve_val(&x).resolved();
+                let y = Val::Var(y);
+                let y = s.resolve_val(&y).resolved();
+                match (x, y) {
+                    (Ok(x), Ok(y)) => Watch::done(if x.contains(y) { Some(s) } else { None }),
+                    (Err(x), Err(y)) => Watch::watch(s, x).and(y),
+                    (_, Err(y)) => Watch::watch(s, y),
+                    (Err(x), _) => Watch::watch(s, x),
+                }
+            }) as Goal<OfTwo>,
+        ]);
+        let result = util::goal_resolves_to(goal, (&x, &y));
+        assert_eq!(result, vec![(vec![1, 2, 3], 1)]);
     }
 }

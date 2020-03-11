@@ -1,6 +1,6 @@
 use super::{Domain, DomainType, IntoDomainVal, Unified, UnifyIn};
 use crate::state::State;
-use crate::value::{IntoVal, LVar, Val};
+use crate::value::{LVar, Val};
 use im::HashMap;
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -13,9 +13,14 @@ pub struct OfOne<T> {
 #[derive(Debug)]
 pub struct OfOneVal<'a, T: UnifyIn<'a, OfOne<T>>>(Val<T>, PhantomData<&'a T>);
 
-impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a, V: IntoVal<T>> IntoDomainVal<'a, OfOne<T>> for V {
-    fn into_domain_val(self) -> OfOneVal<'a, T> {
-        OfOneVal(self.into_val(), PhantomData)
+// impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a> IntoDomainVal<'a, OfOne<T>> for LVar<T> {
+//     fn into_domain_val(self) -> OfOneVal<'a, T> {
+//         OfOneVal(self.into_val(), PhantomData)
+//     }
+// }
+impl<'a, T: UnifyIn<'a, OfOne<T>> + 'a> IntoDomainVal<'a, T> for OfOne<T> {
+    fn into_domain_val(val: Val<T>) -> OfOneVal<'a, T> {
+        OfOneVal(val, PhantomData)
     }
 }
 
