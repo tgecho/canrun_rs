@@ -7,104 +7,99 @@ use std::fmt::Debug;
 type T1 = i32;
 type T2 = Vec<i32>;
 
-#[derive(Debug)]
-pub struct OfTwo {
-    t1: HashMap<LVar<T1>, Val<T1>>,
-    t2: HashMap<LVar<T2>, Val<T2>>,
-}
-
-#[derive(Debug)]
-pub enum OfTwoVal {
-    T1(Val<T1>),
-    T2(Val<T2>),
-}
-
-impl<'a> IntoDomainVal<'a, T1> for OfTwo {
-    fn into_domain_val(val: Val<T1>) -> OfTwoVal {
-        OfTwoVal::T1(val)
-    }
-}
-
-impl<'a> IntoDomainVal<'a, T2> for OfTwo {
-    fn into_domain_val(val: Val<T2>) -> OfTwoVal {
-        OfTwoVal::T2(val)
-    }
-}
-
-impl<'a> Clone for OfTwo {
-    fn clone(&self) -> Self {
-        OfTwo {
-            t1: self.t1.clone(),
-            t2: self.t2.clone(),
+macro_rules! impl_into_domain_val {
+    ($type:ty, $variant:path, $domain_value:ident) => {
+        impl<'a> IntoDomainVal<'a, $type> for OfTwo {
+            fn into_domain_val(val: Val<$type>) -> $domain_value {
+                $variant(val)
+            }
         }
-    }
-}
-impl Clone for OfTwoVal {
-    fn clone(&self) -> Self {
-        match self {
-            OfTwoVal::T1(val) => OfTwoVal::T1(val.clone()),
-            OfTwoVal::T2(val) => OfTwoVal::T2(val.clone()),
-        }
-    }
+    };
 }
 
-impl<'a> Domain<'a> for OfTwo {
-    type Value = OfTwoVal;
-    fn new() -> Self {
-        OfTwo {
-            t1: HashMap::new(),
-            t2: HashMap::new(),
+macro_rules! impl_domain_type {
+    ($domain:ty, $type:ty, $property:ident) => {
+        impl<'a> DomainType<'a, $type> for $domain {
+            fn values_as_ref(&self) -> &HashMap<LVar<$type>, Val<$type>> {
+                &self.$property
+            }
+            fn values_as_mut(&mut self) -> &mut HashMap<LVar<$type>, Val<$type>> {
+                &mut self.$property
+            }
         }
-    }
-    fn unify_domain_values(
-        state: State<'a, Self>,
-        a: Self::Value,
-        b: Self::Value,
-    ) -> Option<State<Self>> {
-        match (a, b) {
-            (OfTwoVal::T1(a), OfTwoVal::T1(b)) => state.unify::<T1, Val<T1>, Val<T1>>(a, b),
-            (OfTwoVal::T2(a), OfTwoVal::T2(b)) => state.unify::<T2, Val<T2>, Val<T2>>(a, b),
-            _ => None, // This should only happen if a DomainVal constructor allows two values with different types.
-        }
-    }
+    };
 }
 
-impl<'a> DomainType<'a, T1> for OfTwo {
-    fn values_as_ref(&self) -> &HashMap<LVar<T1>, Val<T1>> {
-        &self.t1
-    }
-    fn values_as_mut(&mut self) -> &mut HashMap<LVar<T1>, Val<T1>> {
-        &mut self.t1
-    }
+macro_rules! impl_unify_eq {
+    ($domain:ty, $type:ty) => {
+        impl<'a> UnifyIn<'a, OfTwo> for $type {
+            fn unify_with(&self, other: &Self) -> Unified<'a, OfTwo> {
+                if self == other {
+                    Unified::Success
+                } else {
+                    Unified::Failed
+                }
+            }
+        }
+    };
 }
 
-impl<'a> DomainType<'a, T2> for OfTwo {
-    fn values_as_ref(&self) -> &HashMap<LVar<T2>, Val<T2>> {
-        &self.t2
-    }
-    fn values_as_mut(&mut self) -> &mut HashMap<LVar<T2>, Val<T2>> {
-        &mut self.t2
-    }
+macro_rules! create_types {
+    ($domain:ident, $($name:ident:$type:ty),+) => {
+
+        #[derive(Debug)]
+        pub struct $domain {
+            $($name: HashMap<LVar<$type>, Val<$type>>),+
+        }
+
+        #[allow(non_camel_case_types)]
+        #[derive(Debug)]
+        pub enum DomainValue {
+            $($name(Val<$type>)),+
+        }
+
+        impl<'a> Clone for $domain {
+            fn clone(&self) -> Self {
+                $domain {
+                    $($name: self.$name.clone()),+
+                }
+            }
+        }
+
+        impl Clone for DomainValue {
+            fn clone(&self) -> Self {
+                match self {
+                    $(DomainValue::$name(val) => DomainValue::$name(val.clone())),+
+                }
+            }
+        }
+
+        impl<'a> Domain<'a> for $domain {
+            type Value = DomainValue;
+            fn new() -> Self {
+                $domain {
+                    $($name: HashMap::new(),)+
+                }
+            }
+            fn unify_domain_values(
+                state: State<'a, Self>,
+                a: Self::Value,
+                b: Self::Value,
+            ) -> Option<State<Self>> {
+                match (a, b) {
+                    $((DomainValue::$name(a), DomainValue::$name(b)) => state.unify::<$type, Val<$type>, Val<$type>>(a, b),)+
+                    _ => None, // This should only happen if a DomainVal constructor allows two values with different types.
+                }
+            }
+        }
+
+        $(impl_into_domain_val!($type, DomainValue::$name, DomainValue);)+
+        $(impl_domain_type!($domain, $type, $name);)+
+        $(impl_unify_eq!($domain, $type);)+
+    };
 }
 
-impl<'a> UnifyIn<'a, OfTwo> for T1 {
-    fn unify_with(&self, other: &Self) -> Unified<'a, OfTwo> {
-        if self == other {
-            Unified::Success
-        } else {
-            Unified::Failed
-        }
-    }
-}
-impl<'a> UnifyIn<'a, OfTwo> for T2 {
-    fn unify_with(&self, other: &Self) -> Unified<'a, OfTwo> {
-        if self == other {
-            Unified::Success
-        } else {
-            Unified::Failed
-        }
-    }
-}
+create_types!(OfTwo, t1: T1, t2: T2);
 
 #[cfg(test)]
 mod tests {
