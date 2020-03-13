@@ -1,16 +1,7 @@
-use super::{Domain, DomainType, IntoDomainVal, Unified, UnifyIn};
-use crate::state::State;
-use crate::value::{LVar, Val};
-use im::HashMap;
-use std::fmt::Debug;
-
-type T1 = i32;
-type T2 = Vec<i32>;
-
 macro_rules! impl_into_domain_val {
     ($type:ty, $variant:path, $domain_value:ident) => {
-        impl<'a> IntoDomainVal<'a, $type> for OfTwo {
-            fn into_domain_val(val: Val<$type>) -> $domain_value {
+        impl<'a> crate::domain::IntoDomainVal<'a, $type> for OfTwo {
+            fn into_domain_val(val: crate::value::Val<$type>) -> $domain_value {
                 $variant(val)
             }
         }
@@ -19,11 +10,15 @@ macro_rules! impl_into_domain_val {
 
 macro_rules! impl_domain_type {
     ($domain:ty, $type:ty, $property:ident) => {
-        impl<'a> DomainType<'a, $type> for $domain {
-            fn values_as_ref(&self) -> &HashMap<LVar<$type>, Val<$type>> {
+        impl<'a> crate::domain::DomainType<'a, $type> for $domain {
+            fn values_as_ref(
+                &self,
+            ) -> &im::HashMap<crate::value::LVar<$type>, crate::value::Val<$type>> {
                 &self.$property
             }
-            fn values_as_mut(&mut self) -> &mut HashMap<LVar<$type>, Val<$type>> {
+            fn values_as_mut(
+                &mut self,
+            ) -> &mut im::HashMap<crate::value::LVar<$type>, crate::value::Val<$type>> {
                 &mut self.$property
             }
         }
@@ -32,12 +27,12 @@ macro_rules! impl_domain_type {
 
 macro_rules! impl_unify_eq {
     ($domain:ty, $type:ty) => {
-        impl<'a> UnifyIn<'a, OfTwo> for $type {
-            fn unify_with(&self, other: &Self) -> Unified<'a, OfTwo> {
+        impl<'a> crate::domain::UnifyIn<'a, OfTwo> for $type {
+            fn unify_with(&self, other: &Self) -> crate::domain::Unified<'a, OfTwo> {
                 if self == other {
-                    Unified::Success
+                    crate::domain::Unified::Success
                 } else {
-                    Unified::Failed
+                    crate::domain::Unified::Failed
                 }
             }
         }
@@ -45,61 +40,74 @@ macro_rules! impl_unify_eq {
 }
 
 macro_rules! create_types {
-    ($domain:ident, $($name:ident:$type:ty),+) => {
+    ($domain:ident $($name:ident:$type:ty,)+) => {
+        pub use domain::$domain::$domain;
 
-        #[derive(Debug)]
-        pub struct $domain {
-            $($name: HashMap<LVar<$type>, Val<$type>>),+
-        }
+        pub mod domain {
+            #[allow(non_snake_case)]
+            pub mod $domain {
 
-        #[allow(non_camel_case_types)]
-        #[derive(Debug)]
-        pub enum DomainValue {
-            $($name(Val<$type>)),+
-        }
-
-        impl<'a> Clone for $domain {
-            fn clone(&self) -> Self {
-                $domain {
-                    $($name: self.$name.clone()),+
+                #[derive(std::fmt::Debug)]
+                pub struct $domain {
+                    $($name: im::HashMap<crate::value::LVar<$type>, crate::value::Val<$type>>),+
                 }
+
+                #[allow(non_camel_case_types)]
+                #[derive(std::fmt::Debug)]
+                pub enum DomainValue {
+                    $($name(crate::value::Val<$type>)),+
+                }
+
+                impl<'a> Clone for $domain {
+                    fn clone(&self) -> Self {
+                        $domain {
+                            $($name: self.$name.clone()),+
+                        }
+                    }
+                }
+
+                impl Clone for DomainValue {
+                    fn clone(&self) -> Self {
+                        match self {
+                            $(DomainValue::$name(val) => DomainValue::$name(val.clone())),+
+                        }
+                    }
+                }
+
+                impl<'a> crate::domain::Domain<'a> for $domain {
+                    type Value = DomainValue;
+                    fn new() -> Self {
+                        $domain {
+                            $($name: im::HashMap::new(),)+
+                        }
+                    }
+                    fn unify_domain_values(
+                        state: crate::state::State<'a, Self>,
+                        a: Self::Value,
+                        b: Self::Value,
+                    ) -> Option<crate::state::State<Self>> {
+                        match (a, b) {
+                            $((DomainValue::$name(a), DomainValue::$name(b)) => state.unify::<$type, crate::value::Val<$type>, crate::value::Val<$type>>(a, b),)+
+                            _ => None, // This should only happen if a DomainVal constructor allows two values with different types.
+                        }
+                    }
+                }
+
+                $(impl_into_domain_val!($type, DomainValue::$name, DomainValue);)+
+                $(impl_domain_type!($domain, $type, $name);)+
+                $(impl_unify_eq!($domain, $type);)+
+
             }
         }
-
-        impl Clone for DomainValue {
-            fn clone(&self) -> Self {
-                match self {
-                    $(DomainValue::$name(val) => DomainValue::$name(val.clone())),+
-                }
-            }
-        }
-
-        impl<'a> Domain<'a> for $domain {
-            type Value = DomainValue;
-            fn new() -> Self {
-                $domain {
-                    $($name: HashMap::new(),)+
-                }
-            }
-            fn unify_domain_values(
-                state: State<'a, Self>,
-                a: Self::Value,
-                b: Self::Value,
-            ) -> Option<State<Self>> {
-                match (a, b) {
-                    $((DomainValue::$name(a), DomainValue::$name(b)) => state.unify::<$type, Val<$type>, Val<$type>>(a, b),)+
-                    _ => None, // This should only happen if a DomainVal constructor allows two values with different types.
-                }
-            }
-        }
-
-        $(impl_into_domain_val!($type, DomainValue::$name, DomainValue);)+
-        $(impl_domain_type!($domain, $type, $name);)+
-        $(impl_unify_eq!($domain, $type);)+
     };
 }
 
-create_types!(OfTwo, t1: T1, t2: T2);
+create_types! {
+    OfTwo
+    t1: i32,
+    t2: Vec<i32>,
+    t3: String,
+}
 
 #[cfg(test)]
 mod tests {
