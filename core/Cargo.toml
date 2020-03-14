@@ -1,0 +1,19 @@
+[package]
+name = "canrun"
+version = "0.1.0"
+authors = ["Erik Simmler <tgecho@gmail.com>"]
+edition = "2018"
+
+[lib]
+# To stop double compile errors https://github.com/rust-lang/cargo/issues/851
+doctest = false
+
+[dependencies]
+im = "14.2.0"
+rand = "0.7.3"
+itertools = "0.8.2"
+log = "0.4.8"
+canrun_codegen = {path = "../codegen"}
+
+[dev-dependencies]
+env_logger = "0.7.1"
