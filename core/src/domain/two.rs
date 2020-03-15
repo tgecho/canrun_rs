@@ -1,5 +1,11 @@
+// The name "canrun" is not available from within the crate for testing.
+// I think this workaround should work ~95% of the time. I guess it
+// will fall down if someone renames the crate or something.
+// https://github.com/rust-lang/rust/issues/54363
+use crate as canrun;
+
 canrun_codegen::domain! {
-    OfTwo
+    OfThree
     i32,
     Vec<i32>,
     String,
@@ -7,7 +13,7 @@ canrun_codegen::domain! {
 
 #[cfg(test)]
 mod tests {
-    use super::OfTwo;
+    use super::OfThree;
     use crate::goal::{all, project, unify, Goal};
     use crate::state::{State, Watch};
     use crate::tests::util;
@@ -17,10 +23,10 @@ mod tests {
     fn succeeds() {
         let x = var::<Vec<i32>>();
         let y = var::<i32>();
-        let goal: Goal<OfTwo> = all::<OfTwo>(vec![
+        let goal: Goal<OfThree> = all::<OfThree>(vec![
             unify(x, vec![1, 2, 3]),
             unify(y, 1),
-            project(|s: State<OfTwo>| {
+            project(|s: State<OfThree>| {
                 // This is pretty gnarly
                 let x = Val::Var(x);
                 let x = s.resolve_val(&x).resolved();
@@ -32,7 +38,7 @@ mod tests {
                     (_, Err(y)) => Watch::watch(s, y),
                     (Err(x), _) => Watch::watch(s, x),
                 }
-            }) as Goal<OfTwo>,
+            }) as Goal<OfThree>,
         ]);
         let result = util::goal_resolves_to(goal, (&x, &y));
         assert_eq!(result, vec![(vec![1, 2, 3], 1)]);
