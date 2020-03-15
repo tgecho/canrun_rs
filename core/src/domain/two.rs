@@ -11,6 +11,11 @@ domains! {
         Vec<i32>,
         String,
     }
+
+    pub domain OfTwo {
+        i32,
+        Vec<i32>,
+    }
 }
 
 #[cfg(test)]
