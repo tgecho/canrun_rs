@@ -6,31 +6,44 @@ use syn::punctuated::Punctuated;
 use syn::{parse_macro_input, Result, Token};
 
 struct DomainDef {
+    domain_visibility: syn::Visibility,
     domain_name: syn::Ident,
-    domain_type: Vec<syn::Type>,
+    domain_types: Vec<syn::Type>,
+}
+
+mod kw {
+    syn::custom_keyword!(domain);
 }
 
 impl Parse for DomainDef {
     fn parse(input: ParseStream) -> Result<Self> {
+        let domain_visibility = input.parse()?;
+        input.parse::<kw::domain>()?;
+        // input.parse::<proc_macro2::Delimiter>()?;
         let domain_name: syn::Ident = input.parse()?;
-        let raw_types: Punctuated<syn::Type, Token![,]> = Punctuated::parse_terminated(input)?;
-        let domain_type: Vec<_> = raw_types.into_iter().collect();
+        let content;
+        syn::braced!(content in input);
+        let raw_types: Punctuated<syn::Type, Token![,]> =
+            content.parse_terminated(syn::Type::parse)?;
+        let domain_types: Vec<_> = raw_types.into_iter().collect();
 
         Ok(DomainDef {
+            domain_visibility,
             domain_name,
-            domain_type,
+            domain_types,
         })
     }
 }
 
 #[proc_macro]
-pub fn domain(item: TokenStream) -> TokenStream {
+pub fn domains(item: TokenStream) -> TokenStream {
     let DomainDef {
+        domain_visibility,
         domain_name,
-        domain_type,
+        domain_types,
     } = parse_macro_input!(item as DomainDef);
 
-    let (field, variant): (Vec<_>, Vec<_>) = (0..domain_type.len())
+    let (fields, variants): (Vec<_>, Vec<_>) = (0..domain_types.len())
         .into_iter()
         .map(|n| (format_ident!("t{}", n), format_ident!("T{}", n)))
         .unzip();
@@ -39,15 +52,15 @@ pub fn domain(item: TokenStream) -> TokenStream {
 
     let result = quote! {
         #[derive(std::fmt::Debug)]
-        pub struct #domain_name {
-            #(#field: im::HashMap<canrun::value::LVar<#domain_type>, canrun::value::Val<#domain_type>>),*
+        #domain_visibility struct #domain_name {
+            #(#fields: im::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>>),*
         }
 
         impl<'a> canrun::domain::Domain<'a> for #domain_name {
             type Value = #value_name;
             fn new() -> Self {
                 #domain_name {
-                    #(#field: im::HashMap::new(),)*
+                    #(#fields: im::HashMap::new(),)*
                 }
             }
             fn unify_domain_values(
@@ -58,8 +71,8 @@ pub fn domain(item: TokenStream) -> TokenStream {
                 use canrun::value::Val;
                 match (a, b) {
                     #(
-                        (#value_name::#variant(a), #value_name::#variant(b)) => {
-                            state.unify::<#domain_type, Val<#domain_type>, Val<#domain_type>>(a, b)
+                        (#value_name::#variants(a), #value_name::#variants(b)) => {
+                            state.unify::<#domain_types, Val<#domain_types>, Val<#domain_types>>(a, b)
                         }
                     ,)*
                     _ => None, // This should only happen if a DomainVal constructor allows two values with different types.
@@ -68,30 +81,30 @@ pub fn domain(item: TokenStream) -> TokenStream {
         }
 
         #(
-            impl<'a> canrun::domain::IntoDomainVal<'a, #domain_type> for #domain_name {
-                fn into_domain_val(val: canrun::value::Val<#domain_type>) -> #value_name {
-                    #value_name::#variant(val)
+            impl<'a> canrun::domain::IntoDomainVal<'a, #domain_types> for #domain_name {
+                fn into_domain_val(val: canrun::value::Val<#domain_types>) -> #value_name {
+                    #value_name::#variants(val)
                 }
             }
         )*
 
         #(
-            impl<'a> canrun::domain::DomainType<'a, #domain_type> for #domain_name {
+            impl<'a> canrun::domain::DomainType<'a, #domain_types> for #domain_name {
                 fn values_as_ref(
                     &self,
-                ) -> &im::HashMap<canrun::value::LVar<#domain_type>, canrun::value::Val<#domain_type>> {
-                    &self.#field
+                ) -> &im::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>> {
+                    &self.#fields
                 }
                 fn values_as_mut(
                     &mut self,
-                ) -> &mut im::HashMap<canrun::value::LVar<#domain_type>, canrun::value::Val<#domain_type>> {
-                    &mut self.#field
+                ) -> &mut im::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>> {
+                    &mut self.#fields
                 }
             }
         )*
 
         #(
-            impl<'a> canrun::domain::UnifyIn<'a, #domain_name> for #domain_type {
+            impl<'a> canrun::domain::UnifyIn<'a, #domain_name> for #domain_types {
                 fn unify_with(&self, other: &Self) -> canrun::domain::Unified<'a, #domain_name> {
                     if self == other {
                         canrun::domain::Unified::Success
@@ -105,20 +118,20 @@ pub fn domain(item: TokenStream) -> TokenStream {
         impl<'a> Clone for #domain_name {
             fn clone(&self) -> Self {
                 #domain_name {
-                    #(#field: self.#field.clone()),*
+                    #(#fields: self.#fields.clone()),*
                 }
             }
         }
 
         #[derive(std::fmt::Debug)]
-        pub enum #value_name {
-            #(#variant(canrun::value::Val<#domain_type>)),*
+        #domain_visibility enum #value_name {
+            #(#variants(canrun::value::Val<#domain_types>)),*
         }
 
         impl Clone for #value_name {
             fn clone(&self) -> Self {
                 match self {
-                    #(#value_name::#variant(val) => #value_name::#variant(val.clone())),*
+                    #(#value_name::#variants(val) => #value_name::#variants(val.clone())),*
                 }
             }
         }

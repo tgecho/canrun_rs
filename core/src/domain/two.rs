@@ -3,12 +3,14 @@
 // will fall down if someone renames the crate or something.
 // https://github.com/rust-lang/rust/issues/54363
 use crate as canrun;
+use canrun_codegen::domains;
 
-canrun_codegen::domain! {
-    OfThree
-    i32,
-    Vec<i32>,
-    String,
+domains! {
+    pub domain OfThree {
+        i32,
+        Vec<i32>,
+        String,
+    }
 }
 
 #[cfg(test)]
