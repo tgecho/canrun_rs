@@ -6,12 +6,6 @@ use crate as canrun;
 use canrun_codegen::domains;
 
 domains! {
-    pub domain OfThree {
-        i32,
-        Vec<i32>,
-        String,
-    }
-
     pub domain OfTwo {
         i32,
         Vec<i32>,
@@ -20,7 +14,7 @@ domains! {
 
 #[cfg(test)]
 mod tests {
-    use super::OfThree;
+    use super::OfTwo;
     use crate::goal::{all, project, unify, Goal};
     use crate::state::{State, Watch};
     use crate::tests::util;
@@ -30,10 +24,10 @@ mod tests {
     fn succeeds() {
         let x = var::<Vec<i32>>();
         let y = var::<i32>();
-        let goal: Goal<OfThree> = all::<OfThree>(vec![
+        let goal: Goal<OfTwo> = all::<OfTwo>(vec![
             unify(x, vec![1, 2, 3]),
             unify(y, 1),
-            project(|s: State<OfThree>| {
+            project(|s: State<OfTwo>| {
                 // This is pretty gnarly
                 let x = Val::Var(x);
                 let x = s.resolve_val(&x).resolved();
@@ -45,7 +39,7 @@ mod tests {
                     (_, Err(y)) => Watch::watch(s, y),
                     (Err(x), _) => Watch::watch(s, x),
                 }
-            }) as Goal<OfThree>,
+            }) as Goal<OfTwo>,
         ]);
         let result = util::goal_resolves_to(goal, (&x, &y));
         assert_eq!(result, vec![(vec![1, 2, 3], 1)]);

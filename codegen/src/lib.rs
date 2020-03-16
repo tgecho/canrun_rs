@@ -15,31 +15,32 @@ mod kw {
     syn::custom_keyword!(domain);
 }
 
-struct Defs {
+struct DomainDefs {
     defs: Vec<DomainDef>,
 }
-impl Parse for Defs {
+impl Parse for DomainDefs {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut defs = Vec::new();
-
         while !input.is_empty() {
             if input.peek(kw::domain) || input.peek2(kw::domain) {
                 defs.push(input.parse()?);
             }
         }
-
-        Ok(Defs { defs })
+        Ok(DomainDefs { defs })
     }
 }
 
 impl Parse for DomainDef {
     fn parse(input: ParseStream) -> Result<Self> {
         let domain_visibility = input.parse()?;
+
         input.parse::<kw::domain>()?;
-        // input.parse::<proc_macro2::Delimiter>()?;
+
         let domain_name: syn::Ident = input.parse()?;
+
         let content;
         syn::braced!(content in input);
+
         let raw_types: Punctuated<syn::Type, Token![,]> =
             content.parse_terminated(syn::Type::parse)?;
         let domain_types: Vec<_> = raw_types.into_iter().collect();
@@ -159,6 +160,6 @@ impl quote::ToTokens for DomainDef {
 
 #[proc_macro]
 pub fn domains(item: TokenStream) -> TokenStream {
-    let Defs { defs } = parse_macro_input!(item as Defs);
+    let DomainDefs { defs } = parse_macro_input!(item as DomainDefs);
     quote!(#(#defs)*).into()
 }
