@@ -28,7 +28,10 @@ mod tests {
             unify(x, vec![1, 2, 3]),
             unify(y, 1),
             project(|s: State<OfTwo>| {
-                // This is pretty gnarly
+                // TODO: Figure out a more ergonomic way to define watch and/or projection functions.
+                // - This may just be to provide the 1/2/3 var versions we had in the original PoC
+                // - The query system may be useful here, though we may want to add the ability to NOT clone.
+
                 let x = Val::Var(x);
                 let x = s.resolve_val(&x).resolved();
                 let y = Val::Var(y);
@@ -44,4 +47,8 @@ mod tests {
         let result = util::goal_resolves_to(goal, (&x, &y));
         assert_eq!(result, vec![(vec![1, 2, 3], 1)]);
     }
+    // TODO: Prove a few more use cases around connecting values of different types.
+    // - Specifically, how should we handle things like Vec<Val<T>>?
+    // - Does this need to be somehow special cased in the macro?
+    // - Or will it work (and is it clear/ergonomic enough) to just say if you want to be able to relate to values inside they need to be wrapped in a Val and have an equivilent elsewhere?
 }
