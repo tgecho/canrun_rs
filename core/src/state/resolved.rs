@@ -1,7 +1,6 @@
 use super::{State, WatchFns};
 use crate::domain::{Domain, DomainType};
-use crate::value::{LVar, Val};
-use std::rc::Rc;
+use crate::value::LVar;
 
 #[derive(Clone)]
 pub struct ResolvedState<'a, D: Domain<'a> + 'a> {
@@ -10,23 +9,14 @@ pub struct ResolvedState<'a, D: Domain<'a> + 'a> {
 }
 
 impl<'a, D: Domain<'a> + 'a> ResolvedState<'a, D> {
-    pub fn get_rc<T>(&self, var: &LVar<T>) -> Option<Rc<T>>
+    pub fn get<'g, T>(&'g self, var: LVar<T>) -> Result<&'g T, LVar<T>>
     where
         D: DomainType<'a, T>,
     {
-        let val = self.domain.values_as_ref().get(var)?;
-        match val {
-            Val::Var(var) => self.get_rc(var),
-            Val::Resolved(resolved) => Some(resolved.clone()),
+        match self.domain.values_as_ref().get(&var) {
+            Some(val) => val.resolved(),
+            None => Err(var),
         }
-    }
-
-    pub fn get<T>(&self, var: &LVar<T>) -> Option<T>
-    where
-        T: Clone,
-        D: DomainType<'a, T>,
-    {
-        self.get_rc(var).map(|rc| (*rc).clone())
     }
 
     pub fn reopen(self) -> State<'a, D> {

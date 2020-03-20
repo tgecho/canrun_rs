@@ -1,5 +1,4 @@
 #![feature(specialization)]
-#![feature(trace_macros)]
 
 pub mod domain;
 pub mod goal;

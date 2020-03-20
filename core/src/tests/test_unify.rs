@@ -22,7 +22,7 @@ fn unifying_var_success() {
     let s: State<OfOne<i32>> = State::new();
     let x = var();
     let s = s.apply(|s| s.unify(x, 1)?.unify(1, x));
-    let results: Vec<i32> = s.query(&x).collect();
+    let results: Vec<i32> = s.query(x).collect();
     assert_eq!(results, vec![1]);
 }
 

@@ -34,7 +34,7 @@ fn basic_watch_succeeds() {
         custom(|s| s.watch(assert(x, |x| x > &1))),
         custom(|s| s.watch(assert(x, |x| x > &0))),
     ];
-    util::all_permutations_resolve_to(goals, &x, vec![2]);
+    util::all_permutations_resolve_to(goals, x, vec![2]);
 }
 
 #[test]
@@ -45,5 +45,5 @@ fn basic_watch_fails() {
         custom(|s| s.watch(assert(x.clone(), |x| x > &1))),
         custom(|s| s.watch(assert(x, |x| x > &3))),
     ];
-    util::all_permutations_resolve_to(goals, &x, vec![]);
+    util::all_permutations_resolve_to(goals, x, vec![]);
 }

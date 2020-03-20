@@ -43,7 +43,7 @@ mod tests {
     fn succeeds() {
         let x = var();
         let goal: Goal<OfOne<i32>> = custom(|s| s.unify(x, 1));
-        let results = util::goal_resolves_to(goal, &x);
+        let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![1]);
     }
 }

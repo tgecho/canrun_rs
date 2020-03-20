@@ -85,6 +85,16 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
+    pub fn get<'g, T>(&'g self, var: LVar<T>) -> Result<&'g T, LVar<T>>
+    where
+        D: DomainType<'a, T>,
+    {
+        match self.domain.values_as_ref().get(&var) {
+            Some(val) => val.resolved(),
+            None => Err(var),
+        }
+    }
+
     pub(crate) fn unify<T, A, B>(mut self, a: A, b: B) -> Option<Self>
     where
         T: UnifyIn<'a, D>,

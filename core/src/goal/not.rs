@@ -36,7 +36,7 @@ mod tests {
     fn succeeds() {
         let x = var();
         let goal: Goal<OfOne<i32>> = both(unify(x, 1), not(unify(x, 2)));
-        let results = util::goal_resolves_to(goal, &x);
+        let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![1]);
     }
 
@@ -44,7 +44,7 @@ mod tests {
     fn fails() {
         let x = var();
         let goal: Goal<OfOne<i32>> = both(unify(x, 5), not(unify(x, 5)));
-        let results = util::goal_resolves_to(goal, &x);
+        let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![]);
     }
 }

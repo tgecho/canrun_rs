@@ -18,7 +18,7 @@ mod tests {
     use crate::goal::{all, project, unify, Goal};
     use crate::state::{State, Watch};
     use crate::tests::util;
-    use crate::value::{var, Val};
+    use crate::value::var;
 
     #[test]
     fn succeeds() {
@@ -32,11 +32,7 @@ mod tests {
                 // - This may just be to provide the 1/2/3 var versions we had in the original PoC
                 // - The query system may be useful here, though we may want to add the ability to NOT clone.
 
-                let x = Val::Var(x);
-                let x = s.resolve_val(&x).resolved();
-                let y = Val::Var(y);
-                let y = s.resolve_val(&y).resolved();
-                match (x, y) {
+                match (s.get(x), s.get(y)) {
                     (Ok(x), Ok(y)) => Watch::done(if x.contains(y) { Some(s) } else { None }),
                     (Err(x), Err(y)) => Watch::watch(s, x).and(y),
                     (_, Err(y)) => Watch::watch(s, y),
@@ -44,7 +40,7 @@ mod tests {
                 }
             }) as Goal<OfTwo>,
         ]);
-        let result = util::goal_resolves_to(goal, (&x, &y));
+        let result = util::goal_resolves_to(goal, (x, y));
         assert_eq!(result, vec![(vec![1, 2, 3], 1)]);
     }
     // TODO: Prove a few more use cases around connecting values of different types.

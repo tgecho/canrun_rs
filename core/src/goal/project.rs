@@ -40,18 +40,18 @@ mod tests {
     use crate::goal::unify::unify;
     use crate::goal::Goal;
     use crate::tests::util;
-    use crate::value::{var, Val};
+    use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
         let goals: Vec<Goal<OfOne<i32>>> = vec![
             unify(2, x),
-            project(|s| match s.resolve_val(&Val::Var(x)).resolved() {
+            project(|s| match s.get(x) {
                 Ok(x) => Watch::done(if x > &1 { Some(s) } else { None }),
                 Err(x) => Watch::watch(s, x),
             }),
         ];
-        util::all_permutations_resolve_to(goals, &x, vec![2]);
+        util::all_permutations_resolve_to(goals, x, vec![2]);
     }
 }

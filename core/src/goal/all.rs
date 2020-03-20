@@ -30,7 +30,7 @@ mod tests {
         let x = var();
         let y = var();
         let goal: Goal<OfOne<i32>> = all(vec![unify(x, 5), unify(y, 7)]);
-        let result = util::goal_resolves_to(goal, (&x, &y));
+        let result = util::goal_resolves_to(goal, (x, y));
         assert_eq!(result, vec![(5, 7)]);
     }
 
@@ -38,7 +38,7 @@ mod tests {
     fn fails() {
         let x = var();
         let goal: Goal<OfOne<i32>> = all(vec![unify(x, 5), unify(x, 7)]);
-        let result = util::goal_resolves_to(goal.clone(), &x);
+        let result = util::goal_resolves_to(goal.clone(), x);
         assert_eq!(result, vec![]);
     }
 }

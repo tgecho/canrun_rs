@@ -1,5 +1,5 @@
-use crate::state::IterResolved;
 use crate::domain::{Domain, DomainType};
+use crate::state::IterResolved;
 use crate::value::LVar;
 
 pub trait StateQuery<'a, D: Domain<'a> + 'a> {
@@ -22,7 +22,7 @@ pub trait QueryState<'a, D: Domain<'a> + 'a> {
         -> Box<dyn Iterator<Item = Self::Result> + 'a>;
 }
 
-impl<'a, D, T> QueryState<'a, D> for &'a LVar<T>
+impl<'a, D, T> QueryState<'a, D> for LVar<T>
 where
     D: Domain<'a> + DomainType<'a, T> + 'a,
     T: Clone + 'a,
@@ -32,11 +32,15 @@ where
         self,
         state: S,
     ) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
-        Box::new(state.resolved_iter().filter_map(move |r| r.get(self)))
+        Box::new(
+            state
+                .resolved_iter()
+                .filter_map(move |r| r.get(self).ok().cloned()),
+        )
     }
 }
 
-impl<'a, D, T1, T2> QueryState<'a, D> for (&'a LVar<T1>, &'a LVar<T2>)
+impl<'a, D, T1, T2> QueryState<'a, D> for (LVar<T1>, LVar<T2>)
 where
     D: Domain<'a> + DomainType<'a, T1> + DomainType<'a, T2> + 'a,
     T1: Clone + 'a,
@@ -47,15 +51,13 @@ where
         self,
         state: S,
     ) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
-        Box::new(
-            state
-                .resolved_iter()
-                .filter_map(move |r| Some((r.get(self.0)?, r.get(self.1)?))),
-        )
+        Box::new(state.resolved_iter().filter_map(move |r| {
+            Some((r.get(self.0).ok().cloned()?, r.get(self.1).ok().cloned()?))
+        }))
     }
 }
 
-impl<'a, D, T1, T2, T3> QueryState<'a, D> for (&'a LVar<T1>, &'a LVar<T2>, &'a LVar<T3>)
+impl<'a, D, T1, T2, T3> QueryState<'a, D> for (LVar<T1>, LVar<T2>, LVar<T3>)
 where
     D: Domain<'a> + DomainType<'a, T1> + DomainType<'a, T2> + DomainType<'a, T3> + 'a,
     T1: Clone + 'a,
@@ -67,10 +69,12 @@ where
         self,
         state: S,
     ) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
-        Box::new(
-            state
-                .resolved_iter()
-                .filter_map(move |r| Some((r.get(self.0)?, r.get(self.1)?, r.get(self.2)?))),
-        )
+        Box::new(state.resolved_iter().filter_map(move |r| {
+            Some((
+                r.get(self.0).ok().cloned()?,
+                r.get(self.1).ok().cloned()?,
+                r.get(self.2).ok().cloned()?,
+            ))
+        }))
     }
 }
