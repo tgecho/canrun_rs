@@ -20,6 +20,8 @@ pub use lazy::lazy;
 pub use not::not;
 pub use project::assert_1::assert_1;
 pub use project::assert_2::assert_2;
+pub use project::map_1::map_1;
+pub use project::map_2::map_2;
 pub use unify::unify;
 
 #[derive(Clone, Debug)]
