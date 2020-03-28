@@ -1,5 +1,6 @@
 use crate::domain::Domain;
 use crate::state::State;
+use std::rc::Rc;
 
 mod all;
 mod any;
@@ -8,7 +9,7 @@ mod custom;
 mod either;
 mod lazy;
 mod not;
-mod project;
+pub mod project;
 mod unify;
 pub use all::all;
 pub use any::any;
@@ -17,7 +18,8 @@ pub use custom::custom;
 pub use either::either;
 pub use lazy::lazy;
 pub use not::not;
-pub use project::project;
+pub use project::assert_1::assert_1;
+pub use project::assert_2::assert_2;
 pub use unify::unify;
 
 #[derive(Clone, Debug)]
@@ -30,7 +32,7 @@ pub enum Goal<'a, D: Domain<'a>> {
     Not(Box<Goal<'a, D>>),
     Lazy(lazy::Lazy<'a, D>),
     Custom(custom::Custom<'a, D>),
-    Project(project::Project<'a, D>),
+    Project(Rc<dyn project::Project<'a, D> + 'a>),
 }
 
 impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
@@ -44,7 +46,7 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
             Goal::Not(goal) => not::run(state, *goal),
             Goal::Lazy(lazy) => lazy.run(state),
             Goal::Custom(custom) => custom.run(state),
-            Goal::Project(project) => project.run(state),
+            Goal::Project(proj) => project::run(proj, state),
         }
     }
 }

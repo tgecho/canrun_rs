@@ -1,3 +1,6 @@
+pub mod assert_1;
+pub mod assert_2;
+
 use super::Goal;
 use crate::domain::Domain;
 use crate::state::State;
@@ -5,37 +8,22 @@ use crate::state::Watch;
 use std::fmt;
 use std::rc::Rc;
 
-#[derive(Clone)]
-pub struct Project<'a, D: Domain<'a>>(Rc<dyn Fn(State<'a, D>) -> Watch<State<'_, D>> + 'a>);
-
-impl<'a, D: Domain<'a>> Project<'a, D> {
-    pub(crate) fn run(self, state: State<'a, D>) -> Option<State<'a, D>>
-    where
-        D: Domain<'a>,
-    {
-        let watch = self.0;
-        state.watch(watch)
-    }
-}
-
-pub fn project<'a, D, F>(func: F) -> Goal<'a, D>
+pub(crate) fn run<'a, D>(
+    proj: Rc<dyn Project<'a, D> + 'a>,
+    state: State<'a, D>,
+) -> Option<State<'a, D>>
 where
     D: Domain<'a>,
-    F: Fn(State<'a, D>) -> Watch<State<'a, D>> + 'a,
 {
-    Goal::Project(Project(Rc::new(func)))
+    state.watch(Rc::new(move |s| proj.attempt(s)))
 }
-
-impl<'a, D: Domain<'a>> fmt::Debug for Project<'a, D> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Project ??")
-    }
+pub trait Project<'a, D: Domain<'a>>: fmt::Debug {
+    fn attempt<'r>(&'r self, state: State<'a, D>) -> Watch<State<'a, D>>;
 }
 
 #[cfg(test)]
 mod tests {
-    use super::project;
-    use super::Watch;
+    use super::assert_1::assert_1;
     use crate::domain::one::OfOne;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
@@ -45,13 +33,7 @@ mod tests {
     #[test]
     fn succeeds() {
         let x = var();
-        let goals: Vec<Goal<OfOne<i32>>> = vec![
-            unify(2, x),
-            project(|s| match s.get(x) {
-                Ok(x) => Watch::done(if x > &1 { Some(s) } else { None }),
-                Err(x) => Watch::watch(s, x),
-            }),
-        ];
+        let goals: Vec<Goal<OfOne<i32>>> = vec![unify(2, x), assert_1(x, |x| *x > 1)];
         util::all_permutations_resolve_to(goals, x, vec![2]);
     }
 }
