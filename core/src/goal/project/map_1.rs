@@ -10,29 +10,34 @@ use crate::value::{
 use std::fmt;
 use std::rc::Rc;
 
-pub fn map_1<'a, A, AV, B, BV, D, A_, _B>(a: AV, b: BV, a_: A_, _b: _B) -> Goal<'a, D>
+pub fn map_1<'a, A, AV, B, BV, D, AtoB, BtoA>(
+    a: AV,
+    b: BV,
+    a_to_b: AtoB,
+    b_to_a: BtoA,
+) -> Goal<'a, D>
 where
     A: UnifyIn<'a, D> + 'a,
     AV: IntoVal<A>,
     B: UnifyIn<'a, D> + 'a,
     BV: IntoVal<B>,
     D: Domain<'a> + DomainType<'a, A> + DomainType<'a, B>,
-    A_: Fn(&A) -> B + 'a,
-    _B: Fn(&B) -> A + 'a,
+    AtoB: Fn(&A) -> B + 'a,
+    BtoA: Fn(&B) -> A + 'a,
 {
     Goal::Project(Rc::new(Map1 {
         a: a.into_val(),
         b: b.into_val(),
-        a_: Rc::new(a_),
-        _b: Rc::new(_b),
+        a_to_b: Rc::new(a_to_b),
+        b_to_a: Rc::new(b_to_a),
     }))
 }
 
 pub struct Map1<'a, A, B> {
     a: Val<A>,
     b: Val<B>,
-    a_: Rc<dyn Fn(&A) -> B + 'a>,
-    _b: Rc<dyn Fn(&B) -> A + 'a>,
+    a_to_b: Rc<dyn Fn(&A) -> B + 'a>,
+    b_to_a: Rc<dyn Fn(&B) -> A + 'a>,
 }
 
 impl<'a, A, B> fmt::Debug for Map1<'a, A, B> {
@@ -52,11 +57,11 @@ where
         let b = state.resolve_val(&self.b).clone();
         match (a, b) {
             (Resolved(a), b) => {
-                let f = &self.a_;
+                let f = &self.a_to_b;
                 Watch::done(state.unify(f(&*a), b))
             }
             (a, Resolved(b)) => {
-                let f = &self._b;
+                let f = &self.b_to_a;
                 Watch::done(state.unify(f(&*b), a))
             }
             (Var(a), Var(b)) => Watch::watch(state, a).and(b),

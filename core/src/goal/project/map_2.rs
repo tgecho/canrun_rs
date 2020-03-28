@@ -1,5 +1,3 @@
-#![allow(non_camel_case_types)]
-
 use super::Goal;
 use super::Project;
 use crate::domain::{Domain, DomainType, UnifyIn};
@@ -12,13 +10,13 @@ use crate::value::{
 use std::fmt;
 use std::rc::Rc;
 
-pub fn map_2<'a, A, AV, B, BV, C, CV, D, AB_, A_C, _BC>(
+pub fn map_2<'a, A, AV, B, BV, C, CV, D, ABtoC, ACtoB, BCtoA>(
     a: AV,
     b: BV,
     c: CV,
-    ab_: AB_,
-    a_c: A_C,
-    _bc: _BC,
+    ab_to_c: ABtoC,
+    ac_to_b: ACtoB,
+    bc_to_a: BCtoA,
 ) -> Goal<'a, D>
 where
     A: UnifyIn<'a, D> + 'a,
@@ -28,17 +26,17 @@ where
     C: UnifyIn<'a, D> + 'a,
     CV: IntoVal<C>,
     D: Domain<'a> + DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C>,
-    AB_: Fn(&A, &B) -> C + 'a,
-    A_C: Fn(&A, &C) -> B + 'a,
-    _BC: Fn(&B, &C) -> A + 'a,
+    ABtoC: Fn(&A, &B) -> C + 'a,
+    ACtoB: Fn(&A, &C) -> B + 'a,
+    BCtoA: Fn(&B, &C) -> A + 'a,
 {
     Goal::Project(Rc::new(Map2 {
         a: a.into_val(),
         b: b.into_val(),
         c: c.into_val(),
-        ab_: Rc::new(ab_),
-        a_c: Rc::new(a_c),
-        _bc: Rc::new(_bc),
+        ab_to_c: Rc::new(ab_to_c),
+        ac_to_b: Rc::new(ac_to_b),
+        bc_to_a: Rc::new(bc_to_a),
     }))
 }
 
@@ -46,9 +44,9 @@ pub struct Map2<'a, A, B, C> {
     a: Val<A>,
     b: Val<B>,
     c: Val<C>,
-    ab_: Rc<dyn Fn(&A, &B) -> C + 'a>,
-    a_c: Rc<dyn Fn(&A, &C) -> B + 'a>,
-    _bc: Rc<dyn Fn(&B, &C) -> A + 'a>,
+    ab_to_c: Rc<dyn Fn(&A, &B) -> C + 'a>,
+    ac_to_b: Rc<dyn Fn(&A, &C) -> B + 'a>,
+    bc_to_a: Rc<dyn Fn(&B, &C) -> A + 'a>,
 }
 
 impl<'a, A, B, C> fmt::Debug for Map2<'a, A, B, C> {
@@ -70,15 +68,15 @@ where
         let c = state.resolve_val(&self.c).clone();
         match (a, b, c) {
             (Resolved(a), Resolved(b), c) => {
-                let f = &self.ab_;
+                let f = &self.ab_to_c;
                 Watch::done(state.unify(f(&*a, &*b), c))
             }
             (Resolved(a), b, Resolved(c)) => {
-                let f = &self.a_c;
+                let f = &self.ac_to_b;
                 Watch::done(state.unify(f(&*a, &*c), b))
             }
             (a, Resolved(b), Resolved(c)) => {
-                let f = &self._bc;
+                let f = &self.bc_to_a;
                 Watch::done(state.unify(f(&*b, &*c), a))
             }
             (Var(a), Var(b), _) => Watch::watch(state, a).and(b),
