@@ -72,17 +72,17 @@ where
 #[cfg(test)]
 mod tests {
     use super::map_1;
-    use crate::domain::one::OfOne;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::util;
+    use crate::tests::domains::Numbers;
+    use crate::util;
     use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
         let y = var();
-        let goals: Vec<Goal<OfOne<i32>>> =
+        let goals: Vec<Goal<Numbers>> =
             vec![unify(1, x), unify(2, y), map_1(x, y, |x| x + 1, |y| y - 1)];
         util::all_permutations_resolve_to(goals, (x, y), vec![(1, 2)]);
     }

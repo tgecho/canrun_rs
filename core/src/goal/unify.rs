@@ -25,15 +25,15 @@ where
 #[cfg(test)]
 mod tests {
     use super::unify;
-    use crate::domain::one::OfOne;
     use crate::goal::Goal;
-    use crate::tests::util;
+    use crate::tests::domains::Numbers;
+    use crate::util;
     use crate::value::var;
 
     #[test]
     fn basic_unify_succeeds() {
         let x = var();
-        let goal: Goal<OfOne<i32>> = unify(x, 5);
+        let goal: Goal<Numbers> = unify(x, 5);
         let result = util::goal_resolves_to(goal, x);
         assert_eq!(result, vec![5]);
     }

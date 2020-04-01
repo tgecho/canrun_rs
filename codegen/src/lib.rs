@@ -71,14 +71,14 @@ impl quote::ToTokens for DomainDef {
         let result = quote! {
             #[derive(std::fmt::Debug)]
             #domain_visibility struct #domain_name {
-                #(#fields: im::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>>),*
+                #(#fields: canrun::state::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>>),*
             }
 
             impl<'a> canrun::domain::Domain<'a> for #domain_name {
                 type Value = #value_name;
                 fn new() -> Self {
                     #domain_name {
-                        #(#fields: im::HashMap::new(),)*
+                        #(#fields: canrun::state::HashMap::new(),)*
                     }
                 }
                 fn unify_domain_values(
@@ -110,28 +110,28 @@ impl quote::ToTokens for DomainDef {
                 impl<'a> canrun::domain::DomainType<'a, #domain_types> for #domain_name {
                     fn values_as_ref(
                         &self,
-                    ) -> &im::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>> {
+                    ) -> &canrun::state::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>> {
                         &self.#fields
                     }
                     fn values_as_mut(
                         &mut self,
-                    ) -> &mut im::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>> {
+                    ) -> &mut canrun::state::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>> {
                         &mut self.#fields
                     }
                 }
             )*
 
-            #(
-                impl<'a> canrun::domain::UnifyIn<'a, #domain_name> for #domain_types {
-                    fn unify_with(&self, other: &Self) -> canrun::domain::Unified<'a, #domain_name> {
-                        if self == other {
-                            canrun::domain::Unified::Success
-                        } else {
-                            canrun::domain::Unified::Failed
-                        }
-                    }
-                }
-            )*
+
+                // impl<'a, T: PartialEq + std::fmt::Debug> canrun::domain::UnifyIn<'a, #domain_name> for T {
+                //     fn unify_with(&self, other: &Self) -> canrun::domain::Unified<'a, #domain_name> {
+                //         if self == other {
+                //             canrun::domain::Unified::Success
+                //         } else {
+                //             canrun::domain::Unified::Failed
+                //         }
+                //     }
+                // }
+
 
             impl<'a> Clone for #domain_name {
                 fn clone(&self) -> Self {

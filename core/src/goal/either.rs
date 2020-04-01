@@ -28,16 +28,16 @@ where
 #[cfg(test)]
 mod tests {
     use super::either;
-    use crate::domain::one::OfOne;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::util;
+    use crate::tests::domains::Numbers;
+    use crate::util;
     use crate::value::var;
 
     #[test]
     fn either_both_succeeds() {
         let x = var();
-        let goal = either::<OfOne<i32>>(unify(x, 5), unify(x, 7));
+        let goal = either::<Numbers>(unify(x, 5), unify(x, 7));
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![5, 7]);
     }
@@ -45,7 +45,7 @@ mod tests {
     #[test]
     fn either_one_succeeds() {
         let x = var();
-        let bad: Goal<OfOne<i32>> = unify(6, 5);
+        let bad: Goal<Numbers> = unify(6, 5);
 
         let first = util::goal_resolves_to(either(unify(x, 1), bad.clone()), x);
         assert_eq!(first, vec![1]);
@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn either_both_fail() {
         let x = var();
-        let goal: Goal<OfOne<i32>> = either(unify(6, 5), unify(1, 2));
+        let goal: Goal<Numbers> = either(unify(6, 5), unify(1, 2));
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![]);
     }

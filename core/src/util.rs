@@ -1,4 +1,6 @@
-use super::super::state::State;
+pub(super) mod multikeymultivaluemap;
+
+use super::state::State;
 use crate::domain::Domain;
 use crate::goal::Goal;
 use crate::query::{QueryState, StateQuery};
@@ -33,14 +35,14 @@ where
     state.query(query).collect()
 }
 
-pub(crate) fn all_permutations_resolve_to<'a, D, Q>(
+pub fn all_permutations_resolve_to<'a, D, Q>(
     goals: Vec<Goal<'a, D>>,
     query: Q,
     expected: Vec<Q::Result>,
 ) where
     D: Domain<'a> + Debug + 'a,
     Q: QueryState<'a, D> + Clone,
-    Q::Result: Eq + Debug,
+    Q::Result: PartialEq + Debug,
 {
     for permutation in all_permutations(goals) {
         dbg!(&permutation);

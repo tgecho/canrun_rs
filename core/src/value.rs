@@ -73,6 +73,16 @@ impl<T> Clone for Val<T> {
     }
 }
 
+impl<T: PartialEq> PartialEq for Val<T> {
+    fn eq(&self, other: &Val<T>) -> bool {
+        match (self, other) {
+            (Resolved(s), Resolved(other)) => s == other,
+            (Var(s), Var(other)) => s == other,
+            _ => false,
+        }
+    }
+}
+
 impl<'a, T: fmt::Debug> fmt::Debug for Val<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

@@ -26,16 +26,16 @@ pub trait Project<'a, D: Domain<'a>>: fmt::Debug {
 #[cfg(test)]
 mod tests {
     use super::assert_1::assert_1;
-    use crate::domain::one::OfOne;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::util;
+    use crate::tests::domains::Numbers;
+    use crate::util;
     use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goals: Vec<Goal<OfOne<i32>>> = vec![unify(2, x), assert_1(x, |x| *x > 1)];
+        let goals: Vec<Goal<Numbers>> = vec![unify(2, x), assert_1(x, |x| *x > 1)];
         util::all_permutations_resolve_to(goals, x, vec![2]);
     }
 }

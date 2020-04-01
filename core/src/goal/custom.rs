@@ -34,15 +34,15 @@ impl<'a, D: Domain<'a>> fmt::Debug for Custom<'a, D> {
 #[cfg(test)]
 mod tests {
     use super::custom;
-    use crate::domain::one::OfOne;
     use crate::goal::Goal;
-    use crate::tests::util;
+    use crate::tests::domains::Numbers;
+    use crate::util;
     use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goal: Goal<OfOne<i32>> = custom(|s| s.unify(x, 1));
+        let goal: Goal<Numbers> = custom(|s| s.unify(x, 1));
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![1]);
     }

@@ -15,6 +15,7 @@ use std::rc::Rc;
 
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
 type WatchFns<'s, D> = MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Watch<State<'s, D>> + 's>>;
+pub use im::HashMap;
 
 #[derive(Clone)]
 pub struct State<'a, D: Domain<'a> + 'a> {
@@ -75,7 +76,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn resolve_val<'r, T>(&'r self, val: &'r Val<T>) -> &'r Val<T>
+    pub fn resolve_val<'r, T>(&'r self, val: &'r Val<T>) -> &'r Val<T>
     where
         D: DomainType<'a, T>,
     {
@@ -95,7 +96,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn unify<T, A, B>(mut self, a: A, b: B) -> Option<Self>
+    pub fn unify<T, A, B>(mut self, a: A, b: B) -> Option<Self>
     where
         T: UnifyIn<'a, D>,
         A: IntoVal<T>,
@@ -134,7 +135,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn watch(self, func: Rc<dyn Fn(Self) -> Watch<Self> + 'a>) -> Option<Self> {
+    pub fn watch(self, func: Rc<dyn Fn(Self) -> Watch<Self> + 'a>) -> Option<Self> {
         match func(self) {
             Watch::Done(state) => state,
             Watch::Waiting(mut state, WatchList(vars)) => {
@@ -144,7 +145,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub(crate) fn fork(mut self, func: Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>) -> Option<Self> {
+    pub fn fork(mut self, func: Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>) -> Option<Self> {
         self.forks.push_back(func);
         Some(self)
     }

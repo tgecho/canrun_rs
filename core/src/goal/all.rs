@@ -19,17 +19,17 @@ where
 #[cfg(test)]
 mod tests {
     use super::all;
-    use crate::domain::one::OfOne;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::util;
+    use crate::tests::domains::Numbers;
+    use crate::util;
     use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
         let y = var();
-        let goal: Goal<OfOne<i32>> = all(vec![unify(x, 5), unify(y, 7)]);
+        let goal: Goal<Numbers> = all(vec![unify(x, 5), unify(y, 7)]);
         let result = util::goal_resolves_to(goal, (x, y));
         assert_eq!(result, vec![(5, 7)]);
     }
@@ -37,7 +37,7 @@ mod tests {
     #[test]
     fn fails() {
         let x = var();
-        let goal: Goal<OfOne<i32>> = all(vec![unify(x, 5), unify(x, 7)]);
+        let goal: Goal<Numbers> = all(vec![unify(x, 5), unify(x, 7)]);
         let result = util::goal_resolves_to(goal.clone(), x);
         assert_eq!(result, vec![]);
     }

@@ -6,14 +6,16 @@ pub mod query;
 pub mod state;
 pub mod value;
 
-mod util;
+pub use canrun_codegen::domains;
+
+pub mod util;
 
 #[cfg(test)]
-pub(crate) mod tests {
-    pub mod test_fork;
-    pub mod test_unify;
-    pub mod test_watch;
-    pub mod util;
+pub mod tests {
+    pub mod domains;
+    mod test_fork;
+    mod test_unify;
+    mod test_watch;
 }
 
 // #[macro_use]

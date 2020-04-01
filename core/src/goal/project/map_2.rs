@@ -89,10 +89,10 @@ where
 #[cfg(test)]
 mod tests {
     use super::map_2;
-    use crate::domain::one::OfOne;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::util;
+    use crate::tests::domains::Numbers;
+    use crate::util;
     use crate::value::var;
 
     #[test]
@@ -100,7 +100,7 @@ mod tests {
         let x = var();
         let y = var();
         let z = var();
-        let goals: Vec<Goal<OfOne<i32>>> = vec![
+        let goals: Vec<Goal<Numbers>> = vec![
             unify(1, x),
             unify(2, y),
             unify(3, z),

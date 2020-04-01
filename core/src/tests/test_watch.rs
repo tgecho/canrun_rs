@@ -1,9 +1,10 @@
 use super::super::state::{State, Watch};
-use super::util;
-use crate::domain::{one::OfOne, DomainType};
+use crate::domain::DomainType;
 use crate::goal::custom;
 use crate::goal::unify;
 use crate::goal::Goal;
+use crate::tests::domains::Numbers;
+use crate::util;
 use crate::value::{val, var, IntoVal};
 use std::rc::Rc;
 
@@ -29,7 +30,7 @@ where
 #[test]
 fn basic_watch_succeeds() {
     let x = var();
-    let goals: Vec<Goal<OfOne<i32>>> = vec![
+    let goals: Vec<Goal<Numbers>> = vec![
         unify(2, x),
         custom(|s| s.watch(assert(x, |x| x > &1))),
         custom(|s| s.watch(assert(x, |x| x > &0))),
@@ -40,7 +41,7 @@ fn basic_watch_succeeds() {
 #[test]
 fn basic_watch_fails() {
     let x = var();
-    let goals: Vec<Goal<OfOne<i32>>> = vec![
+    let goals: Vec<Goal<Numbers>> = vec![
         unify(val(2), x.clone()),
         custom(|s| s.watch(assert(x.clone(), |x| x > &1))),
         custom(|s| s.watch(assert(x, |x| x > &3))),
