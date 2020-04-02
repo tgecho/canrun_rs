@@ -3,7 +3,8 @@ mod iter_resolved;
 mod resolved;
 
 use super::util::multikeymultivaluemap::MKMVMap;
-use crate::domain::{Domain, DomainType, Unified, UnifyIn};
+use crate::domain::{Domain, DomainType};
+use crate::unify::Unify;
 use crate::value::{
     IntoVal, LVar, LVarId, Val,
     Val::{Resolved, Var},
@@ -98,21 +99,21 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
 
     pub fn unify<T, A, B>(mut self, a: A, b: B) -> Option<Self>
     where
-        T: UnifyIn<'a, D>,
         A: IntoVal<T>,
         B: IntoVal<T>,
         D: DomainType<'a, T>,
+        Self: Unify<'a, T>,
     {
         let a_val = a.into_val();
         let b_val = b.into_val();
         let a = self.resolve_val(&a_val);
         let b = self.resolve_val(&b_val);
         match (a, b) {
-            (Resolved(a), Resolved(b)) => match a.unify_with(b) {
-                Unified::Success => Some(self),
-                Unified::Failed => None,
-                Unified::Conditional(func) => func(self),
-            },
+            (Resolved(a), Resolved(b)) => {
+                let a = a.clone();
+                let b = b.clone();
+                self.unify_resolved(a, b)
+            }
             (Var(a), Var(b)) if a == b => Some(self),
             (Var(var), val) | (val, Var(var)) => {
                 let key = *var;

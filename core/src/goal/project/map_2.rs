@@ -1,8 +1,9 @@
 use super::Goal;
 use super::Project;
-use crate::domain::{Domain, DomainType, UnifyIn};
+use crate::domain::{Domain, DomainType};
 use crate::state::State;
 use crate::state::Watch;
+use crate::unify::Unify;
 use crate::value::{
     IntoVal, Val,
     Val::{Resolved, Var},
@@ -19,13 +20,14 @@ pub fn map_2<'a, A, AV, B, BV, C, CV, D, ABtoC, ACtoB, BCtoA>(
     bc_to_a: BCtoA,
 ) -> Goal<'a, D>
 where
-    A: UnifyIn<'a, D> + 'a,
+    A: 'a,
     AV: IntoVal<A>,
-    B: UnifyIn<'a, D> + 'a,
+    B: 'a,
     BV: IntoVal<B>,
-    C: UnifyIn<'a, D> + 'a,
+    C: 'a,
     CV: IntoVal<C>,
     D: Domain<'a> + DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C>,
+    State<'a, D>: Unify<'a, A> + Unify<'a, B> + Unify<'a, C>,
     ABtoC: Fn(&A, &B) -> C + 'a,
     ACtoB: Fn(&A, &C) -> B + 'a,
     BCtoA: Fn(&B, &C) -> A + 'a,
@@ -57,10 +59,8 @@ impl<'a, A, B, C> fmt::Debug for Map2<'a, A, B, C> {
 
 impl<'a, A, B, C, Dom> Project<'a, Dom> for Map2<'a, A, B, C>
 where
-    A: UnifyIn<'a, Dom>,
-    B: UnifyIn<'a, Dom>,
-    C: UnifyIn<'a, Dom>,
-    Dom: Domain<'a> + DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C>,
+    Dom: Domain<'a> + DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C> + 'a,
+    State<'a, Dom>: Unify<'a, A> + Unify<'a, B> + Unify<'a, C>,
 {
     fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Watch<State<'a, Dom>> {
         let a = state.resolve_val(&self.a).clone();

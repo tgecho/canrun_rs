@@ -3,10 +3,15 @@
 // will fall down if someone renames the crate or something.
 // https://github.com/rust-lang/rust/issues/54363
 use crate as canrun;
+use canrun::value::Val;
 use canrun_codegen::domains;
 
 domains! {
     pub domain Numbers {
         i32,
+    }
+    pub domain Numbers2 {
+        i32,
+        Vec<Val<i32>>
     }
 }

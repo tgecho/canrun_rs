@@ -4,6 +4,7 @@ pub mod domain;
 pub mod goal;
 pub mod query;
 pub mod state;
+pub mod unify;
 pub mod value;
 
 pub use canrun_codegen::domains;
