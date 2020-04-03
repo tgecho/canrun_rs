@@ -55,10 +55,10 @@ impl<I> fmt::Debug for Member<I> {
 #[cfg(test)]
 mod tests {
     use super::member;
-    use canrun::domains;
     use canrun::goal::{either, unify, Goal};
     use canrun::util;
-    use canrun::value::{val, var, Val};
+    use canrun::value::{var, Val};
+    use canrun::{domains, lvec};
 
     domains! {
         domain Numbers {
@@ -70,21 +70,21 @@ mod tests {
     #[test]
     fn basic_member() {
         let x = var::<i32>();
-        let goals: Vec<Goal<Numbers>> = vec![member(x, vec![val(1), val(2), val(3)])];
+        let goals: Vec<Goal<Numbers>> = vec![member(x, lvec![1, 2, 3])];
         util::all_permutations_resolve_to(goals, x, vec![1, 2, 3]);
     }
 
     #[test]
     fn member_with_conditions() {
         let x = var();
-        let goals: Vec<Goal<Numbers>> = vec![unify(x, 2), member(x, vec![val(1), val(2), val(3)])];
+        let goals: Vec<Goal<Numbers>> = vec![unify(x, 2), member(x, lvec![1, 2, 3])];
         util::all_permutations_resolve_to(goals, x, vec![2]);
     }
 
     #[test]
     fn unify_two_contains_1() {
         let x = var();
-        let list = vec![val(1), val(2), val(3)];
+        let list = lvec![1, 2, 3];
         let goals: Vec<Goal<Numbers>> = vec![member(1, x), member(1, x), unify(x, list.clone())];
         util::all_permutations_resolve_to(goals, x, vec![list]);
     }
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn unify_two_contains_2() {
         let x = var();
-        let list = vec![val(1), val(2), val(3)];
+        let list = lvec![1, 2, 3];
         let goals: Vec<Goal<Numbers>> = vec![member(1, x), member(2, x), unify(x, list.clone())];
         util::all_permutations_resolve_to(goals, x, vec![list]);
     }
@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn unify_two_contains_3() {
         let x = var();
-        let list = vec![val(1), val(2), val(3)];
+        let list = lvec![1, 2, 3];
         let goals: Vec<Goal<Numbers>> = vec![
             either(member(1, x), member(4, x)),
             member(2, x),
@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn unify_two_contains_4() {
         let x = var();
-        let list = vec![val(1), val(2), val(3)];
+        let list = lvec![1, 2, 3];
         let goals: Vec<Goal<Numbers>> = vec![member(1, x), member(4, x), unify(x, list.clone())];
 
         util::all_permutations_resolve_to(goals, x, vec![]);

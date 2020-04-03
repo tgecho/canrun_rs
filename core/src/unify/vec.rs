@@ -22,42 +22,42 @@ where
     }
 }
 
+#[macro_export]
+macro_rules! lvec {
+    ($($item:expr),*) => {
+        vec![$(canrun::value::IntoVal::into_val($item)),*]
+    };
+}
+
 #[cfg(test)]
 mod tests {
+    use crate as canrun;
     use crate::goal::unify;
     use crate::goal::Goal;
+    use crate::lvec;
     use crate::tests::domains::Numbers2;
     use crate::util;
-    use crate::value::{val, var};
+    use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goals: Vec<Goal<Numbers2>> = vec![
-            unify(x, vec![val(1), val(2)]),
-            unify(x, vec![val(1), val(2)]),
-        ];
-        util::all_permutations_resolve_to(goals, x, vec![vec![val(1), val(2)]]);
+        let goals: Vec<Goal<Numbers2>> = vec![unify(x, lvec![1, 2]), unify(x, lvec![1, 2])];
+        util::all_permutations_resolve_to(goals, x, vec![lvec![1, 2]]);
     }
 
     #[test]
     fn fails() {
         let x = var();
-        let goals: Vec<Goal<Numbers2>> = vec![
-            unify(x, vec![val(1), val(3)]),
-            unify(x, vec![val(1), val(2)]),
-        ];
+        let goals: Vec<Goal<Numbers2>> = vec![unify(x, lvec![1, 3]), unify(x, lvec![1, 2])];
         util::all_permutations_resolve_to(goals, x, vec![]);
     }
 
     #[test]
     fn nested_var() {
         let x = var();
-        let y = var();
-        let goals: Vec<Goal<Numbers2>> = vec![
-            unify(x, vec![val(1), y.into_val()]),
-            unify(x, vec![val(1), val(2)]),
-        ];
+        let y = var::<i32>();
+        let goals: Vec<Goal<Numbers2>> = vec![unify(x, lvec![1, y]), unify(x, lvec![1, 2])];
         util::all_permutations_resolve_to(goals, y, vec![2]);
     }
 }
