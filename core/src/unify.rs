@@ -2,8 +2,8 @@ use crate::domain::{Domain, DomainType};
 use crate::state::State;
 use std::rc::Rc;
 
+mod tuples;
 mod vec;
-// TODO: tuples?
 
 pub trait Unify<'a, T>: Sized {
     fn unify_resolved(self, a: Rc<T>, b: Rc<T>) -> Option<Self>;

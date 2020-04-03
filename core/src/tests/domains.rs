@@ -12,6 +12,7 @@ domains! {
     }
     pub domain Numbers2 {
         i32,
-        Vec<Val<i32>>
+        Vec<Val<i32>>,
+        (Val<i32>, Val<i32>),
     }
 }
