@@ -49,4 +49,15 @@ mod tests {
         ];
         util::all_permutations_resolve_to(goals, x, vec![]);
     }
+
+    #[test]
+    fn nested_var() {
+        let x = var();
+        let y = var();
+        let goals: Vec<Goal<Numbers2>> = vec![
+            unify(x, vec![val(1), y.into_val()]),
+            unify(x, vec![val(1), val(2)]),
+        ];
+        util::all_permutations_resolve_to(goals, y, vec![2]);
+    }
 }
