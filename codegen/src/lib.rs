@@ -86,11 +86,11 @@ impl quote::ToTokens for DomainDef {
                     a: Self::Value,
                     b: Self::Value,
                 ) -> Option<canrun::state::State<Self>> {
-                    use canrun::value::Val;
+                    use canrun::value::{Val, IntoVal};
                     match (a, b) {
                         #(
                             (#value_name::#variants(a), #value_name::#variants(b)) => {
-                                state.unify::<#domain_types, Val<#domain_types>, Val<#domain_types>>(a, b)
+                                state.unify::<#domain_types>(a.into_val(), b.into_val())
                             }
                         ,)*
                         _ => None, // This should only happen if a DomainVal constructor allows two values with different types.
@@ -120,18 +120,6 @@ impl quote::ToTokens for DomainDef {
                     }
                 }
             )*
-
-
-                // impl<'a, T: PartialEq + std::fmt::Debug> canrun::domain::UnifyIn<'a, #domain_name> for T {
-                //     fn unify_with(&self, other: &Self) -> canrun::domain::Unified<'a, #domain_name> {
-                //         if self == other {
-                //             canrun::domain::Unified::Success
-                //         } else {
-                //             canrun::domain::Unified::Failed
-                //         }
-                //     }
-                // }
-
 
             impl<'a> Clone for #domain_name {
                 fn clone(&self) -> Self {

@@ -6,7 +6,7 @@ use super::util::multikeymultivaluemap::MKMVMap;
 use crate::domain::{Domain, DomainType};
 use crate::unify::Unify;
 use crate::value::{
-    IntoVal, LVar, LVarId, Val,
+    LVar, LVarId, Val,
     Val::{Resolved, Var},
 };
 pub use iter_resolved::IterResolved;
@@ -97,17 +97,13 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub fn unify<T, A, B>(mut self, a: A, b: B) -> Option<Self>
+    pub fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
     where
-        A: IntoVal<T>,
-        B: IntoVal<T>,
         D: DomainType<'a, T>,
         Self: Unify<'a, T>,
     {
-        let a_val = a.into_val();
-        let b_val = b.into_val();
-        let a = self.resolve_val(&a_val);
-        let b = self.resolve_val(&b_val);
+        let a = self.resolve_val(&a);
+        let b = self.resolve_val(&b);
         match (a, b) {
             (Resolved(a), Resolved(b)) => {
                 let a = a.clone();
