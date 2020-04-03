@@ -1,5 +1,5 @@
 use canrun::domain::{Domain, DomainType, IntoDomainVal};
-use canrun::goal::{any, project::Project, unify, Goal};
+use canrun::goal::{project::Project, unify, Goal};
 use canrun::state::{State, Watch};
 use canrun::unify::Unify;
 use canrun::value::{IntoVal, Val};
@@ -39,7 +39,7 @@ where
                     .zip(repeat(self.item.clone()))
                     .map(|(a, b): (&Val<I>, Val<I>)| unify(a, b) as Goal<D>)
                     .collect();
-                Watch::done(any(goals).apply(state))
+                Watch::done(Goal::Any(goals).apply(state))
             }
             Err(var) => Watch::watch(state, var),
         }

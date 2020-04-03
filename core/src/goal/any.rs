@@ -19,16 +19,18 @@ where
     }))
 }
 
-pub fn any<'a, D>(goals: Vec<Goal<'a, D>>) -> Goal<'a, D>
-where
-    D: Domain<'a>,
-{
-    Goal::Any(goals)
+#[macro_export]
+macro_rules! any {
+    ($($item:expr),*) => {
+        canrun::goal::Goal::Any(vec![$($item),*])
+    };
 }
+pub use any;
 
 #[cfg(test)]
 mod tests {
     use super::any;
+    use crate as canrun;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
     use crate::tests::domains::Numbers;
@@ -38,7 +40,7 @@ mod tests {
     #[test]
     fn both_succeeds() {
         let x = var();
-        let goal: Goal<Numbers> = any(vec![unify(x, 5), unify(x, 7)]);
+        let goal: Goal<Numbers> = any![unify(x, 5), unify(x, 7)];
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![5, 7]);
     }
@@ -48,17 +50,17 @@ mod tests {
         let x = var();
         let bad: Goal<Numbers> = unify(6, 5);
 
-        let first = util::goal_resolves_to(any(vec![unify(x, 1), bad.clone()]), x);
+        let first = util::goal_resolves_to(any![unify(x, 1), bad.clone()], x);
         assert_eq!(first, vec![1]);
 
-        let second = util::goal_resolves_to(any(vec![bad, unify(x, 2)]), x);
+        let second = util::goal_resolves_to(any![bad, unify(x, 2)], x);
         assert_eq!(second, vec![2]);
     }
 
     #[test]
     fn both_fail() {
         let x = var();
-        let goal: Goal<Numbers> = any(vec![unify(6, 5), unify(1, 2)]);
+        let goal: Goal<Numbers> = any![unify(6, 5), unify(1, 2)];
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![]);
     }
