@@ -18,6 +18,47 @@ where
     }))
 }
 
+/// Return a [Goal](crate::goal::Goal) that succeeds if either sub-goal succeed.
+///
+/// This is essentially an "OR" operation, and will eventually lead to zero, one
+/// or two [resolved states](crate::state::ResolvedState), depending on the success
+/// or failure of the sub-goals.
+///
+/// # Examples
+///
+/// Two successful unifications will yield up two different results:
+/// ```
+/// use canrun::value::var;
+/// use canrun::goal::{Goal, either, unify};
+/// use canrun::domains::example::I32;
+///
+/// let x = var();
+/// let goal: Goal<I32> = either(unify(x, 1), unify(x, 2));
+/// let result: Vec<_> = goal.query(x).collect();
+/// assert_eq!(result, vec![1, 2])
+/// ```
+///
+/// One failing goal will not cause the other to fail:
+/// ```
+/// # use canrun::value::var;
+/// # use canrun::goal::{Goal, either, unify};
+/// # use canrun::domains::example::I32;
+/// # let x = var();
+/// let goal: Goal<I32> = either(unify(1, 2), unify(x, 3));
+/// let result: Vec<_> = goal.query(x).collect();
+/// assert_eq!(result, vec![3])
+/// ```
+///
+/// Both goals can fail, leading to no results:
+/// ```
+/// # use canrun::value::var;
+/// # use canrun::goal::{Goal, either, unify};
+/// # use canrun::domains::example::I32;
+/// # let x = var();
+/// let goal: Goal<I32> = either(unify(6, 5), unify(1, 2));
+/// let result: Vec<_> = goal.query(x).collect();
+/// assert_eq!(result, vec![]) // Empty result
+/// ```
 pub fn either<'a, D>(a: Goal<'a, D>, b: Goal<'a, D>) -> Goal<'a, D>
 where
     D: Domain<'a>,
