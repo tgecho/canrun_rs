@@ -1,5 +1,3 @@
-#![feature(specialization)]
-
 pub mod domains;
 pub mod goal;
 pub mod query;
