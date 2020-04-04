@@ -8,7 +8,6 @@ mod both;
 mod custom;
 mod either;
 mod lazy;
-mod not;
 pub mod project;
 mod unify;
 
@@ -25,8 +24,6 @@ pub use either::either;
 #[doc(inline)]
 pub use lazy::lazy;
 #[doc(inline)]
-pub use not::not;
-#[doc(inline)]
 pub use unify::unify;
 
 #[derive(Clone, Debug)]
@@ -36,7 +33,6 @@ pub enum Goal<'a, D: Domain<'a>> {
     All(Vec<Goal<'a, D>>),
     Either(Box<Goal<'a, D>>, Box<Goal<'a, D>>),
     Any(Vec<Goal<'a, D>>),
-    Not(Box<Goal<'a, D>>),
     Lazy(lazy::Lazy<'a, D>),
     Custom(custom::Custom<'a, D>),
     Project(Rc<dyn project::Project<'a, D> + 'a>),
@@ -50,7 +46,6 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
             Goal::All(goals) => all::run(state, goals),
             Goal::Either(a, b) => either::run(state, *a, *b),
             Goal::Any(goals) => any::run(state, goals),
-            Goal::Not(goal) => not::run(state, *goal),
             Goal::Lazy(lazy) => lazy.run(state),
             Goal::Custom(custom) => custom.run(state),
             Goal::Project(proj) => project::run(proj, state),
