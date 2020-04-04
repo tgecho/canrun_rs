@@ -1,19 +1,19 @@
 #![feature(specialization)]
 
-pub mod domain;
+pub mod domains;
 pub mod goal;
 pub mod query;
 pub mod state;
 pub mod unify;
 pub mod value;
 
+#[doc(inline)]
 pub use canrun_codegen::domains;
 
 pub mod util;
 
 #[cfg(test)]
 pub mod tests {
-    pub mod domains;
     mod test_fork;
     mod test_unify;
     mod test_watch;

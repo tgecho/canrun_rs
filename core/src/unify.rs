@@ -1,4 +1,4 @@
-use crate::domain::{Domain, DomainType};
+use crate::domains::{Domain, DomainType};
 use crate::state::State;
 use std::rc::Rc;
 

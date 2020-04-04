@@ -59,11 +59,6 @@ impl<T> IntoVal<T> for &LVar<T> {
         Val::Var(self.clone())
     }
 }
-impl<T> LVar<T> {
-    pub fn into_val(&self) -> Val<T> {
-        Val::Var(self.clone())
-    }
-}
 
 #[macro_export]
 macro_rules! val {

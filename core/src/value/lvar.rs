@@ -1,3 +1,4 @@
+use super::Val;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
@@ -42,6 +43,9 @@ impl<T> LVar<T> {
             label: Some(label),
             t: PhantomData,
         }
+    }
+    pub fn into_val(&self) -> Val<T> {
+        Val::Var(self.clone())
     }
 }
 

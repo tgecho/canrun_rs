@@ -1,5 +1,5 @@
 use super::Goal;
-use crate::domain::Domain;
+use crate::domains::Domain;
 use crate::state::State;
 
 pub(crate) fn run<'a, D>(state: State<'a, D>, goals: Vec<Goal<'a, D>>) -> Option<State<'a, D>>
@@ -21,9 +21,9 @@ pub use all;
 mod tests {
     use super::all;
     use crate as canrun;
+    use crate::domains::example::I32;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::domains::Numbers;
     use crate::util;
     use crate::value::var;
 
@@ -31,7 +31,7 @@ mod tests {
     fn succeeds() {
         let x = var();
         let y = var();
-        let goal: Goal<Numbers> = all![unify(x, 5), unify(y, 7)];
+        let goal: Goal<I32> = all![unify(x, 5), unify(y, 7)];
         let result = util::goal_resolves_to(goal, (x, y));
         assert_eq!(result, vec![(5, 7)]);
     }
@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn fails() {
         let x = var();
-        let goal: Goal<Numbers> = all![unify(x, 5), unify(x, 7)];
+        let goal: Goal<I32> = all![unify(x, 5), unify(x, 7)];
         let result = util::goal_resolves_to(goal.clone(), x);
         assert_eq!(result, vec![]);
     }

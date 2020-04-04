@@ -1,5 +1,5 @@
 use super::Goal;
-use crate::domain::Domain;
+use crate::domains::Domain;
 use crate::state::State;
 use std::fmt;
 use std::rc::Rc;
@@ -34,15 +34,15 @@ impl<'a, D: Domain<'a>> fmt::Debug for Custom<'a, D> {
 #[cfg(test)]
 mod tests {
     use super::custom;
+    use crate::domains::example::I32;
     use crate::goal::Goal;
-    use crate::tests::domains::Numbers;
     use crate::util;
     use crate::value::{var, IntoVal};
 
     #[test]
     fn succeeds() {
         let x = var::<i32>();
-        let goal: Goal<Numbers> = custom(|s| s.unify(x.into_val(), 1.into_val()));
+        let goal: Goal<I32> = custom(|s| s.unify(x.into_val(), 1.into_val()));
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![1]);
     }

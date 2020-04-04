@@ -1,5 +1,5 @@
 use super::Unify;
-use crate::domain::DomainType;
+use crate::domains::DomainType;
 use crate::state::State;
 use crate::value::Val;
 use std::rc::Rc;
@@ -32,24 +32,24 @@ macro_rules! lvec {
 #[cfg(test)]
 mod tests {
     use crate as canrun;
+    use crate::domains::example::VecI32;
     use crate::goal::unify;
     use crate::goal::Goal;
     use crate::lvec;
-    use crate::tests::domains::Numbers2;
     use crate::util;
     use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goals: Vec<Goal<Numbers2>> = vec![unify(x, lvec![1, 2]), unify(x, lvec![1, 2])];
+        let goals: Vec<Goal<VecI32>> = vec![unify(x, lvec![1, 2]), unify(x, lvec![1, 2])];
         util::all_permutations_resolve_to(goals, x, vec![lvec![1, 2]]);
     }
 
     #[test]
     fn fails() {
         let x = var();
-        let goals: Vec<Goal<Numbers2>> = vec![unify(x, lvec![1, 3]), unify(x, lvec![1, 2])];
+        let goals: Vec<Goal<VecI32>> = vec![unify(x, lvec![1, 3]), unify(x, lvec![1, 2])];
         util::all_permutations_resolve_to(goals, x, vec![]);
     }
 
@@ -57,7 +57,7 @@ mod tests {
     fn nested_var() {
         let x = var();
         let y = var::<i32>();
-        let goals: Vec<Goal<Numbers2>> = vec![unify(x, lvec![1, y]), unify(x, lvec![1, 2])];
+        let goals: Vec<Goal<VecI32>> = vec![unify(x, lvec![1, y]), unify(x, lvec![1, 2])];
         util::all_permutations_resolve_to(goals, y, vec![2]);
     }
 }

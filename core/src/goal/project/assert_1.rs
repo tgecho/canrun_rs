@@ -1,6 +1,6 @@
 use super::Goal;
 use super::Project;
-use crate::domain::{Domain, DomainType};
+use crate::domains::{Domain, DomainType};
 use crate::state::State;
 use crate::state::Watch;
 use crate::value::{

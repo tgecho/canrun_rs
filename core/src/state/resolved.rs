@@ -1,5 +1,5 @@
 use super::{State, WatchFns};
-use crate::domain::{Domain, DomainType};
+use crate::domains::{Domain, DomainType};
 use crate::value::LVar;
 
 #[derive(Clone)]

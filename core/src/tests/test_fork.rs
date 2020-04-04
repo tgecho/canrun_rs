@@ -1,7 +1,7 @@
 use super::super::state::{IterResolved, State, StateIter};
 use crate as canrun;
-use crate::domain::Domain;
-use crate::tests::domains::Numbers;
+use crate::domains::example::I32;
+use crate::domains::Domain;
 use crate::value::val;
 use std::rc::Rc;
 
@@ -20,7 +20,7 @@ where
 
 #[test]
 fn basic_fork_first_success() {
-    let state: State<Numbers> = State::new();
+    let state: State<I32> = State::new();
     let state = state.fork(either(
         |s| s.unify(val!(2), val!(2)),
         |s| s.unify(val!(1), val!(2)),
@@ -31,7 +31,7 @@ fn basic_fork_first_success() {
 
 #[test]
 fn basic_fork_second_success() {
-    let state: State<Numbers> = State::new();
+    let state: State<I32> = State::new();
     let state = state.fork(either(
         |s| s.unify(val!(1), val!(2)),
         |s| s.unify(val!(2), val!(2)),
@@ -41,7 +41,7 @@ fn basic_fork_second_success() {
 
 #[test]
 fn basic_fork_both_success() {
-    let state: State<Numbers> = State::new();
+    let state: State<I32> = State::new();
     let state = state.fork(either(
         |s| s.unify(val!(1), val!(1)),
         |s| s.unify(val!(2), val!(2)),

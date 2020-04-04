@@ -1,6 +1,6 @@
 use super::Goal;
 use super::Project;
-use crate::domain::{Domain, DomainType};
+use crate::domains::{Domain, DomainType};
 use crate::state::State;
 use crate::state::Watch;
 use crate::unify::Unify;
@@ -89,9 +89,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::map_2;
+    use crate::domains::example::I32;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::domains::Numbers;
     use crate::util;
     use crate::value::var;
 
@@ -100,7 +100,7 @@ mod tests {
         let x = var();
         let y = var();
         let z = var();
-        let goals: Vec<Goal<Numbers>> = vec![
+        let goals: Vec<Goal<I32>> = vec![
             unify(1, x),
             unify(2, y),
             unify(3, z),

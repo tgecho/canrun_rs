@@ -3,6 +3,22 @@ use crate::value::{LVar, Val};
 use im::HashMap;
 use std::fmt::Debug;
 
+pub mod example {
+    use crate::value::Val;
+
+    canrun_codegen::canrun_internal_domains! {
+        pub domain I32 { i32 }
+        pub domain VecI32 {
+            i32,
+            Vec<Val<i32>>,
+        }
+        pub domain TupleI32 {
+            i32,
+            (Val<i32>, Val<i32>),
+        }
+    }
+}
+
 pub trait Domain<'a>: Clone + Debug {
     type Value: Debug + Clone + 'a;
     fn new() -> Self;

@@ -1,5 +1,5 @@
 use super::Unify;
-use crate::domain::DomainType;
+use crate::domains::DomainType;
 use crate::state::State;
 use crate::value::Val;
 use std::rc::Rc;

@@ -1,5 +1,5 @@
 use super::Goal;
-use crate::domain::Domain;
+use crate::domains::Domain;
 use crate::state::IterResolved;
 use crate::state::State;
 
@@ -25,17 +25,17 @@ where
 #[cfg(test)]
 mod tests {
     use super::not;
+    use crate::domains::example::I32;
     use crate::goal::both::both;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::domains::Numbers;
     use crate::util;
     use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goal: Goal<Numbers> = both(unify(x, 1), not(unify(x, 2)));
+        let goal: Goal<I32> = both(unify(x, 1), not(unify(x, 2)));
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![1]);
     }
@@ -43,7 +43,7 @@ mod tests {
     #[test]
     fn fails() {
         let x = var();
-        let goal: Goal<Numbers> = both(unify(x, 5), not(unify(x, 5)));
+        let goal: Goal<I32> = both(unify(x, 5), not(unify(x, 5)));
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![]);
     }

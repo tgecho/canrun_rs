@@ -1,6 +1,6 @@
 use super::Goal;
 use super::Project;
-use crate::domain::{Domain, DomainType};
+use crate::domains::{Domain, DomainType};
 use crate::state::State;
 use crate::state::Watch;
 use crate::unify::Unify;
@@ -73,9 +73,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::map_1;
+    use crate::domains::example::I32;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::domains::Numbers;
     use crate::util;
     use crate::value::var;
 
@@ -83,7 +83,7 @@ mod tests {
     fn succeeds() {
         let x = var();
         let y = var();
-        let goals: Vec<Goal<Numbers>> =
+        let goals: Vec<Goal<I32>> =
             vec![unify(1, x), unify(2, y), map_1(x, y, |x| x + 1, |y| y - 1)];
         util::all_permutations_resolve_to(goals, (x, y), vec![(1, 2)]);
     }

@@ -6,6 +6,7 @@ use syn::punctuated::Punctuated;
 use syn::{parse_macro_input, Result, Token};
 
 struct DomainDef {
+    canrun_internal: bool,
     domain_visibility: syn::Visibility,
     domain_name: syn::Ident,
     domain_types: Vec<syn::Type>,
@@ -46,6 +47,7 @@ impl Parse for DomainDef {
         let domain_types: Vec<_> = raw_types.into_iter().collect();
 
         Ok(DomainDef {
+            canrun_internal: false,
             domain_visibility,
             domain_name,
             domain_types,
@@ -56,10 +58,17 @@ impl Parse for DomainDef {
 impl quote::ToTokens for DomainDef {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let DomainDef {
+            canrun_internal,
             domain_visibility,
             domain_name,
             domain_types,
         } = self;
+
+        let canrun_mod = if *canrun_internal {
+            format_ident!("crate")
+        } else {
+            format_ident!("canrun")
+        };
 
         let (fields, variants): (Vec<_>, Vec<_>) = (0..domain_types.len())
             .into_iter()
@@ -71,22 +80,22 @@ impl quote::ToTokens for DomainDef {
         let result = quote! {
             #[derive(std::fmt::Debug)]
             #domain_visibility struct #domain_name {
-                #(#fields: canrun::state::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>>),*
+                #(#fields: #canrun_mod::state::HashMap<#canrun_mod::value::LVar<#domain_types>, #canrun_mod::value::Val<#domain_types>>),*
             }
 
-            impl<'a> canrun::domain::Domain<'a> for #domain_name {
+            impl<'a> #canrun_mod::domains::Domain<'a> for #domain_name {
                 type Value = #value_name;
                 fn new() -> Self {
                     #domain_name {
-                        #(#fields: canrun::state::HashMap::new(),)*
+                        #(#fields: #canrun_mod::state::HashMap::new(),)*
                     }
                 }
                 fn unify_domain_values(
-                    state: canrun::state::State<'a, Self>,
+                    state: #canrun_mod::state::State<'a, Self>,
                     a: Self::Value,
                     b: Self::Value,
-                ) -> Option<canrun::state::State<Self>> {
-                    use canrun::value::{Val, IntoVal};
+                ) -> Option<#canrun_mod::state::State<Self>> {
+                    use #canrun_mod::value::{Val, IntoVal};
                     match (a, b) {
                         #(
                             (#value_name::#variants(a), #value_name::#variants(b)) => {
@@ -99,23 +108,23 @@ impl quote::ToTokens for DomainDef {
             }
 
             #(
-                impl<'a> canrun::domain::IntoDomainVal<'a, #domain_types> for #domain_name {
-                    fn into_domain_val(val: canrun::value::Val<#domain_types>) -> #value_name {
+                impl<'a> #canrun_mod::domains::IntoDomainVal<'a, #domain_types> for #domain_name {
+                    fn into_domain_val(val: #canrun_mod::value::Val<#domain_types>) -> #value_name {
                         #value_name::#variants(val)
                     }
                 }
             )*
 
             #(
-                impl<'a> canrun::domain::DomainType<'a, #domain_types> for #domain_name {
+                impl<'a> #canrun_mod::domains::DomainType<'a, #domain_types> for #domain_name {
                     fn values_as_ref(
                         &self,
-                    ) -> &canrun::state::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>> {
+                    ) -> &#canrun_mod::state::HashMap<#canrun_mod::value::LVar<#domain_types>, #canrun_mod::value::Val<#domain_types>> {
                         &self.#fields
                     }
                     fn values_as_mut(
                         &mut self,
-                    ) -> &mut canrun::state::HashMap<canrun::value::LVar<#domain_types>, canrun::value::Val<#domain_types>> {
+                    ) -> &mut #canrun_mod::state::HashMap<#canrun_mod::value::LVar<#domain_types>, #canrun_mod::value::Val<#domain_types>> {
                         &mut self.#fields
                     }
                 }
@@ -131,7 +140,7 @@ impl quote::ToTokens for DomainDef {
 
             #[derive(std::fmt::Debug)]
             #domain_visibility enum #value_name {
-                #(#variants(canrun::value::Val<#domain_types>)),*
+                #(#variants(#canrun_mod::value::Val<#domain_types>)),*
             }
 
             impl Clone for #value_name {
@@ -149,5 +158,15 @@ impl quote::ToTokens for DomainDef {
 #[proc_macro]
 pub fn domains(item: TokenStream) -> TokenStream {
     let DomainDefs { defs } = parse_macro_input!(item as DomainDefs);
+    quote!(#(#defs)*).into()
+}
+
+#[proc_macro]
+pub fn canrun_internal_domains(item: TokenStream) -> TokenStream {
+    let DomainDefs { defs } = parse_macro_input!(item as DomainDefs);
+    let defs = defs.into_iter().map(|mut domain: DomainDef| {
+        domain.canrun_internal = true;
+        domain
+    });
     quote!(#(#defs)*).into()
 }

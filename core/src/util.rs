@@ -1,7 +1,7 @@
 pub(super) mod multikeymultivaluemap;
 
 use super::state::State;
-use crate::domain::Domain;
+use crate::domains::Domain;
 use crate::goal::Goal;
 use crate::query::{QueryState, StateQuery};
 use itertools::Itertools;

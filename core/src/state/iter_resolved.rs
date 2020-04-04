@@ -1,6 +1,6 @@
 use super::resolved::ResolvedState;
 use super::State;
-use crate::domain::Domain;
+use crate::domains::Domain;
 
 pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<'s, D>> + 's>;
 

@@ -1,6 +1,9 @@
-use crate::domain::{Domain, DomainType};
-use crate::state::IterResolved;
+use crate::domains::{Domain, DomainType};
+use crate::goal::Goal;
+use crate::state::{IterResolved, State};
 use crate::value::LVar;
+
+// TODO: Come up with better names for these query traits
 
 pub trait StateQuery<'a, D: Domain<'a> + 'a> {
     fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>
@@ -12,14 +15,23 @@ impl<'a, D: Domain<'a> + 'a, S: IterResolved<'a, D>> StateQuery<'a, D> for S {
     where
         Q: QueryState<'a, D>,
     {
-        query.query(self)
+        query.run(self)
+    }
+}
+
+impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
+    pub fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>
+    where
+        Q: QueryState<'a, D>,
+    {
+        let state = self.apply(State::new());
+        query.run(state)
     }
 }
 
 pub trait QueryState<'a, D: Domain<'a> + 'a> {
     type Result;
-    fn query<S: IterResolved<'a, D>>(self, state: S)
-        -> Box<dyn Iterator<Item = Self::Result> + 'a>;
+    fn run<S: IterResolved<'a, D>>(self, state: S) -> Box<dyn Iterator<Item = Self::Result> + 'a>;
 }
 
 impl<'a, D, T> QueryState<'a, D> for LVar<T>
@@ -28,10 +40,7 @@ where
     T: Clone + 'a,
 {
     type Result = T;
-    fn query<S: IterResolved<'a, D>>(
-        self,
-        state: S,
-    ) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
+    fn run<S: IterResolved<'a, D>>(self, state: S) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
         Box::new(
             state
                 .resolved_iter()
@@ -47,10 +56,7 @@ where
     T2: Clone + 'a,
 {
     type Result = (T1, T2);
-    fn query<S: IterResolved<'a, D>>(
-        self,
-        state: S,
-    ) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
+    fn run<S: IterResolved<'a, D>>(self, state: S) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
         Box::new(state.resolved_iter().filter_map(move |r| {
             Some((r.get(self.0).ok().cloned()?, r.get(self.1).ok().cloned()?))
         }))
@@ -65,10 +71,7 @@ where
     T3: Clone + 'a,
 {
     type Result = (T1, T2, T3);
-    fn query<S: IterResolved<'a, D>>(
-        self,
-        state: S,
-    ) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
+    fn run<S: IterResolved<'a, D>>(self, state: S) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
         Box::new(state.resolved_iter().filter_map(move |r| {
             Some((
                 r.get(self.0).ok().cloned()?,

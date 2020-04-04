@@ -3,7 +3,7 @@ mod iter_resolved;
 mod resolved;
 
 use super::util::multikeymultivaluemap::MKMVMap;
-use crate::domain::{Domain, DomainType};
+use crate::domains::{Domain, DomainType};
 use crate::unify::Unify;
 use crate::value::{
     LVar, LVarId, Val,

@@ -13,7 +13,7 @@ pub use map_1::map_1;
 pub use map_2::map_2;
 
 use super::Goal;
-use crate::domain::Domain;
+use crate::domains::Domain;
 use crate::state::State;
 use crate::state::Watch;
 use std::fmt;
@@ -35,16 +35,16 @@ pub trait Project<'a, D: Domain<'a>>: fmt::Debug {
 #[cfg(test)]
 mod tests {
     use super::assert_1::assert_1;
+    use crate::domains::example::I32;
     use crate::goal::unify::unify;
     use crate::goal::Goal;
-    use crate::tests::domains::Numbers;
     use crate::util;
     use crate::value::var;
 
     #[test]
     fn succeeds() {
         let x = var();
-        let goals: Vec<Goal<Numbers>> = vec![unify(2, x), assert_1(x, |x| *x > 1)];
+        let goals: Vec<Goal<I32>> = vec![unify(2, x), assert_1(x, |x| *x > 1)];
         util::all_permutations_resolve_to(goals, x, vec![2]);
     }
 }
