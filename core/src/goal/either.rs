@@ -18,7 +18,7 @@ where
     }))
 }
 
-/// Return a [Goal](crate::goal::Goal) that succeeds if either sub-goal succeed.
+/// Create a [Goal](crate::goal::Goal) that succeeds if either sub-goal succeed.
 ///
 /// This is essentially an "OR" operation, and will eventually lead to zero, one
 /// or two [resolved states](crate::state::ResolvedState), depending on the success
@@ -26,7 +26,7 @@ where
 ///
 /// # Examples
 ///
-/// Two successful unifications will yield up two different results:
+/// Two successful goals will yield up two different results:
 /// ```
 /// use canrun::value::var;
 /// use canrun::goal::{Goal, either, unify};

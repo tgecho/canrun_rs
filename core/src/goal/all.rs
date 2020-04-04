@@ -9,7 +9,7 @@ where
     goals.into_iter().try_fold(state, |s, g| g.apply(s))
 }
 
-/// Return a [Goal](crate::goal::Goal) that only succeeds if all sub-goals succeed.
+/// Create a [Goal](crate::goal::Goal) that only succeeds if all sub-goals succeed.
 ///
 /// This is essentially an "AND" operation on a vector of goals. The resulting state will be the
 /// result of the combining all of the sub-goals.
@@ -18,7 +18,7 @@ where
 ///
 /// # Examples
 ///
-/// Multiple successful unifications allow values to flow between vars:
+/// Multiple successful goals allow values to flow between vars:
 /// ```
 /// use canrun::value::var;
 /// use canrun::goal::{Goal, all, unify};

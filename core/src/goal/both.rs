@@ -13,7 +13,7 @@ where
     a.apply(state).and_then(|s| b.apply(s))
 }
 
-/// Return a [Goal](crate::goal::Goal) that only succeeds if both sub-goals succeed.
+/// Create a [Goal](crate::goal::Goal) that only succeeds if both sub-goals succeed.
 ///
 /// This is essentially an "AND" operation. The resulting state will be the
 /// result of the combining the two sub-goals.
@@ -22,7 +22,7 @@ where
 ///
 /// # Examples
 ///
-/// Two successful unifications allow values to flow between vars:
+/// Two successful goals allow values to flow between vars:
 /// ```
 /// use canrun::value::var;
 /// use canrun::goal::{Goal, both, unify};

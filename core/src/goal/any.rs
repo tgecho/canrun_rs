@@ -19,6 +19,48 @@ where
     }))
 }
 
+/// Create a [Goal](crate::goal::Goal) that yields a state for every successful
+/// sub-goal.
+///
+/// This is essentially an "OR" operation on a vector of goals. It may yield
+/// from zero to as many [resolved states](crate::state::ResolvedState) as there
+/// are sub-goals.
+///
+/// # Examples
+///
+/// Each successful goal will yield a different result:
+/// ```
+/// use canrun::value::var;
+/// use canrun::goal::{Goal, any, unify};
+/// use canrun::domains::example::I32;
+///
+/// let x = var();
+/// let goal: Goal<I32> = any!(unify(x, 1), unify(x, 2), unify(x, 3));
+/// let result: Vec<_> = goal.query(x).collect();
+/// assert_eq!(result, vec![1, 2, 3])
+/// ```
+///
+/// One failing goal will not cause the other to fail:
+/// ```
+/// # use canrun::value::var;
+/// # use canrun::goal::{Goal, any, unify};
+/// # use canrun::domains::example::I32;
+/// # let x = var();
+/// let goal: Goal<I32> = any!(unify(1, 2), unify(x, 2), unify(x, 3));
+/// let result: Vec<_> = goal.query(x).collect();
+/// assert_eq!(result, vec![2, 3])
+/// ```
+///
+/// All goals can fail, leading to no results:
+/// ```
+/// # use canrun::value::var;
+/// # use canrun::goal::{Goal, any, unify};
+/// # use canrun::domains::example::I32;
+/// # let x = var();
+/// let goal: Goal<I32> = any!(unify(6, 5), unify(42, 0), unify(1, 2));
+/// let result: Vec<_> = goal.query(x).collect();
+/// assert_eq!(result, vec![]) // Empty result
+/// ```
 #[macro_export]
 macro_rules! any {
     ($($item:expr),*) => {
