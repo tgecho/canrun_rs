@@ -17,6 +17,36 @@ impl<'a, D: Domain<'a>> Custom<'a, D> {
     }
 }
 
+// TODO: Add more illustrative examples
+
+/// Create a [Goal](crate::goal::Goal) that gives access to the underlying
+/// [State](crate::state::State) struct.
+///
+/// Similar to [lazy](crate::goal::lazy()), the passed in callback is given access to
+/// the state so it can call the lower level [State] manipulation methods. This
+/// should approach should be used sparingly. Ideally most logic should be
+/// composable out of lower level primitive goals.
+///
+/// Because the [State] methods return an `Option<[State]>` the
+/// [question mark operator `?`](https://doc.rust-lang.org/edition-guide/rust-2018/error-handling-and-panics/the-question-mark-operator-for-easier-error-handling.html)
+/// can be used to allow chaining operations on the [State].
+///
+/// # Examples
+///
+/// ```
+/// use canrun::value::{val, var};
+/// use canrun::goal::{Goal, custom};
+/// use canrun::domains::example::I32;
+///
+/// let x = var();
+/// let goal: Goal<I32> = custom(|state| {
+///     let y = var();
+///     state.unify(val!(y), val!(1))?
+///          .unify(val!(x), val!(y))
+/// });
+/// let result: Vec<_> = goal.query(x).collect();
+/// assert_eq!(result, vec![1])
+/// ```
 pub fn custom<'a, D, F>(func: F) -> Goal<'a, D>
 where
     D: Domain<'a>,
