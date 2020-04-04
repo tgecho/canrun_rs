@@ -72,6 +72,7 @@ macro_rules! val {
     };
 }
 
+#[doc(inline)]
 pub use val;
 
 impl<T> Clone for Val<T> {

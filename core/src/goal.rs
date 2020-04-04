@@ -11,17 +11,22 @@ mod lazy;
 mod not;
 pub mod project;
 mod unify;
+
+#[doc(inline)]
 pub use all::all;
+#[doc(inline)]
 pub use any::any;
+#[doc(inline)]
 pub use both::both;
+#[doc(inline)]
 pub use custom::custom;
+#[doc(inline)]
 pub use either::either;
+#[doc(inline)]
 pub use lazy::lazy;
+#[doc(inline)]
 pub use not::not;
-pub use project::assert_1::assert_1;
-pub use project::assert_2::assert_2;
-pub use project::map_1::map_1;
-pub use project::map_2::map_2;
+#[doc(inline)]
 pub use unify::unify;
 
 #[derive(Clone, Debug)]

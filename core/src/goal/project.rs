@@ -1,7 +1,16 @@
-pub mod assert_1;
-pub mod assert_2;
-pub mod map_1;
-pub mod map_2;
+mod assert_1;
+mod assert_2;
+mod map_1;
+mod map_2;
+
+#[doc(inline)]
+pub use assert_1::assert_1;
+#[doc(inline)]
+pub use assert_2::assert_2;
+#[doc(inline)]
+pub use map_1::map_1;
+#[doc(inline)]
+pub use map_2::map_2;
 
 use super::Goal;
 use crate::domain::Domain;

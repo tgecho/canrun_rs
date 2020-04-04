@@ -16,6 +16,7 @@ use std::rc::Rc;
 
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
 type WatchFns<'s, D> = MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Watch<State<'s, D>> + 's>>;
+#[doc(hidden)]
 pub use im::HashMap;
 
 #[derive(Clone)]
