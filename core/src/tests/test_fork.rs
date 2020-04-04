@@ -1,4 +1,5 @@
 use super::super::state::{IterResolved, State, StateIter};
+use crate as canrun;
 use crate::domain::Domain;
 use crate::tests::domains::Numbers;
 use crate::value::val;
@@ -21,8 +22,8 @@ where
 fn basic_fork_first_success() {
     let state: State<Numbers> = State::new();
     let state = state.fork(either(
-        |s| s.unify(val(2), val(2)),
-        |s| s.unify(val(1), val(2)),
+        |s| s.unify(val!(2), val!(2)),
+        |s| s.unify(val!(1), val!(2)),
     ));
     let results: Vec<_> = state.unwrap().resolved_iter().collect();
     assert_eq!(1, results.len());
@@ -32,8 +33,8 @@ fn basic_fork_first_success() {
 fn basic_fork_second_success() {
     let state: State<Numbers> = State::new();
     let state = state.fork(either(
-        |s| s.unify(val(1), val(2)),
-        |s| s.unify(val(2), val(2)),
+        |s| s.unify(val!(1), val!(2)),
+        |s| s.unify(val!(2), val!(2)),
     ));
     assert_eq!(1, state.resolved_iter().count());
 }
@@ -42,8 +43,8 @@ fn basic_fork_second_success() {
 fn basic_fork_both_success() {
     let state: State<Numbers> = State::new();
     let state = state.fork(either(
-        |s| s.unify(val(1), val(1)),
-        |s| s.unify(val(2), val(2)),
+        |s| s.unify(val!(1), val!(1)),
+        |s| s.unify(val!(2), val!(2)),
     ));
     assert_eq!(2, state.resolved_iter().count());
 }

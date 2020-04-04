@@ -65,9 +65,14 @@ impl<T> LVar<T> {
     }
 }
 
-pub fn val<T>(t: T) -> Val<T> {
-    Val::Resolved(Rc::new(t))
+#[macro_export]
+macro_rules! val {
+    ($value:expr) => {
+        canrun::value::IntoVal::into_val($value)
+    };
 }
+
+pub use val;
 
 impl<T> Clone for Val<T> {
     fn clone(&self) -> Self {

@@ -1,4 +1,5 @@
 use super::super::state::{State, Watch};
+use crate as canrun;
 use crate::domain::DomainType;
 use crate::goal::custom;
 use crate::goal::unify;
@@ -42,7 +43,7 @@ fn basic_watch_succeeds() {
 fn basic_watch_fails() {
     let x = var();
     let goals: Vec<Goal<Numbers>> = vec![
-        unify(val(2), x.clone()),
+        unify(val!(2), x.clone()),
         custom(|s| s.watch(assert(x.clone(), |x| x > &1))),
         custom(|s| s.watch(assert(x, |x| x > &3))),
     ];

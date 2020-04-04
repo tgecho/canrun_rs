@@ -62,15 +62,15 @@ mod tests {
     fn tuple2_succeeds() {
         let x = var();
         let goals: Vec<Goal<Tuples2>> =
-            vec![unify(x, (val(1), val(2))), unify(x, (val(1), val(2)))];
-        util::all_permutations_resolve_to(goals, x, vec![(val(1), val(2))]);
+            vec![unify(x, (val!(1), val!(2))), unify(x, (val!(1), val!(2)))];
+        util::all_permutations_resolve_to(goals, x, vec![(val!(1), val!(2))]);
     }
 
     #[test]
     fn tuple2_fails() {
         let x = var();
         let goals: Vec<Goal<Tuples2>> =
-            vec![unify(x, (val(1), val(3))), unify(x, (val(1), val(2)))];
+            vec![unify(x, (val!(1), val!(3))), unify(x, (val!(1), val!(2)))];
         util::all_permutations_resolve_to(goals, x, vec![]);
     }
 
@@ -79,7 +79,7 @@ mod tests {
         let x = var();
         let y = var();
         let goals: Vec<Goal<Tuples2>> =
-            vec![unify(x, (val(1), y.into_val())), unify(x, (val(1), val(2)))];
+            vec![unify(x, (val!(1), val!(y))), unify(x, (val!(1), val!(2)))];
         util::all_permutations_resolve_to(goals, y, vec![2]);
     }
 
@@ -87,18 +87,18 @@ mod tests {
     fn tuple3_succeeds() {
         let x = var();
         let goals: Vec<Goal<Tuples3>> = vec![
-            unify(x, (val(1), val(2), val(3))),
-            unify(x, (val(1), val(2), val(3))),
+            unify(x, (val!(1), val!(2), val!(3))),
+            unify(x, (val!(1), val!(2), val!(3))),
         ];
-        util::all_permutations_resolve_to(goals, x, vec![(val(1), val(2), val(3))]);
+        util::all_permutations_resolve_to(goals, x, vec![(val!(1), val!(2), val!(3))]);
     }
 
     #[test]
     fn tuple3_fails() {
         let x = var();
         let goals: Vec<Goal<Tuples3>> = vec![
-            unify(x, (val(1), val(2), val(3))),
-            unify(x, (val(1), val(2), val(4))),
+            unify(x, (val!(1), val!(2), val!(3))),
+            unify(x, (val!(1), val!(2), val!(4))),
         ];
         util::all_permutations_resolve_to(goals, x, vec![]);
     }
@@ -108,8 +108,8 @@ mod tests {
         let x = var();
         let y = var();
         let goals: Vec<Goal<Tuples3>> = vec![
-            unify(x, (val(1), y.into_val(), val(3))),
-            unify(x, (val(1), val(2), val(3))),
+            unify(x, (val!(1), val!(y), val!(3))),
+            unify(x, (val!(1), val!(2), val!(3))),
         ];
         util::all_permutations_resolve_to(goals, y, vec![2]);
     }
