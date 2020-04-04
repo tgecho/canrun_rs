@@ -9,6 +9,39 @@ where
     goals.into_iter().try_fold(state, |s, g| g.apply(s))
 }
 
+/// Create a goal that only succeeds if all sub-goals succeed.
+///
+/// This is essentially an "AND" operation on a vector of goals. The resulting state will be the
+/// result of the combining all of the sub-goals.
+///
+/// If the any goal fails, the rest of the goals will not be attempted.
+///
+/// # Examples
+///
+/// Multiple successful unifications allow values to flow between vars:
+/// ```
+/// use canrun::value::var;
+/// use canrun::goal::{Goal, all, unify};
+/// use canrun::domains::example::I32;
+///
+/// let x = var();
+/// let y = var();
+/// let goal: Goal<I32> = all![unify(y, x), unify(1, x), unify(y, 1)];
+/// let result: Vec<_> = goal.query((x, y)).collect();
+/// assert_eq!(result, vec![(1, 1)])
+/// ```
+///
+/// A failing goal will cause the entire goal to fail:
+/// ```
+/// # use canrun::value::var;
+/// # use canrun::goal::{Goal, all, unify};
+/// # use canrun::domains::example::I32;
+/// # let x = var();
+/// # let y = var();
+/// let goal: Goal<I32> = all![unify(2, x), unify(1, x), unify(y, x)];
+/// let result: Vec<_> = goal.query(x).collect();
+/// assert_eq!(result, vec![]) // Empty result
+/// ```
 #[macro_export]
 macro_rules! all {
     ($($item:expr),*) => {
