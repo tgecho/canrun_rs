@@ -18,6 +18,28 @@ impl<'a, D: Domain<'a>> Lazy<'a, D> {
     }
 }
 
+// TODO: Add more illustrative examples
+
+/// Create a [Goal](crate::goal::Goal) that is generated via callback just as it is about to be evaluated.
+///
+/// The primary uses for this function involve introducing new internal vars.
+/// The passed in callback function should return a valid goal to be evaluated.
+///
+/// # Examples
+///
+/// ```
+/// use canrun::value::var;
+/// use canrun::goal::{Goal, lazy, both, unify};
+/// use canrun::domains::example::I32;
+///
+/// let x = var();
+/// let goal: Goal<I32> = lazy(|| {
+///     let y = var();
+///     both(unify(y, 1), unify(x, y))
+/// });
+/// let result: Vec<_> = goal.query(x).collect();
+/// assert_eq!(result, vec![1])
+/// ```
 pub fn lazy<'a, D, F>(func: F) -> Goal<'a, D>
 where
     D: Domain<'a>,
