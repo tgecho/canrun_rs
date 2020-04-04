@@ -9,7 +9,7 @@ where
     goals.into_iter().try_fold(state, |s, g| g.apply(s))
 }
 
-/// Create a goal that only succeeds if all sub-goals succeed.
+/// Return a [Goal](crate::goal::Goal) that only succeeds if all sub-goals succeed.
 ///
 /// This is essentially an "AND" operation on a vector of goals. The resulting state will be the
 /// result of the combining all of the sub-goals.
