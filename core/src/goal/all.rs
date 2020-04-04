@@ -31,9 +31,9 @@ mod tests {
     fn succeeds() {
         let x = var();
         let y = var();
-        let goal: Goal<I32> = all![unify(x, 5), unify(y, 7)];
+        let goal: Goal<I32> = all![unify(y, x), unify(y, 1)];
         let result = util::goal_resolves_to(goal, (x, y));
-        assert_eq!(result, vec![(5, 7)]);
+        assert_eq!(result, vec![(1, 1)]);
     }
 
     #[test]
