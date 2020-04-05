@@ -39,10 +39,15 @@ pub mod state;
 pub mod unify;
 pub mod value;
 
+#[doc(inline)]
 pub use goal::project::{assert_1, assert_2, map_1, map_2};
+#[doc(inline)]
 pub use goal::{both, custom, either, lazy, unify, Goal};
+#[doc(inline)]
 pub use state::{ResolvedState, State};
+#[doc(inline)]
 pub use unify::Unify;
+#[doc(inline)]
 pub use value::{var, LVar, Val};
 
 #[doc(hidden)]
