@@ -1,0 +1,22 @@
+name: Nightly
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install nightly toolchain
+        run: rustup toolchain install nightly
+      - name: Build
+        run: cargo +nightly build --verbose
+      - name: Run tests
+        run: cargo +nightly test --verbose
+      - name: Run readme doc tests
+        run: cargo +nightly test --doc --package canrun_readme_check --verbose

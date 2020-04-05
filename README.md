@@ -1,4 +1,4 @@
-Canrun is a logic programming library inspired by the [\*Kanren](http://minikanren.org/) family of language DSLs.
+Canrun is a [logic programming](https://en.wikipedia.org/wiki/Logic_programming) library inspired by the [\*Kanren](http://minikanren.org/) family of language DSLs.
 
 ## Status: Exploratory and Highly Experimental
 

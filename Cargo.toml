@@ -3,4 +3,10 @@ members = [
     "core",
     "codegen",
     "collections",
+    "readme_check"
+]
+default-members = [
+    "core",
+    "codegen",
+    "collections"
 ]
