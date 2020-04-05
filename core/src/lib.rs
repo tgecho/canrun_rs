@@ -5,7 +5,7 @@ pub mod state;
 pub mod unify;
 pub mod value;
 
-#[doc(inline)]
+#[doc(hidden)]
 pub use canrun_codegen::domains;
 
 pub mod util;
