@@ -20,8 +20,7 @@ where
 ///
 /// Multiple successful goals allow values to flow between vars:
 /// ```
-/// use canrun::value::var;
-/// use canrun::goal::{Goal, all, unify};
+/// use canrun::{Goal, all, unify, var};
 /// use canrun::domains::example::I32;
 ///
 /// let x = var();
@@ -33,8 +32,7 @@ where
 ///
 /// A failing goal will cause the entire goal to fail:
 /// ```
-/// # use canrun::value::var;
-/// # use canrun::goal::{Goal, all, unify};
+/// # use canrun::{Goal, all, unify, var};
 /// # use canrun::domains::example::I32;
 /// # let x = var();
 /// # let y = var();

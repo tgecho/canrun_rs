@@ -30,8 +30,7 @@ where
 ///
 /// Each successful goal will yield a different result:
 /// ```
-/// use canrun::value::var;
-/// use canrun::goal::{Goal, any, unify};
+/// use canrun::{Goal, any, unify, var};
 /// use canrun::domains::example::I32;
 ///
 /// let x = var();
@@ -42,8 +41,7 @@ where
 ///
 /// One failing goal will not cause the other to fail:
 /// ```
-/// # use canrun::value::var;
-/// # use canrun::goal::{Goal, any, unify};
+/// # use canrun::{Goal, any, unify, var};
 /// # use canrun::domains::example::I32;
 /// # let x = var();
 /// let goal: Goal<I32> = any!(unify(1, 2), unify(x, 2), unify(x, 3));
@@ -53,8 +51,7 @@ where
 ///
 /// All goals can fail, leading to no results:
 /// ```
-/// # use canrun::value::var;
-/// # use canrun::goal::{Goal, any, unify};
+/// # use canrun::{Goal, any, unify, var};
 /// # use canrun::domains::example::I32;
 /// # let x = var();
 /// let goal: Goal<I32> = any!(unify(6, 5), unify(42, 0), unify(1, 2));
@@ -64,7 +61,7 @@ where
 #[macro_export]
 macro_rules! any {
     ($($item:expr),*) => {
-        canrun::goal::Goal::Any(vec![$($item),*])
+        canrun::Goal::Any(vec![$($item),*])
     };
 }
 pub use any;

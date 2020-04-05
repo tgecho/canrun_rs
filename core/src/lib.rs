@@ -5,6 +5,12 @@ pub mod state;
 pub mod unify;
 pub mod value;
 
+pub use goal::project::{assert_1, assert_2, map_1, map_2};
+pub use goal::{both, custom, either, lazy, unify, Goal};
+pub use state::{ResolvedState, State};
+pub use unify::Unify;
+pub use value::{var, LVar, Val};
+
 #[doc(hidden)]
 pub use canrun_codegen::domains;
 

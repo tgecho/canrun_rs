@@ -40,8 +40,7 @@ where
 ///
 /// One failing goal will not cause the other to fail:
 /// ```
-/// # use canrun::value::var;
-/// # use canrun::goal::{Goal, either, unify};
+/// # use canrun::{Goal, either, unify, var};
 /// # use canrun::domains::example::I32;
 /// # let x = var();
 /// let goal: Goal<I32> = either(unify(1, 2), unify(x, 3));
@@ -51,8 +50,7 @@ where
 ///
 /// Both goals can fail, leading to no results:
 /// ```
-/// # use canrun::value::var;
-/// # use canrun::goal::{Goal, either, unify};
+/// # use canrun::{Goal, either, unify, var};
 /// # use canrun::domains::example::I32;
 /// # let x = var();
 /// let goal: Goal<I32> = either(unify(6, 5), unify(1, 2));

@@ -28,8 +28,7 @@ impl<'a, D: Domain<'a>> Lazy<'a, D> {
 /// # Examples
 ///
 /// ```
-/// use canrun::value::var;
-/// use canrun::goal::{Goal, lazy, both, unify};
+/// use canrun::{Goal, lazy, both, unify, var};
 /// use canrun::domains::example::I32;
 ///
 /// let x = var();

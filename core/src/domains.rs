@@ -5,10 +5,7 @@
 //! [domains!](./macro.domains.html) macro.
 //!
 //! ```
-//! # use canrun::domains;
-//! # use canrun::state::State;
-//! # use canrun::goal::{Goal, unify};
-//! # use canrun::value::var;
+//! # use canrun::{domains, State, Goal, unify, var};
 //! # domains! { domain MyDomain { i32 } }
 //! # fn main() {
 //! # let x = var();
@@ -100,7 +97,7 @@ pub trait IntoDomainVal<'a, T>: Domain<'a> {
 /// [Val](crate::value::Val) is required in the Vec type.
 /// ```
 /// # use canrun::domains;
-/// use canrun::value::Val;
+/// use canrun::Val;
 /// domains! {
 ///     pub domain MyBigDomain {
 ///         i32,

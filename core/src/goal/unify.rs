@@ -23,8 +23,7 @@ where
 ///
 /// Unifying a fresh LVar will bind it to the other value:
 /// ```
-/// use canrun::value::var;
-/// use canrun::goal::{Goal, unify};
+/// use canrun::{Goal, unify, var};
 /// use canrun::domains::example::I32;
 ///
 /// let x = var();
@@ -35,8 +34,7 @@ where
 ///
 /// Attempting to unify two unequal values will fail:
 /// ```
-/// # use canrun::value::var;
-/// # use canrun::goal::{Goal, unify};
+/// # use canrun::{Goal, unify, var};
 /// # use canrun::domains::example::I32;
 /// # let x = var();
 /// let goal: Goal<I32> = unify(1, 2);

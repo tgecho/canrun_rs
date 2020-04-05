@@ -34,8 +34,7 @@ impl<'a, D: Domain<'a>> Custom<'a, D> {
 /// # Examples
 ///
 /// ```
-/// use canrun::value::{val, var};
-/// use canrun::goal::{Goal, custom};
+/// use canrun::{Goal, custom, val, var};
 /// use canrun::domains::example::I32;
 ///
 /// let x = var();
