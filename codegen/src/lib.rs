@@ -138,6 +138,7 @@ impl quote::ToTokens for DomainDef {
                 }
             }
 
+            #[doc(hidden)]
             #[derive(std::fmt::Debug)]
             #domain_visibility enum #value_name {
                 #(#variants(#canrun_mod::value::Val<#domain_types>)),*
