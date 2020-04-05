@@ -1,4 +1,4 @@
-use im::{HashMap, HashSet};
+use im_rc::{HashMap, HashSet};
 use std::fmt;
 use std::hash::Hash;
 

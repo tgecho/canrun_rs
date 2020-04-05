@@ -17,13 +17,13 @@ use std::rc::Rc;
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
 type WatchFns<'s, D> = MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Watch<State<'s, D>> + 's>>;
 #[doc(hidden)]
-pub use im::HashMap;
+pub use im_rc::HashMap;
 
 #[derive(Clone)]
 pub struct State<'a, D: Domain<'a> + 'a> {
     domain: D,
     watches: WatchFns<'a, D>,
-    forks: im::Vector<Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>>,
+    forks: im_rc::Vector<Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>>,
 }
 
 #[derive(Debug)]
@@ -59,7 +59,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         State {
             domain: D::new(),
             watches: MKMVMap::new(),
-            forks: im::Vector::new(),
+            forks: im_rc::Vector::new(),
         }
     }
 

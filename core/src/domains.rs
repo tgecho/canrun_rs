@@ -1,6 +1,6 @@
 use crate::state::State;
 use crate::value::{LVar, Val};
-use im::HashMap;
+use im_rc::HashMap;
 use std::fmt::Debug;
 
 pub mod example {

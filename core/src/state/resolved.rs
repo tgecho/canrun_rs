@@ -35,7 +35,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<'a, D> {
         State {
             domain: self.domain,
             watches: self.watches,
-            forks: im::Vector::new(),
+            forks: im_rc::Vector::new(),
         }
     }
 }
