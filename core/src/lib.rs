@@ -1,3 +1,6 @@
+#![feature(external_doc)]
+#![doc(include = "../../README.md")]
+
 pub mod domains;
 pub mod goal;
 pub mod query;
