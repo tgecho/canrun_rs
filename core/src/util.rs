@@ -3,7 +3,7 @@ pub(super) mod multikeymultivaluemap;
 use super::state::State;
 use crate::domains::Domain;
 use crate::goal::Goal;
-use crate::query::{QueryState, StateQuery};
+use crate::query::{Query, Queryable};
 use itertools::Itertools;
 use std::fmt::Debug;
 
@@ -20,7 +20,7 @@ where
 pub(crate) fn goals_resolve_to<'a, D, Q>(goals: &Vec<Goal<'a, D>>, query: Q) -> Vec<Q::Result>
 where
     D: Domain<'a> + 'a,
-    Q: QueryState<'a, D>,
+    Q: Query<'a, D>,
 {
     let goal = Goal::All(goals.clone());
     goal_resolves_to(goal, query)
@@ -29,7 +29,7 @@ where
 pub(crate) fn goal_resolves_to<'a, D, Q>(goal: Goal<'a, D>, query: Q) -> Vec<Q::Result>
 where
     D: Domain<'a> + 'a,
-    Q: QueryState<'a, D>,
+    Q: Query<'a, D>,
 {
     let state = goal.apply(State::new());
     state.query(query).collect()
@@ -41,7 +41,7 @@ pub fn all_permutations_resolve_to<'a, D, Q>(
     expected: Vec<Q::Result>,
 ) where
     D: Domain<'a> + Debug + 'a,
-    Q: QueryState<'a, D> + Clone,
+    Q: Query<'a, D> + Clone,
     Q::Result: PartialEq + Debug,
 {
     for permutation in all_permutations(goals) {

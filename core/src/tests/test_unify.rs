@@ -1,7 +1,7 @@
 use super::super::state::State;
 use crate as canrun;
 use crate::domains::example::I32;
-use crate::query::StateQuery;
+use crate::query::Queryable;
 use crate::value::{val, var, IntoVal};
 
 #[test]
