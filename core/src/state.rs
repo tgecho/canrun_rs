@@ -9,7 +9,7 @@ use crate::value::{
     LVar, LVarId, Val,
     Val::{Resolved, Var},
 };
-pub use iter_resolved::IterResolved;
+pub use iter_resolved::{IterResolved, ResolvedIter};
 pub use resolved::ResolvedState;
 use std::iter::once;
 use std::rc::Rc;

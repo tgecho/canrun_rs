@@ -1,5 +1,6 @@
-//! Canrun is a [logic programming](https://en.wikipedia.org/wiki/Logic_programming)
-//! library inspired by the [\*Kanren](http://minikanren.org/) family of language DSLs.
+//! Canrun is a [logic
+//! programming](https://en.wikipedia.org/wiki/Logic_programming) library
+//! inspired by the [\*Kanren](http://minikanren.org/) family of language DSLs.
 //!
 //! ## Status: Exploratory and Highly Experimental
 //!
@@ -25,12 +26,13 @@
 //!
 //! - [Domains](crate::domains) constrain the set of types that you can reason
 //!   about in a particular context.
-//! - [LVars](crate::value::LVar) are bound to other [values](crate::value)
-//!   through unification.
+//! - [Values](crate::value) are either resolved or [LVars](crate::value::LVar) that
+//!   can be bound to other values through unification.
 //! - [Goals](crate::goal) contain declarative assertions about the
 //!   relationships between values.
-//! - [States](crate::state) track the process of unifying values and allow
-//!   [querying](crate::query) for results.
+//! - [States](crate::state) track value bindings and constraints during
+//!   evaluation of a logic program.
+//! - [Queries](crate::query) allow easy extraction of resolved values.
 
 pub mod domains;
 pub mod goal;
@@ -43,6 +45,8 @@ pub mod value;
 pub use goal::project::{assert_1, assert_2, map_1, map_2};
 #[doc(inline)]
 pub use goal::{both, custom, either, lazy, unify, Goal};
+#[doc(inline)]
+pub use query::{Query, Queryable};
 #[doc(inline)]
 pub use state::{ResolvedState, State};
 #[doc(inline)]

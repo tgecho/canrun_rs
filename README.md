@@ -1,8 +1,13 @@
-Canrun is a [logic programming](https://en.wikipedia.org/wiki/Logic_programming) library inspired by the [\*Kanren](http://minikanren.org/) family of language DSLs.
+Canrun is a [logic programming](https://en.wikipedia.org/wiki/Logic_programming)
+library inspired by the [\*Kanren](http://minikanren.org/) family of language
+DSLs.
 
 ## Status: Exploratory and Highly Experimental
 
-I'm still quite new to both Rust and logic programming, so there are likely to be rough edges. At best the goal is to be a useful implementation of the core concepts of a Kanren in way that is idiomatic to Rust. At worst it may just be a poor misinterpretation with fatel flaws.
+I'm still quite new to both Rust and logic programming, so there are likely to
+be rough edges. At best the goal is to be a useful implementation of the core
+concepts of a Kanren in way that is idiomatic to Rust. At worst it may just be a
+poor misinterpretation with fatel flaws.
 
 ## Quick Start
 
@@ -19,7 +24,12 @@ assert_eq!(result, vec![1])
 
 ## Concepts
 
-- [Domains](crate::domains) constrain the set of types that you can reason about in a particular context.
-- [LVars](crate::value::LVar) are bound to other [values](crate::value) through unification.
-- [Goals](crate::goal) contain declarative assertions about the relationships between values.
-- [States](crate::state) track the process of unifying values and allow [querying](crate::query) for results.
+- [Domains](crate::domains) constrain the types of values that you can reason about
+  in a particular context.
+- [Values](crate::value) are either resolved or [LVars](crate::value::LVar) that
+  can be bound to other values through unification.
+- [Goals](crate::goal) contain declarative assertions about the relationships
+  between values.
+- [States](crate::state) track value bindings and constraints during evaluation
+  of a logic program.
+- [Queries](crate::query) allow easy extraction of resolved values.

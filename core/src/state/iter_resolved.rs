@@ -7,6 +7,7 @@ pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<'s, D>> + '
 pub trait IterResolved<'a, D: Domain<'a> + 'a> {
     fn resolved_iter(self) -> ResolvedIter<'a, D>;
 }
+
 impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for State<'a, D> {
     fn resolved_iter(self) -> ResolvedIter<'a, D> {
         Box::new(self.iter_forks().map(|s| ResolvedState {
@@ -15,13 +16,9 @@ impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for State<'a, D> {
         }))
     }
 }
+
 impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Option<State<'a, D>> {
     fn resolved_iter(self) -> ResolvedIter<'a, D> {
         Box::new(self.into_iter().flat_map(|s| s.resolved_iter()))
-    }
-}
-impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Vec<ResolvedState<'a, D>> {
-    fn resolved_iter(self) -> ResolvedIter<'a, D> {
-        Box::new(self.into_iter())
     }
 }
