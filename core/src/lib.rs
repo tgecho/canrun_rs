@@ -38,7 +38,7 @@ pub mod domains;
 pub mod goal;
 pub mod query;
 pub mod state;
-pub mod unify;
+mod unify;
 pub mod value;
 
 #[doc(inline)]

@@ -114,8 +114,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
 
     pub fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
     where
-        D: DomainType<'a, T>,
-        Self: Unify<'a, T>,
+        D: Unify<'a, T>,
     {
         let a = self.resolve_val(&a);
         let b = self.resolve_val(&b);
@@ -123,7 +122,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
             (Resolved(a), Resolved(b)) => {
                 let a = a.clone();
                 let b = b.clone();
-                self.unify_resolved(a, b)
+                Unify::unify_resolved(self, a, b)
             }
             (Var(a), Var(b)) if a == b => Some(self),
             (Var(var), val) | (val, Var(var)) => {

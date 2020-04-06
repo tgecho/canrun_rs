@@ -4,16 +4,19 @@ use crate::state::State;
 use crate::value::Val;
 use std::rc::Rc;
 
-impl<'a, T, D> Unify<'a, Vec<Val<T>>> for State<'a, D>
+impl<'a, T, D> Unify<'a, Vec<Val<T>>> for D
 where
-    D: DomainType<'a, T> + DomainType<'a, Vec<Val<T>>>,
-    Self: Unify<'a, T>,
+    D: Unify<'a, T> + DomainType<'a, Vec<Val<T>>>,
 {
-    fn unify_resolved(self, a: Rc<Vec<Val<T>>>, b: Rc<Vec<Val<T>>>) -> Option<Self> {
+    fn unify_resolved(
+        state: State<'a, Self>,
+        a: Rc<Vec<Val<T>>>,
+        b: Rc<Vec<Val<T>>>,
+    ) -> Option<State<'a, Self>> {
         if a.len() == b.len() {
             a.iter()
                 .zip(b.iter())
-                .try_fold(self, |s: State<'a, D>, (a, b)| {
+                .try_fold(state, |s: State<'a, D>, (a, b)| {
                     s.unify(a.clone(), b.clone())
                 })
         } else {

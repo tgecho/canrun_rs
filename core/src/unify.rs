@@ -5,17 +5,17 @@ use std::rc::Rc;
 mod tuples;
 mod vec;
 
-pub trait Unify<'a, T>: Sized {
-    fn unify_resolved(self, a: Rc<T>, b: Rc<T>) -> Option<Self>;
+pub trait Unify<'a, T>: DomainType<'a, T> {
+    fn unify_resolved(state: State<'a, Self>, a: Rc<T>, b: Rc<T>) -> Option<State<'a, Self>>;
 }
 
 macro_rules! impl_unify_eq {
     ($($type:ty),+) => {
         $(
-            impl<'a, D: DomainType<'a, $type>> Unify<'a, $type> for State<'a, D> {
-                fn unify_resolved(self, a: Rc<$type>, b: Rc<$type>) -> Option<Self> {
+            impl<'a, D: DomainType<'a, $type>> Unify<'a, $type> for D {
+                fn unify_resolved(state: State<'a, Self>, a: Rc<$type>, b: Rc<$type>) -> Option<State<'a, Self>> {
                     if a == b {
-                        Some(self)
+                        Some(state)
                     } else {
                         None
                     }

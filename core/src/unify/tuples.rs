@@ -4,34 +4,35 @@ use crate::state::State;
 use crate::value::Val;
 use std::rc::Rc;
 
-impl<'a, A, B, D> Unify<'a, (Val<A>, Val<B>)> for State<'a, D>
+impl<'a, A, B, D> Unify<'a, (Val<A>, Val<B>)> for D
 where
-    D: DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, (Val<A>, Val<B>)>,
-    Self: Unify<'a, A> + Unify<'a, B>,
+    D: Unify<'a, A> + Unify<'a, B> + DomainType<'a, (Val<A>, Val<B>)>,
 {
-    fn unify_resolved(self, l: Rc<(Val<A>, Val<B>)>, r: Rc<(Val<A>, Val<B>)>) -> Option<Self> {
+    fn unify_resolved(
+        state: State<'a, D>,
+        l: Rc<(Val<A>, Val<B>)>,
+        r: Rc<(Val<A>, Val<B>)>,
+    ) -> Option<State<'a, D>> {
         Some(
-            self.unify(l.0.clone(), r.0.clone())?
+            state
+                .unify(l.0.clone(), r.0.clone())?
                 .unify(l.1.clone(), r.1.clone())?,
         )
     }
 }
 
-impl<'a, A, B, C, D> Unify<'a, (Val<A>, Val<B>, Val<C>)> for State<'a, D>
+impl<'a, A, B, C, D> Unify<'a, (Val<A>, Val<B>, Val<C>)> for D
 where
-    D: DomainType<'a, A>
-        + DomainType<'a, B>
-        + DomainType<'a, C>
-        + DomainType<'a, (Val<A>, Val<B>, Val<C>)>,
-    Self: Unify<'a, A> + Unify<'a, B> + Unify<'a, C>,
+    D: Unify<'a, A> + Unify<'a, B> + Unify<'a, C> + DomainType<'a, (Val<A>, Val<B>, Val<C>)>,
 {
     fn unify_resolved(
-        self,
+        state: State<'a, D>,
         l: Rc<(Val<A>, Val<B>, Val<C>)>,
         r: Rc<(Val<A>, Val<B>, Val<C>)>,
-    ) -> Option<Self> {
+    ) -> Option<State<'a, D>> {
         Some(
-            self.unify(l.0.clone(), r.0.clone())?
+            state
+                .unify(l.0.clone(), r.0.clone())?
                 .unify(l.1.clone(), r.1.clone())?
                 .unify(l.2.clone(), r.2.clone())?,
         )

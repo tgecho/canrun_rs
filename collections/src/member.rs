@@ -1,8 +1,8 @@
 use canrun::domains::{DomainType, IntoDomainVal};
 use canrun::goal::{project::Project, unify, Goal};
 use canrun::state::{State, Watch};
-use canrun::unify::Unify;
 use canrun::value::{IntoVal, Val};
+use canrun::Unify;
 use std::fmt;
 use std::iter::repeat;
 use std::rc::Rc;
@@ -12,8 +12,7 @@ where
     I: 'a,
     IV: IntoVal<I>,
     CV: IntoVal<Vec<Val<I>>>,
-    D: DomainType<'a, I> + DomainType<'a, Vec<Val<I>>> + IntoDomainVal<'a, I>,
-    State<'a, D>: Unify<'a, I> + Unify<'a, Vec<Val<I>>>,
+    D: Unify<'a, I> + Unify<'a, Vec<Val<I>>> + IntoDomainVal<'a, I>,
 {
     Goal::Project(Rc::new(Member {
         item: item.into_val(),
