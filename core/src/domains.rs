@@ -4,10 +4,16 @@
 //! macro.
 //!
 //! ```
-//! # use canrun::{domains, State, Goal, unify, var};
-//! # domains! { domain MyDomain { i32 } }
+//! use canrun::{domains, State, Goal, unify, var};
+//!
+//! domains! {
+//!     domain MyDomain {
+//!         i32
+//!     }
+//! }
+//!
 //! # fn main() {
-//! # let x = var();
+//! let x = var();
 //! let state: State<MyDomain> = State::new();
 //! let goal: Goal<MyDomain> = unify(x, 1);
 //! # }
@@ -19,7 +25,7 @@ use im_rc::HashMap;
 use std::fmt::Debug;
 
 pub mod example {
-    //! These example domains are available for simple use cases.
+    //! Basic domains for simple use cases.
     //!
     //! | Domain   | Types |
     //! | ------   | ----- |
@@ -63,10 +69,10 @@ pub trait IntoDomainVal<'a, T>: Domain<'a> {
     fn into_domain_val(val: Val<T>) -> Self::Value;
 }
 
-/// Generate a [Domain] struct and other associated types and impls.
+/// Generate [Domain] structs and other associated types and impls.
 ///
 /// Manually implementing a [Domain] would be tedious and finicky. This macro
-/// attempts to simplfy most of the general cases by building out everything
+/// attempts to simplify most of the general cases by building out everything
 /// required to reason about values of various types.
 ///
 /// A few [example domains](crate::domains::example) are available for simple use cases.
