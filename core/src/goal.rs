@@ -1,3 +1,13 @@
+//! Declarative assertions about the relationships between values.
+//!
+//! They provide a high level interface for defining logic programs.
+//! [Goals](crate::Goal) are composable, with many higher level goals being made
+//! up of lower level primitives. Since the typical way of using goals are
+//! through simple functions, it is easy to build and reuse custom, first class
+//! goal constructors.
+//!
+//! While [State] exposes a lower level API, in practice there really shouldn't
+//! be anything that can't be expressed using goals.
 use crate::domains::Domain;
 use crate::query::{Query, Queryable};
 use crate::state::State;
@@ -28,6 +38,13 @@ pub use lazy::lazy;
 #[doc(inline)]
 pub use unify::unify;
 
+/// A container of one of many possible types of [goals](crate::goal).
+///
+/// Values of this type are typically constructed with one of the many
+/// constructor [functions](crate::goal#functions) and
+/// [macros](crate::goal#macros). These high level methods provide automatic
+/// [value](crate::value) wrapping through [IntoVal](crate::value::IntoVal) and
+/// other niceties.
 #[derive(Clone, Debug)]
 pub enum Goal<'a, D: Domain<'a>> {
     Unify(D::Value, D::Value),

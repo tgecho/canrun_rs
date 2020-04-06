@@ -1,8 +1,7 @@
-//! A container for values of the various types that is used to paramaterize other Canrun types such as
-//! [State](crate::state::State) and [Goal](crate::goal::Goal).
+//! Constrain the set of types that you can reason about in a particular context.
 //!
-//! Domains are typically generated with the
-//! [domains!](./macro.domains.html) macro.
+//! Domains are typically generated with the [domains!](./macro.domains.html)
+//! macro.
 //!
 //! ```
 //! # use canrun::{domains, State, Goal, unify, var};
