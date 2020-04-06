@@ -1,6 +1,6 @@
 use super::Goal;
 use super::Project;
-use crate::domains::{Domain, DomainType};
+use crate::domains::DomainType;
 use crate::state::State;
 use crate::state::Watch;
 use crate::unify::Unify;
@@ -38,7 +38,7 @@ pub fn map_1<'a, A: 'a, AV, B: 'a, BV, D, AtoB, BtoA>(
 where
     AV: IntoVal<A>,
     BV: IntoVal<B>,
-    D: Domain<'a> + DomainType<'a, A> + DomainType<'a, B>,
+    D: DomainType<'a, A> + DomainType<'a, B>,
     State<'a, D>: Unify<'a, A> + Unify<'a, B>,
     AtoB: Fn(&A) -> B + 'a,
     BtoA: Fn(&B) -> A + 'a,
@@ -66,7 +66,7 @@ impl<'a, A, B> fmt::Debug for Map1<'a, A, B> {
 
 impl<'a, A, B, Dom> Project<'a, Dom> for Map1<'a, A, B>
 where
-    Dom: Domain<'a> + DomainType<'a, A> + DomainType<'a, B> + 'a,
+    Dom: DomainType<'a, A> + DomainType<'a, B> + 'a,
     State<'a, Dom>: Unify<'a, A> + Unify<'a, B>,
 {
     fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Watch<State<'a, Dom>> {

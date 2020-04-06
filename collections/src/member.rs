@@ -1,4 +1,4 @@
-use canrun::domains::{Domain, DomainType, IntoDomainVal};
+use canrun::domains::{DomainType, IntoDomainVal};
 use canrun::goal::{project::Project, unify, Goal};
 use canrun::state::{State, Watch};
 use canrun::unify::Unify;
@@ -12,7 +12,7 @@ where
     I: 'a,
     IV: IntoVal<I>,
     CV: IntoVal<Vec<Val<I>>>,
-    D: Domain<'a> + DomainType<'a, I> + DomainType<'a, Vec<Val<I>>> + IntoDomainVal<'a, I>,
+    D: DomainType<'a, I> + DomainType<'a, Vec<Val<I>>> + IntoDomainVal<'a, I>,
     State<'a, D>: Unify<'a, I> + Unify<'a, Vec<Val<I>>>,
 {
     Goal::Project(Rc::new(Member {
@@ -28,7 +28,7 @@ struct Member<I> {
 
 impl<'a, I, D> Project<'a, D> for Member<I>
 where
-    D: Domain<'a> + DomainType<'a, I> + DomainType<'a, Vec<Val<I>>> + IntoDomainVal<'a, I>,
+    D: DomainType<'a, I> + DomainType<'a, Vec<Val<I>>> + IntoDomainVal<'a, I>,
 {
     fn attempt<'r>(&'r self, state: State<'a, D>) -> Watch<State<'a, D>> {
         let collection = state.resolve_val(&self.collection).resolved();

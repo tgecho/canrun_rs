@@ -1,6 +1,6 @@
 use super::Goal;
 use super::Project;
-use crate::domains::{Domain, DomainType};
+use crate::domains::DomainType;
 use crate::state::State;
 use crate::state::Watch;
 use crate::value::{
@@ -30,7 +30,7 @@ pub struct Assert1<'a, A> {
 pub fn assert_1<'a, A: 'a, AV, D, F>(a: AV, func: F) -> Goal<'a, D>
 where
     AV: IntoVal<A>,
-    D: Domain<'a> + DomainType<'a, A>,
+    D: DomainType<'a, A>,
     F: Fn(&A) -> bool + 'a,
 {
     Goal::Project(Rc::new(Assert1 {
@@ -41,7 +41,7 @@ where
 
 impl<'a, A, Dom> Project<'a, Dom> for Assert1<'a, A>
 where
-    Dom: Domain<'a> + DomainType<'a, A>,
+    Dom: DomainType<'a, A>,
 {
     fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Watch<State<'a, Dom>> {
         let a = state.resolve_val(&self.a).clone();

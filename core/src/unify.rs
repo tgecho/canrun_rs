@@ -1,4 +1,4 @@
-use crate::domains::{Domain, DomainType};
+use crate::domains::DomainType;
 use crate::state::State;
 use std::rc::Rc;
 
@@ -12,7 +12,7 @@ pub trait Unify<'a, T>: Sized {
 macro_rules! impl_unify_eq {
     ($($type:ty),+) => {
         $(
-            impl<'a, D: Domain<'a> + DomainType<'a, $type>> Unify<'a, $type> for State<'a, D> {
+            impl<'a, D: DomainType<'a, $type>> Unify<'a, $type> for State<'a, D> {
                 fn unify_resolved(self, a: Rc<$type>, b: Rc<$type>) -> Option<Self> {
                     if a == b {
                         Some(self)
