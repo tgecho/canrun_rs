@@ -1,3 +1,24 @@
+//! Extract values from the results of resolving potential states.
+//!
+//! [Goals](crate::Goal) and [States](crate::State) (and other types) are
+//! [Queryable], meaning you can call `.query()` on them with any type that
+//! implements [Query] for a matching [Domain].
+//!
+//! Queries will typically only return results for states in which the requested
+//! values are fully resolved, though this is not a hard requirement. A [Query]
+//! is free to define its own requirements about the status or contents of any
+//! values in a result.
+//!
+//! # Example:
+//! ```
+//! use canrun::{Goal, unify, var, State};
+//! use canrun::domains::example::I32;
+//!
+//! let x = var();
+//! let goal: Goal<I32> = unify(x, 1);
+//! let result: Vec<_> = goal.query(x).collect();
+//! assert_eq!(result, vec![1])
+//! ```
 use crate::domains::Domain;
 use crate::state::{IterResolved, ResolvedState};
 
