@@ -16,11 +16,25 @@ pub struct Assert2<'a, A, B> {
     f: Rc<dyn Fn(&A, &B) -> bool + 'a>,
 }
 
-pub fn assert_2<'a, A, AV, B, BV, D, F>(a: AV, b: BV, func: F) -> Goal<'a, D>
+/// Create a [projection goal](super) that succeeds if the resolved values pass
+/// an assertion test.
+///
+/// ```
+/// use canrun::{Goal, all, unify, var, assert_2};
+/// use canrun::domains::example::I32;
+///
+/// let (x, y) = (var(), var());
+/// let goal: Goal<I32> = all![
+///     unify(1, x),
+///     unify(2, y),
+///     assert_2(x, y, |x, y| x < y),
+/// ];
+/// let result: Vec<_> = goal.query((x, y)).collect();
+/// assert_eq!(result, vec![(1, 2)])
+/// ```
+pub fn assert_2<'a, A: 'a, AV, B: 'a, BV, D, F>(a: AV, b: BV, func: F) -> Goal<'a, D>
 where
-    A: 'a,
     AV: IntoVal<A>,
-    B: 'a,
     BV: IntoVal<B>,
     D: Domain<'a> + DomainType<'a, A> + DomainType<'a, B>,
     F: Fn(&A, &B) -> bool + 'a,

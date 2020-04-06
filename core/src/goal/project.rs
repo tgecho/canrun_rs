@@ -1,3 +1,12 @@
+//! [Goals](crate::goal) that deal with resolved values.
+//!
+//! Not all relationships can be expressed with the simpler low level
+//! operations, especially when involve values of different types.
+//!
+//! The project family of goals use [State.watch()](crate::State::watch()) to
+//! allow dealing with resolved values. These goals are relatively low level and
+//! may be a bit subtle to use correctly. They are provided as a foundation for
+//! building higher level goals.
 mod assert_1;
 mod assert_2;
 mod map_1;
@@ -28,6 +37,8 @@ where
 {
     state.watch(Rc::new(move |s| proj.attempt(s)))
 }
+
+/// Allows a chance to inspect the state and decide if the required values have been resolved.
 pub trait Project<'a, D: Domain<'a>>: fmt::Debug {
     fn attempt<'r>(&'r self, state: State<'a, D>) -> Watch<State<'a, D>>;
 }

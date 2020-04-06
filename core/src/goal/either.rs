@@ -18,7 +18,7 @@ where
     }))
 }
 
-/// Create a [Goal](crate::goal::Goal) that succeeds if either sub-goal succeed.
+/// Create a [goal](crate::goal::Goal) that succeeds if either sub-goal succeed.
 ///
 /// This is essentially an "OR" operation, and will eventually lead to zero, one
 /// or two [resolved states](crate::state::ResolvedState), depending on the success

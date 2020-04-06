@@ -19,7 +19,7 @@ impl<'a, D: Domain<'a>> Custom<'a, D> {
 
 // TODO: Add more illustrative examples
 
-/// Create a [Goal](crate::goal::Goal) that gives access to the underlying
+/// Create a [goal](crate::goal::Goal) that gives access to the underlying
 /// [State](crate::state::State) struct.
 ///
 /// Similar to [lazy](crate::goal::lazy()), the passed in callback is given access to

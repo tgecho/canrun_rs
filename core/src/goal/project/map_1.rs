@@ -11,16 +11,32 @@ use crate::value::{
 use std::fmt;
 use std::rc::Rc;
 
-pub fn map_1<'a, A, AV, B, BV, D, AtoB, BtoA>(
+/// Create a [projection goal](super) that allows deriving one resolved value
+/// from the other.
+///
+/// Functions must be provided to derive in both directions. Whichever value is
+/// resolved first will be used to derive the other.
+///
+/// ```
+/// use canrun::{Goal, all, unify, var, map_1};
+/// use canrun::domains::example::I32;
+///
+/// let (x, y) = (var(), var());
+/// let goal: Goal<I32> = all![
+///     unify(1, x),
+///     map_1(x, y, |x| x + 1, |y| y - 1),
+/// ];
+/// let result: Vec<_> = goal.query(y).collect();
+/// assert_eq!(result, vec![2])
+/// ```
+pub fn map_1<'a, A: 'a, AV, B: 'a, BV, D, AtoB, BtoA>(
     a: AV,
     b: BV,
     a_to_b: AtoB,
     b_to_a: BtoA,
 ) -> Goal<'a, D>
 where
-    A: 'a,
     AV: IntoVal<A>,
-    B: 'a,
     BV: IntoVal<B>,
     D: Domain<'a> + DomainType<'a, A> + DomainType<'a, B>,
     State<'a, D>: Unify<'a, A> + Unify<'a, B>,

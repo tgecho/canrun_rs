@@ -13,7 +13,7 @@ where
     a.apply(state).and_then(|s| b.apply(s))
 }
 
-/// Create a [Goal](crate::goal::Goal) that only succeeds if both sub-goals succeed.
+/// Create a [goal](crate::goal::Goal) that only succeeds if both sub-goals succeed.
 ///
 /// This is essentially an "AND" operation. The resulting state will be the
 /// result of the combining the two sub-goals.
