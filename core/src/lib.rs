@@ -48,7 +48,7 @@ pub use goal::{both, custom, either, lazy, unify, Goal};
 #[doc(inline)]
 pub use query::{Query, Queryable};
 #[doc(inline)]
-pub use state::{ResolvedState, State};
+pub use state::{IterResolved, ResolvedState, State};
 #[doc(inline)]
 pub use unify::Unify;
 #[doc(inline)]

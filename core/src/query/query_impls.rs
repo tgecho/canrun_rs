@@ -1,9 +1,11 @@
 use super::Query;
 use crate::domains::{Domain, DomainType};
-use crate::state::IterResolved;
+use crate::state::ResolvedState;
 use crate::value::LVar;
 
 /// Query for a single [LVar](crate::value::LVar)
+///
+/// # Example:
 /// ```
 /// use canrun::{Goal, unify, var};
 /// use canrun::domains::example::I32;
@@ -20,19 +22,14 @@ where
     T: Clone + 'a,
 {
     type Result = T;
-    fn query_in<S: IterResolved<'a, D>>(
-        self,
-        state: S,
-    ) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
-        Box::new(
-            state
-                .resolved_iter()
-                .filter_map(move |r| r.get(self).ok().cloned()),
-        )
+    fn query_in(&self, state: ResolvedState<'a, D>) -> Option<Self::Result> {
+        state.get(*self).ok().cloned()
     }
 }
 
 /// Query for a tuple of two [LVars](crate::value::LVar)
+///
+/// # Example:
 /// ```
 /// use canrun::{Goal, both, unify, var};
 /// use canrun::domains::example::I32;
@@ -50,23 +47,23 @@ where
     T2: Clone + 'a,
 {
     type Result = (T1, T2);
-    fn query_in<S: IterResolved<'a, D>>(
-        self,
-        state: S,
-    ) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
-        Box::new(state.resolved_iter().filter_map(move |r| {
-            Some((r.get(self.0).ok().cloned()?, r.get(self.1).ok().cloned()?))
-        }))
+    fn query_in(&self, state: ResolvedState<'a, D>) -> Option<Self::Result> {
+        Some((
+            state.get(self.0).ok().cloned()?,
+            state.get(self.1).ok().cloned()?,
+        ))
     }
 }
 
 /// Query for a tuple of three [LVars](crate::value::LVar)
+///
+/// # Example:
 /// ```
-/// use canrun::{Goal, both, unify, var};
+/// use canrun::{Goal, all, unify, var};
 /// use canrun::domains::example::I32;
 ///
 /// let (x, y, z) = (var(), var(), var());
-/// let goal: Goal<I32> = both(unify(x, 1), unify(y, 2), unify(y, 3));
+/// let goal: Goal<I32> = all![unify(x, 1), unify(y, 2), unify(z, 3)];
 /// let query = (x, y, z);
 /// let result: Vec<_> = goal.query(query).collect();
 /// assert_eq!(result, vec![(1, 2, 3)])
@@ -79,16 +76,11 @@ where
     T3: Clone + 'a,
 {
     type Result = (T1, T2, T3);
-    fn query_in<S: IterResolved<'a, D>>(
-        self,
-        state: S,
-    ) -> Box<dyn Iterator<Item = Self::Result> + 'a> {
-        Box::new(state.resolved_iter().filter_map(move |r| {
-            Some((
-                r.get(self.0).ok().cloned()?,
-                r.get(self.1).ok().cloned()?,
-                r.get(self.2).ok().cloned()?,
-            ))
-        }))
+    fn query_in(&self, state: ResolvedState<'a, D>) -> Option<Self::Result> {
+        Some((
+            state.get(self.0).ok().cloned()?,
+            state.get(self.1).ok().cloned()?,
+            state.get(self.2).ok().cloned()?,
+        ))
     }
 }

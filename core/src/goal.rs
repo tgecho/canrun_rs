@@ -1,5 +1,5 @@
 use crate::domains::Domain;
-use crate::query::Query;
+use crate::query::{Query, Queryable};
 use crate::state::State;
 use crate::state::{IterResolved, ResolvedIter};
 use std::rc::Rc;
@@ -56,14 +56,14 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
 
     pub fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>
     where
-        Q: Query<'a, D>,
+        Q: Query<'a, D> + 'a,
     {
-        query.query_in(self)
+        Queryable::query(self, query)
     }
 }
 
 impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Goal<'a, D> {
-    fn resolved_iter(self) -> ResolvedIter<'a, D> {
-        self.apply(State::new()).resolved_iter()
+    fn iter_resolved(self) -> ResolvedIter<'a, D> {
+        self.apply(State::new()).iter_resolved()
     }
 }
