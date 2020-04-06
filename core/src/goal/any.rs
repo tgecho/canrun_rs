@@ -19,7 +19,7 @@ where
     }))
 }
 
-/// Create a [Goal](crate::goal::Goal) that yields a state for every successful
+/// Create a [goal](crate::goal::Goal) that yields a state for every successful
 /// sub-goal.
 ///
 /// This is essentially an "OR" operation on a vector of goals. It may yield
@@ -60,7 +60,7 @@ where
 /// ```
 #[macro_export]
 macro_rules! any {
-    ($($item:expr),*) => {
+    ($($item:expr),* $(,)?) => {
         canrun::Goal::Any(vec![$($item),*])
     };
 }

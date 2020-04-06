@@ -9,7 +9,7 @@ where
     goals.into_iter().try_fold(state, |s, g| g.apply(s))
 }
 
-/// Create a [Goal](crate::goal::Goal) that only succeeds if all sub-goals succeed.
+/// Create a [goal](crate::goal::Goal) that only succeeds if all sub-goals succeed.
 ///
 /// This is essentially an "AND" operation on a vector of goals. The resulting state will be the
 /// result of the combining all of the sub-goals.
@@ -42,7 +42,7 @@ where
 /// ```
 #[macro_export]
 macro_rules! all {
-    ($($item:expr),*) => {
+    ($($item:expr),* $(,)?) => {
         canrun::goal::Goal::All(vec![$($item),*])
     };
 }
