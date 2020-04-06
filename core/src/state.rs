@@ -1,6 +1,22 @@
+//! Track value bindings and constraints during the evaluation process.
+//!
+//! State is the imperative core of each logic program. It manages the updates
+//! to the relationships between values while delegating the actual storage to a
+//! type specific [Domain](crate::domains).
+//!
+//! In general, it is preferred to deal with State indirectly through
+//! [goals](crate::goal). They are essentially equivalent in capability, and
+//! their declarative, higher level nature makes them much easier to use.
+//! Notably, goal functions provide automatic [value](crate::value) wrapping
+//! through [IntoVal](crate::value::IntoVal).
+//!
+//! An open [State] is the initial struct that you will start with (explicitly
+//! or implicitly through a [goal](crate::goal)). Iterating through the
+//! potentially results will yield zero or more [ResolvedStates](ResolvedState).
 mod impls;
 mod iter_resolved;
 mod resolved;
+mod watch;
 
 use super::util::multikeymultivaluemap::MKMVMap;
 use crate::domains::{Domain, DomainType};
@@ -13,45 +29,43 @@ pub use iter_resolved::{IterResolved, ResolvedIter};
 pub use resolved::ResolvedState;
 use std::iter::once;
 use std::rc::Rc;
+pub use watch::{Watch, WatchList};
 
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
 type WatchFns<'s, D> = MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Watch<State<'s, D>> + 's>>;
 #[doc(hidden)]
 pub use im_rc::HashMap;
 
+/// The core struct used to contain and manage [value](crate::value) bindings.
+///
+/// An open [State] can be updated in a few different ways. Most update methods
+/// return an `Option<State<D>>` to reflect the fact each new constraint
+/// invalidate the state. This gives you the ability to quickly short circuit as
+/// soon the state hits a dead end.
+///
+/// In general, it is most ergonomic to manipulate a state inside a function
+/// that returns an `Option<State<D>>` to allow the use of the question mark
+/// operator (Note that the [.apply()](State::apply()) function makes it easy to
+/// do this).
+///
+/// ```
+/// use canrun::{State, val, var};
+/// use canrun::domains::example::I32;
+///
+/// fn my_fn<'a>() -> Option<State<'a, I32>> {
+///     let x = var();
+///     let y = var();
+///     let state: State<I32> = State::new();
+///     let maybe: Option<State<I32>> = state.unify(val!(x), val!(1));
+///     maybe?.unify(val!(x), val!(y))
+/// }
+/// assert!(my_fn().is_some());
+/// ```
 #[derive(Clone)]
 pub struct State<'a, D: Domain<'a> + 'a> {
     domain: D,
     watches: WatchFns<'a, D>,
     forks: im_rc::Vector<Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>>,
-}
-
-#[derive(Debug)]
-pub struct WatchList(Vec<LVarId>);
-
-#[derive(Debug)]
-pub enum Watch<State> {
-    Done(Option<State>),
-    Waiting(State, WatchList),
-}
-
-impl<S> Watch<S> {
-    pub fn done(state: Option<S>) -> Self {
-        Watch::Done(state)
-    }
-    pub fn watch<T>(state: S, var: LVar<T>) -> Watch<S> {
-        Watch::Waiting(state, WatchList(vec![var.id]))
-    }
-    pub fn and<T>(self, var: LVar<T>) -> Watch<S> {
-        match self {
-            Watch::Done(Some(state)) => Watch::watch(state, var),
-            Watch::Done(None) => self,
-            Watch::Waiting(state, mut list) => {
-                list.0.push(var.id);
-                Watch::Waiting(state, list)
-            }
-        }
-    }
 }
 
 impl<'a, D: Domain<'a> + 'a> State<'a, D> {

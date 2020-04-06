@@ -1,4 +1,4 @@
-//! Declarative assertions about the relationships between values.
+//! Make declarative assertions about the relationships between values.
 //!
 //! They provide a high level interface for defining logic programs.
 //! [Goals](crate::Goal) are composable, with many higher level goals being made
