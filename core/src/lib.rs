@@ -7,7 +7,7 @@
 //! I'm still quite new to both Rust and logic programming, so there are likely
 //! to be rough edges. At best the goal is to be a useful implementation of the
 //! core concepts of a Kanren in way that is idiomatic to Rust. At worst it may
-//! just be a poor misinterpretation with fatel flaws.
+//! just be a poor misinterpretation with fatal flaws.
 //!
 //! ## Quick Start
 //!
