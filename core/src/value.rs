@@ -1,3 +1,5 @@
+//! Contain individual resolved values or variables that can be bound through
+//! [unification](crate::Unify).
 mod lvar;
 
 pub(super) use lvar::LVarId;
@@ -5,14 +7,25 @@ pub use lvar::{var, LVar};
 use std::fmt;
 use std::rc::Rc;
 
+/// The possible states a value can be in.
 pub enum Val<T: ?Sized> {
+    /// A [logical variable](LVar).
     Var(LVar<T>),
+    /// A resolved value.
+    ///
+    /// When a state is split into an arbitrary number of [resolved
+    /// states](crate::state::ResolvedState), some of the internal data
+    /// structures often need to be cloned. In an attempt to avoid unnecessary
+    /// cloning of every value in the state, we wrap it in an [Rc] so that
+    /// references can be shared.
     Resolved(Rc<T>),
 }
 
 use Val::{Resolved, Var};
 
 impl<T> Val<T> {
+    /// Attempt to extract a reference to resolved value (`&T`) or return the
+    /// `LVar` if the value is not yet resolved.
     pub fn resolved(&self) -> Result<&T, LVar<T>> {
         match self {
             Resolved(x) => Ok(&*x),

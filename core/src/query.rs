@@ -1,4 +1,4 @@
-//! Extract values from the results of resolving potential states.
+//! Extract [values](crate::value) from the results of resolving potential states.
 //!
 //! [Goals](crate::Goal) and [States](crate::State) (and other types) are
 //! [Queryable], meaning you can call `.query()` on them with any type that

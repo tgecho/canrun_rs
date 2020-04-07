@@ -22,18 +22,6 @@
 //! let result: Vec<_> = goal.query(y).collect();
 //! assert_eq!(result, vec![1])
 //! ```
-//!
-//! ## Concepts
-//!
-//! - [Domains](crate::domains) constrain the set of types that you can reason
-//!   about in a particular context.
-//! - [Values](crate::value) are either resolved or [LVars](crate::value::LVar) that
-//!   can be bound to other values through unification.
-//! - [Goals](crate::goal) contain declarative assertions about the
-//!   relationships between values.
-//! - [States](crate::state) track value bindings and constraints during
-//!   evaluation of a logic program.
-//! - [Queries](crate::query) allow easy extraction of resolved values.
 
 pub mod domains;
 pub mod goal;
