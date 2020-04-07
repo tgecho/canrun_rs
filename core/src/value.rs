@@ -69,7 +69,7 @@ impl<T> IntoVal<T> for LVar<T> {
 }
 impl<T> IntoVal<T> for &LVar<T> {
     fn into_val(self) -> Val<T> {
-        Val::Var(self.clone())
+        Val::Var(*self)
     }
 }
 

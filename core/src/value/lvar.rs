@@ -44,8 +44,8 @@ impl<T> LVar<T> {
             t: PhantomData,
         }
     }
-    pub fn into_val(&self) -> Val<T> {
-        Val::Var(self.clone())
+    pub fn into_val(self) -> Val<T> {
+        Val::Var(self)
     }
 }
 

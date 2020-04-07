@@ -12,7 +12,7 @@
 //!     }
 //! }
 //!
-//! # fn main() {
+//! # fn main() -> () {
 //! let x = var();
 //! let state: State<MyDomain> = State::new();
 //! let goal: Goal<MyDomain> = unify(x, 1);
@@ -84,7 +84,9 @@ pub trait IntoDomainVal<'a, T>: Domain<'a> {
 /// domains! {
 ///     domain MyDomain { i32 }
 /// }
-/// # fn main() {}
+/// # fn main() -> () {}
+/// # // keep this `-> ()` to quell `needless_doctest_main` warning
+/// # // https://github.com/rust-lang/rust-clippy/issues/4698
 /// ```
 ///
 /// The optional [visibility

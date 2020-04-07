@@ -71,7 +71,6 @@ impl quote::ToTokens for DomainDef {
         };
 
         let (fields, variants): (Vec<_>, Vec<_>) = (0..domain_types.len())
-            .into_iter()
             .map(|n| (format_ident!("t{}", n), format_ident!("T{}", n)))
             .unzip();
 

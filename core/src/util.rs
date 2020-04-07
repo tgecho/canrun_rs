@@ -18,12 +18,12 @@ where
     goals.into_iter().permutations(goals_len)
 }
 
-pub(crate) fn goals_resolve_to<'a, D, Q>(goals: &Vec<Goal<'a, D>>, query: Q) -> Vec<Q::Result>
+pub(crate) fn goals_resolve_to<'a, D, Q>(goals: &[Goal<'a, D>], query: Q) -> Vec<Q::Result>
 where
     D: Domain<'a> + 'a,
     Q: Query<'a, D> + 'a,
 {
-    let goal = Goal::All(goals.clone());
+    let goal = Goal::All(goals.to_owned());
     goal_resolves_to(goal, query)
 }
 
