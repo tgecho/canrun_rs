@@ -107,14 +107,6 @@ impl quote::ToTokens for DomainDef {
             }
 
             #(
-                impl<'a> #canrun_mod::domains::IntoDomainVal<'a, #domain_types> for #domain_name {
-                    fn into_domain_val(val: #canrun_mod::value::Val<#domain_types>) -> #value_name {
-                        #value_name::#variants(val)
-                    }
-                }
-            )*
-
-            #(
                 impl<'a> #canrun_mod::domains::DomainType<'a, #domain_types> for #domain_name {
                     fn values_as_ref(
                         &self,
@@ -125,6 +117,9 @@ impl quote::ToTokens for DomainDef {
                         &mut self,
                     ) -> &mut #canrun_mod::state::HashMap<#canrun_mod::value::LVar<#domain_types>, #canrun_mod::value::Val<#domain_types>> {
                         &mut self.#fields
+                    }
+                    fn into_domain_val(val: #canrun_mod::value::Val<#domain_types>) -> #value_name {
+                        #value_name::#variants(val)
                     }
                 }
             )*

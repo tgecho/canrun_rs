@@ -1,4 +1,3 @@
-use canrun::domains::{DomainType, IntoDomainVal};
 use canrun::goal::{project::Project, unify, Goal};
 use canrun::state::{State, Watch};
 use canrun::value::{IntoVal, Val};
@@ -12,7 +11,7 @@ where
     I: 'a,
     IV: IntoVal<I>,
     CV: IntoVal<Vec<Val<I>>>,
-    D: Unify<'a, I> + Unify<'a, Vec<Val<I>>> + IntoDomainVal<'a, I>,
+    D: Unify<'a, I> + Unify<'a, Vec<Val<I>>>,
 {
     Goal::Project(Rc::new(Member {
         item: item.into_val(),
@@ -27,7 +26,7 @@ struct Member<I> {
 
 impl<'a, I, D> Project<'a, D> for Member<I>
 where
-    D: DomainType<'a, I> + DomainType<'a, Vec<Val<I>>> + IntoDomainVal<'a, I>,
+    D: Unify<'a, I> + Unify<'a, Vec<Val<I>>>,
 {
     fn attempt<'r>(&'r self, state: State<'a, D>) -> Watch<State<'a, D>> {
         let collection = state.resolve_val(&self.collection).resolved();
@@ -36,7 +35,7 @@ where
                 let goals: Vec<_> = collection
                     .iter()
                     .zip(repeat(self.item.clone()))
-                    .map(|(a, b): (&Val<I>, Val<I>)| unify(a, b) as Goal<D>)
+                    .map(|(a, b)| unify::<I, &Val<I>, Val<I>, D>(a, b) as Goal<D>)
                     .collect();
                 Watch::done(Goal::Any(goals).apply(state))
             }

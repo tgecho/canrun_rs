@@ -63,9 +63,6 @@ pub trait Domain<'a>: Clone + Debug {
 pub trait DomainType<'a, T>: Domain<'a> {
     fn values_as_ref(&self) -> &HashMap<LVar<T>, Val<T>>;
     fn values_as_mut(&mut self) -> &mut HashMap<LVar<T>, Val<T>>;
-}
-
-pub trait IntoDomainVal<'a, T>: Domain<'a> {
     fn into_domain_val(val: Val<T>) -> Self::Value;
 }
 

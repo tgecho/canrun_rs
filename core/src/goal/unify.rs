@@ -1,7 +1,8 @@
 use super::Goal;
-use crate::domains::{Domain, IntoDomainVal};
+use crate::domains::Domain;
 use crate::state::State;
 use crate::value::IntoVal;
+use crate::Unify;
 
 pub(super) fn run<'a, D>(state: State<'a, D>, a: D::Value, b: D::Value) -> Option<State<'a, D>>
 where
@@ -43,7 +44,7 @@ where
 /// ```
 pub fn unify<'a, T, A, B, D>(a: A, b: B) -> Goal<'a, D>
 where
-    D: Domain<'a> + IntoDomainVal<'a, T>,
+    D: Unify<'a, T>,
     A: IntoVal<T>,
     B: IntoVal<T>,
 {
