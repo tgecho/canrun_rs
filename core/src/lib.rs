@@ -42,6 +42,7 @@ pub mod state;
 mod unify;
 pub mod value;
 
+#[doc(inline)]
 pub use domains::DomainType;
 #[doc(inline)]
 pub use goal::project::{assert_1, assert_2, map_1, map_2};

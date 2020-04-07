@@ -46,14 +46,14 @@ mod tests {
     fn succeeds() {
         let x = var();
         let goals: Vec<Goal<VecI32>> = vec![unify(x, lvec![1, 2]), unify(x, lvec![1, 2])];
-        util::all_permutations_resolve_to(goals, x, vec![lvec![1, 2]]);
+        util::assert_permutations_resolve_to(goals, x, vec![lvec![1, 2]]);
     }
 
     #[test]
     fn fails() {
         let x = var();
         let goals: Vec<Goal<VecI32>> = vec![unify(x, lvec![1, 3]), unify(x, lvec![1, 2])];
-        util::all_permutations_resolve_to(goals, x, vec![]);
+        util::assert_permutations_resolve_to(goals, x, vec![]);
     }
 
     #[test]
@@ -61,6 +61,6 @@ mod tests {
         let x = var();
         let y = var::<i32>();
         let goals: Vec<Goal<VecI32>> = vec![unify(x, lvec![1, y]), unify(x, lvec![1, 2])];
-        util::all_permutations_resolve_to(goals, y, vec![2]);
+        util::assert_permutations_resolve_to(goals, y, vec![2]);
     }
 }

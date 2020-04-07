@@ -56,6 +56,6 @@ mod tests {
     fn succeeds() {
         let x = var();
         let goals: Vec<Goal<I32>> = vec![unify(2, x), assert_1(x, |x| *x > 1)];
-        util::all_permutations_resolve_to(goals, x, vec![2]);
+        util::assert_permutations_resolve_to(goals, x, vec![2]);
     }
 }

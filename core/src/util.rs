@@ -1,3 +1,4 @@
+//! Assorted helpers, especially for testing.
 pub(super) mod multikeymultivaluemap;
 
 use super::state::State;
@@ -35,7 +36,32 @@ where
     state.query(query).collect()
 }
 
-pub fn all_permutations_resolve_to<'a, D, Q>(
+/// Test helper for ensuring that goals work no matter the order they are
+/// applied.
+///
+/// When building lower level goals, it can be easy to make mistakes where
+/// something appears to work fine but breaks when you reorder the goals. This
+/// is especially a problem with [projection goals](crate::goal::project).
+///
+/// This function takes a `Vec<Goal<_>>`, a [Query](crate::Query) and a `Vec`
+/// containing the expected values. It will try every permutation of the goals
+/// (wrapped in an [all goal](crate::goal::all)) and panic if any of the results
+/// vary.
+///
+/// # Example
+/// ```
+/// use canrun::{Goal, var, unify, assert_1, util};
+/// use canrun::domains::example::I32;
+///
+/// let x = var();
+/// let goals: Vec<Goal<I32>> = vec![
+///     unify(2, x),
+///     assert_1(x, |x| *x > 1),
+/// ];
+///
+/// util::assert_permutations_resolve_to(goals, x, vec![2]);
+/// ```
+pub fn assert_permutations_resolve_to<'a, D, Q>(
     goals: Vec<Goal<'a, D>>,
     query: Q,
     expected: Vec<Q::Result>,

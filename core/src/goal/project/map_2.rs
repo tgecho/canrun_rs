@@ -119,6 +119,6 @@ mod tests {
             unify(3, z),
             map_2(x, y, z, |x, y| x + y, |x, z| z - x, |y, z| z - y),
         ];
-        util::all_permutations_resolve_to(goals, (x, y, z), vec![(1, 2, 3)]);
+        util::assert_permutations_resolve_to(goals, (x, y, z), vec![(1, 2, 3)]);
     }
 }

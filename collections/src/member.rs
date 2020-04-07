@@ -64,14 +64,14 @@ mod tests {
     fn basic_member() {
         let x = var::<i32>();
         let goals: Vec<Goal<VecI32>> = vec![member(x, lvec![1, 2, 3])];
-        util::all_permutations_resolve_to(goals, x, vec![1, 2, 3]);
+        util::assert_permutations_resolve_to(goals, x, vec![1, 2, 3]);
     }
 
     #[test]
     fn member_with_conditions() {
         let x = var();
         let goals: Vec<Goal<VecI32>> = vec![unify(x, 2), member(x, lvec![1, 2, 3])];
-        util::all_permutations_resolve_to(goals, x, vec![2]);
+        util::assert_permutations_resolve_to(goals, x, vec![2]);
     }
 
     #[test]
@@ -79,7 +79,7 @@ mod tests {
         let x = var();
         let list = lvec![1, 2, 3];
         let goals: Vec<Goal<VecI32>> = vec![member(1, x), member(1, x), unify(x, list.clone())];
-        util::all_permutations_resolve_to(goals, x, vec![list]);
+        util::assert_permutations_resolve_to(goals, x, vec![list]);
     }
 
     #[test]
@@ -87,7 +87,7 @@ mod tests {
         let x = var();
         let list = lvec![1, 2, 3];
         let goals: Vec<Goal<VecI32>> = vec![member(1, x), member(2, x), unify(x, list.clone())];
-        util::all_permutations_resolve_to(goals, x, vec![list]);
+        util::assert_permutations_resolve_to(goals, x, vec![list]);
     }
 
     #[test]
@@ -99,7 +99,7 @@ mod tests {
             member(2, x),
             unify(x, list.clone()),
         ];
-        util::all_permutations_resolve_to(goals, x, vec![list]);
+        util::assert_permutations_resolve_to(goals, x, vec![list]);
     }
 
     #[test]
@@ -108,6 +108,6 @@ mod tests {
         let list = lvec![1, 2, 3];
         let goals: Vec<Goal<VecI32>> = vec![member(1, x), member(4, x), unify(x, list.clone())];
 
-        util::all_permutations_resolve_to(goals, x, vec![]);
+        util::assert_permutations_resolve_to(goals, x, vec![]);
     }
 }

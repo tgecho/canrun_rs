@@ -98,6 +98,6 @@ mod tests {
         let y = var();
         let goals: Vec<Goal<I32>> =
             vec![unify(1, x), unify(2, y), map_1(x, y, |x| x + 1, |y| y - 1)];
-        util::all_permutations_resolve_to(goals, (x, y), vec![(1, 2)]);
+        util::assert_permutations_resolve_to(goals, (x, y), vec![(1, 2)]);
     }
 }
