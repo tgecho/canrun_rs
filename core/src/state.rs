@@ -56,8 +56,8 @@ pub use im_rc::HashMap;
 ///     let x = var();
 ///     let y = var();
 ///     let state: State<I32> = State::new();
-///     let maybe: Option<State<I32>> = state.unify(val!(x), val!(1));
-///     maybe?.unify(val!(x), val!(y))
+///     let maybe: Option<State<I32>> = state.unify(&val!(x), &val!(1));
+///     maybe?.unify(&val!(x), &val!(y))
 /// }
 /// assert!(my_fn().is_some());
 /// ```
@@ -112,12 +112,12 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub fn unify<T>(mut self, a: Val<T>, b: Val<T>) -> Option<Self>
+    pub fn unify<T>(mut self, a: &Val<T>, b: &Val<T>) -> Option<Self>
     where
         D: Unify<'a, T>,
     {
-        let a = self.resolve_val(&a);
-        let b = self.resolve_val(&b);
+        let a = self.resolve_val(a);
+        let b = self.resolve_val(b);
         match (a, b) {
             (Resolved(a), Resolved(b)) => {
                 let a = a.clone();

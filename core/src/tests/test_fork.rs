@@ -22,8 +22,8 @@ where
 fn basic_fork_first_success() {
     let state: State<I32> = State::new();
     let state = state.fork(either(
-        |s| s.unify(val!(2), val!(2)),
-        |s| s.unify(val!(1), val!(2)),
+        |s| s.unify(&val!(2), &val!(2)),
+        |s| s.unify(&val!(1), &val!(2)),
     ));
     let results: Vec<_> = state.unwrap().iter_resolved().collect();
     assert_eq!(1, results.len());
@@ -33,8 +33,8 @@ fn basic_fork_first_success() {
 fn basic_fork_second_success() {
     let state: State<I32> = State::new();
     let state = state.fork(either(
-        |s| s.unify(val!(1), val!(2)),
-        |s| s.unify(val!(2), val!(2)),
+        |s| s.unify(&val!(1), &val!(2)),
+        |s| s.unify(&val!(2), &val!(2)),
     ));
     assert_eq!(1, state.iter_resolved().count());
 }
@@ -43,8 +43,8 @@ fn basic_fork_second_success() {
 fn basic_fork_both_success() {
     let state: State<I32> = State::new();
     let state = state.fork(either(
-        |s| s.unify(val!(1), val!(1)),
-        |s| s.unify(val!(2), val!(2)),
+        |s| s.unify(&val!(1), &val!(1)),
+        |s| s.unify(&val!(2), &val!(2)),
     ));
     assert_eq!(2, state.iter_resolved().count());
 }

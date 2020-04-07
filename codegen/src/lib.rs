@@ -98,7 +98,7 @@ impl quote::ToTokens for DomainDef {
                     match (a, b) {
                         #(
                             (#value_name::#variants(a), #value_name::#variants(b)) => {
-                                state.unify::<#domain_types>(a.into_val(), b.into_val())
+                                state.unify::<#domain_types>(&a.into_val(), &b.into_val())
                             }
                         ,)*
                         _ => None, // This should only happen if a DomainVal constructor allows two values with different types.

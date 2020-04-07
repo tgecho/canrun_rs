@@ -16,9 +16,7 @@ where
         if a.len() == b.len() {
             a.iter()
                 .zip(b.iter())
-                .try_fold(state, |s: State<'a, D>, (a, b)| {
-                    s.unify(a.clone(), b.clone())
-                })
+                .try_fold(state, |s: State<'a, D>, (a, b)| s.unify(a, b))
         } else {
             None
         }

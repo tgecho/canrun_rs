@@ -43,7 +43,7 @@ fn basic_watch_succeeds() {
 fn basic_watch_fails() {
     let x = var();
     let goals: Vec<Goal<I32>> = vec![
-        unify(val!(2), x.clone()),
+        unify(&val!(2), x.clone()),
         custom(|s| s.watch(assert(x.clone(), |x| x > &1))),
         custom(|s| s.watch(assert(x, |x| x > &3))),
     ];

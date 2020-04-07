@@ -15,7 +15,7 @@ use crate::value::{LVar, Val};
 /// let x = var();
 ///
 /// let state = State::new()
-///     .unify(val!(x), val!(1));
+///     .unify(&val!(x), &val!(1));
 ///
 /// let results: Vec<_> = state.iter_resolved()
 ///     .map(|resolved: ResolvedState<I32>| resolved.get(x).ok().cloned())

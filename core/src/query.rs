@@ -67,7 +67,7 @@ mod query_impls;
 /// # use canrun::{State, IterResolved, Queryable, val, var};
 /// # use canrun::domains::example::I32;
 /// # let x = var();
-/// let state: Option<State<I32>> = State::new().unify(val!(x), val!(1));
+/// let state: Option<State<I32>> = State::new().unify(&val!(x), &val!(1));
 /// let result: Vec<_> = state.query(x).collect();
 /// assert_eq!(result, vec![1])
 /// ```

@@ -82,15 +82,15 @@ where
         match (a, b, c) {
             (Resolved(a), Resolved(b), c) => {
                 let f = &self.ab_to_c;
-                Watch::done(state.unify(f(&*a, &*b).into_val(), c))
+                Watch::done(state.unify(&f(&*a, &*b).into_val(), &c))
             }
             (Resolved(a), b, Resolved(c)) => {
                 let f = &self.ac_to_b;
-                Watch::done(state.unify(f(&*a, &*c).into_val(), b))
+                Watch::done(state.unify(&f(&*a, &*c).into_val(), &b))
             }
             (a, Resolved(b), Resolved(c)) => {
                 let f = &self.bc_to_a;
-                Watch::done(state.unify(f(&*b, &*c).into_val(), a))
+                Watch::done(state.unify(&f(&*b, &*c).into_val(), &a))
             }
             (Var(a), Var(b), _) => Watch::watch(state, a).and(b),
             (Var(a), _, Var(c)) => Watch::watch(state, a).and(c),

@@ -72,11 +72,11 @@ where
         match (a, b) {
             (Resolved(a), b) => {
                 let f = &self.a_to_b;
-                Watch::done(state.unify(f(&*a).into_val(), b))
+                Watch::done(state.unify(&f(&*a).into_val(), &b))
             }
             (a, Resolved(b)) => {
                 let f = &self.b_to_a;
-                Watch::done(state.unify(f(&*b).into_val(), a))
+                Watch::done(state.unify(&f(&*b).into_val(), &a))
             }
             (Var(a), Var(b)) => Watch::watch(state, a).and(b),
         }

@@ -40,8 +40,8 @@ impl<'a, D: Domain<'a>> Custom<'a, D> {
 /// let x = var();
 /// let goal: Goal<I32> = custom(|state| {
 ///     let y = var();
-///     state.unify(val!(y), val!(1))?
-///          .unify(val!(x), val!(y))
+///     state.unify(&val!(y), &val!(1))?
+///          .unify(&val!(x), &val!(y))
 /// });
 /// let result: Vec<_> = goal.query(x).collect();
 /// assert_eq!(result, vec![1])
@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn succeeds() {
         let x = var::<i32>();
-        let goal: Goal<I32> = custom(|s| s.unify(x.into_val(), 1.into_val()));
+        let goal: Goal<I32> = custom(|s| s.unify(&x.into_val(), &1.into_val()));
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![1]);
     }

@@ -15,8 +15,8 @@ where
     ) -> Option<State<'a, D>> {
         Some(
             state
-                .unify(l.0.clone(), r.0.clone())?
-                .unify(l.1.clone(), r.1.clone())?,
+                .unify(&l.0.clone(), &r.0.clone())?
+                .unify(&l.1.clone(), &r.1.clone())?,
         )
     }
 }
@@ -32,9 +32,9 @@ where
     ) -> Option<State<'a, D>> {
         Some(
             state
-                .unify(l.0.clone(), r.0.clone())?
-                .unify(l.1.clone(), r.1.clone())?
-                .unify(l.2.clone(), r.2.clone())?,
+                .unify(&l.0.clone(), &r.0.clone())?
+                .unify(&l.1.clone(), &r.1.clone())?
+                .unify(&l.2.clone(), &r.2.clone())?,
         )
     }
 }
