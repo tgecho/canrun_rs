@@ -1,3 +1,4 @@
+#![deny(unused_braces)]
 //! Canrun is a [logic
 //! programming](https://en.wikipedia.org/wiki/Logic_programming) library
 //! inspired by the [\*Kanren](http://minikanren.org/) family of language DSLs.
@@ -41,6 +42,7 @@ pub mod state;
 mod unify;
 pub mod value;
 
+pub use domains::DomainType;
 #[doc(inline)]
 pub use goal::project::{assert_1, assert_2, map_1, map_2};
 #[doc(inline)]
