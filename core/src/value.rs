@@ -1,7 +1,13 @@
 //! Contain individual resolved values or variables that can be bound through
 //! [unification](crate::Unify).
+//!
+//! Values are parameterized with the type they can contain. This ensures that
+//! they can only be unified with values of the same type, and they can only be
+//! added to [states](crate::state) with a compatible [domain](crate::domains).
+mod into_val;
 mod lvar;
 
+pub use into_val::IntoVal;
 pub(super) use lvar::LVarId;
 pub use lvar::{var, LVar};
 use std::fmt;
@@ -26,6 +32,20 @@ use Val::{Resolved, Var};
 impl<T> Val<T> {
     /// Attempt to extract a reference to resolved value (`&T`) or return the
     /// `LVar` if the value is not yet resolved.
+    ///
+    /// Examples:
+    /// ```
+    /// use canrun::{var, val, LVar};
+    ///
+    /// let x: LVar<i32> = var();
+    /// let x_val = val!(x);
+    /// assert_eq!(x_val.resolved(), Err(x));
+    /// ```
+    /// ```
+    /// # use canrun::{var, val};
+    /// let y_val = val!(1);
+    /// assert_eq!(y_val.resolved(), Ok(&1));
+    /// ```
     pub fn resolved(&self) -> Result<&T, LVar<T>> {
         match self {
             Resolved(x) => Ok(&*x),
@@ -34,45 +54,22 @@ impl<T> Val<T> {
     }
 }
 
-pub trait IntoVal<T> {
-    fn into_val(self) -> Val<T>;
-}
-
-impl<T> IntoVal<T> for T {
-    fn into_val(self) -> Val<T> {
-        Val::Resolved(Rc::new(self))
-    }
-}
-
-impl<T> IntoVal<T> for Val<T> {
-    fn into_val(self) -> Val<T> {
-        self
-    }
-}
-
-impl<T> IntoVal<T> for &Val<T> {
-    fn into_val(self) -> Val<T> {
-        self.clone()
-    }
-}
-
-impl<T: Clone> IntoVal<T> for &T {
-    fn into_val(self) -> Val<T> {
-        Val::Resolved(Rc::new(self.clone()))
-    }
-}
-
-impl<T> IntoVal<T> for LVar<T> {
-    fn into_val(self) -> Val<T> {
-        Val::Var(self)
-    }
-}
-impl<T> IntoVal<T> for &LVar<T> {
-    fn into_val(self) -> Val<T> {
-        Val::Var(*self)
-    }
-}
-
+/// Easy conversion of [`LVar<T>`](LVar) and `T` values into [`Val<T>`](Val).
+///
+/// This simply wraps [`IntoVal`](crate::value::IntoVal) to be slightly more
+/// convenient. Note that goal constructors typically do this conversion
+/// automatically.
+///
+/// Example:
+/// ```
+/// use canrun::{val, var, Val, LVar};
+///
+/// let x: LVar<i32> = var();
+/// let x_val: Val<i32> = val!(x);
+///
+/// let y: i32 = 1;
+/// let y_val: Val<i32> = val!(y);
+/// ```
 #[macro_export]
 macro_rules! val {
     ($value:expr) => {

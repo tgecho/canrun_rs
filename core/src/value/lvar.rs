@@ -18,6 +18,16 @@ pub struct LVar<T: ?Sized> {
     t: PhantomData<T>,
 }
 
+/// Create a new [logical var](LVar).
+///
+/// This is simply a shorthand for [LVar::new()].
+///
+/// # Example:
+/// ```
+/// use canrun::{var, LVar};
+///
+/// let x: LVar<i32> = var();
+/// ```
 pub fn var<T>() -> LVar<T> {
     LVar::new()
 }
