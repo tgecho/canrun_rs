@@ -19,6 +19,6 @@ impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for State<'a, D> {
 
 impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Option<State<'a, D>> {
     fn iter_resolved(self) -> ResolvedIter<'a, D> {
-        Box::new(self.into_iter().flat_map(|s| s.iter_resolved()))
+        Box::new(self.into_iter().flat_map(State::iter_resolved))
     }
 }

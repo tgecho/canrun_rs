@@ -88,7 +88,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         let fork = self.forks.pop_front();
         match fork {
             None => Box::new(once(self)),
-            Some(fork) => Box::new(fork(self).flat_map(|s: State<'a, D>| s.iter_forks())),
+            Some(fork) => Box::new(fork(self).flat_map(State::iter_forks)),
         }
     }
 
