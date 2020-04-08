@@ -24,7 +24,7 @@ use crate::state::{IterResolved, ResolvedState};
 
 mod query_impls;
 
-/// Applies a [Query] to a set of [ResolvedStates](crate::ResolvedState).
+/// Types that can be queried with the [Query] trait.
 ///
 /// This is a convenient wrapper around the pattern of iterating over a sequence
 /// of [ResolvedStates](crate::ResolvedState) and applying a [Query], returning
@@ -33,45 +33,47 @@ mod query_impls;
 /// many contexts.
 ///
 /// A blanket impl covers anything that implements [IterResolved], so many types
-/// including [Goal](crate::Goal) and [State](crate::State) are Queryable.
+/// including [Goal](crate::Goal) and [State](crate::State) are queryable.
 ///
-/// # Examples:
-///
-/// ## Goals
-/// ```
-/// use canrun::{Goal, unify, var, State};
-/// use canrun::domains::example::I32;
-///
-/// let x = var();
-/// let goal: Goal<I32> = unify(x, 1);
-/// let result: Vec<_> = goal.query(x).collect();
-/// assert_eq!(result, vec![1])
-/// ```
-///
-/// ## States
-/// ```
-/// use canrun::{State, IterResolved, Queryable, val, var};
-/// use canrun::domains::example::I32;
-/// let x = var();
-///
-/// let state: State<I32> = State::new();
-/// let result: Vec<_> = state.query(x).collect();
-/// assert_eq!(result, vec![]) // Nothing has been added to the State
-/// ```
-///
-/// ### `Option<State<D>>`
-/// Note that most of the lower level [State](crate::State) update methods
-/// return an `Option<State<D>>`. Since [IterResolved] is implemented for this
-/// type, Queryable is as well!
-/// ```
-/// # use canrun::{State, IterResolved, Queryable, val, var};
-/// # use canrun::domains::example::I32;
-/// # let x = var();
-/// let state: Option<State<I32>> = State::new().unify(&val!(x), &val!(1));
-/// let result: Vec<_> = state.query(x).collect();
-/// assert_eq!(result, vec![1])
-/// ```
 pub trait Queryable<'a, D: Domain<'a> + 'a> {
+    /// Applies a [Query] to an iterator of [ResolvedStates](crate::ResolvedState) to derive results.
+    ///
+    /// # Examples:
+    ///
+    /// ## Goals
+    /// ```
+    /// use canrun::{Goal, unify, var, State};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x = var();
+    /// let goal: Goal<I32> = unify(x, 1);
+    /// let result: Vec<_> = goal.query(x).collect();
+    /// assert_eq!(result, vec![1])
+    /// ```
+    ///
+    /// ## States
+    /// ```
+    /// use canrun::{State, IterResolved, Queryable, val, var};
+    /// use canrun::domains::example::I32;
+    /// let x = var();
+    ///
+    /// let state: State<I32> = State::new();
+    /// let result: Vec<_> = state.query(x).collect();
+    /// assert_eq!(result, vec![]) // Nothing has been added to the State
+    /// ```
+    ///
+    /// ### `Option<State<D>>`
+    /// Note that most of the lower level [State](crate::State) update methods
+    /// return an `Option<State<D>>`. Since [IterResolved] is implemented for this
+    /// type, Queryable is as well!
+    /// ```
+    /// # use canrun::{State, IterResolved, Queryable, val, var};
+    /// # use canrun::domains::example::I32;
+    /// # let x = var();
+    /// let state: Option<State<I32>> = State::new().unify(&val!(x), &val!(1));
+    /// let result: Vec<_> = state.query(x).collect();
+    /// assert_eq!(result, vec![1])
+    /// ```
     fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>
     where
         Q: Query<'a, D> + 'a;
