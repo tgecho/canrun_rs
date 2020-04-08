@@ -1,23 +1,4 @@
 //! Constrain the set of types that you can reason about in a particular context.
-//!
-//! Domains are typically generated with the [domains!](./macro.domains.html)
-//! macro.
-//!
-//! ```
-//! use canrun::{domains, State, Goal, unify, var};
-//!
-//! domains! {
-//!     domain MyDomain {
-//!         i32
-//!     }
-//! }
-//!
-//! # fn main() -> () {
-//! let x = var();
-//! let state: State<MyDomain> = State::new();
-//! let goal: Goal<MyDomain> = unify(x, 1);
-//! # }
-//! ```
 
 use crate::state::State;
 use crate::value::{LVar, Val};
@@ -50,9 +31,48 @@ pub mod example {
     }
 }
 
+/// Manage values for a set of specific types.
+///
+/// Works with the [`DomainType<T>`](DomainType) trait to allow access to actual values.
+///
+/// Domains are typically generated with the [domains!](./macro.domains.html)
+/// macro. There isn't currently much use case for interacting with a domain
+/// directly in user code. The only reason it is public is to allow implementing
+/// custom domains through the macro.
+///
+/// ```
+/// use canrun::{domains, State, Goal, unify, var};
+///
+/// domains! {
+///     domain MyDomain {
+///         i32
+///     }
+/// }
+///
+/// # fn main() -> () {
+/// let x = var();
+/// let state: State<MyDomain> = State::new();
+/// let goal: Goal<MyDomain> = unify(x, 1);
+/// # }
+/// ```
 pub trait Domain<'a>: Clone + Debug {
+    /// An individual value that may contain any of the valid types in this domain.
+    ///
+    /// Typically for internal use.
     type Value: Debug + Clone + 'a;
+
+    /// Create a new, valid domain.
+    ///
+    /// Typically for internal use.
     fn new() -> Self;
+
+    /// Apply [.unify()](crate::state::State::unify()) to two [domain level
+    /// values](crate::domains::Domain::Value).
+    ///
+    /// The unification will fail if the inner values are not of the same type.
+    /// This should not be able to happen.
+    ///
+    /// Typically for internal use.
     fn unify_domain_values(
         state: State<'a, Self>,
         a: Self::Value,
