@@ -2,7 +2,7 @@ use super::resolved::ResolvedState;
 use super::State;
 use crate::domains::Domain;
 
-/// An Iterator of [ResolvedStates](crate::state::ResolvedStates).
+/// An Iterator of [ResolvedStates](crate::state::ResolvedState).
 ///
 /// Typically obtained through the [.iter_resolved()](IterResolved::iter_resolved()) trait.
 pub type ResolvedStateIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<D>> + 's>;

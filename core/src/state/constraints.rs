@@ -26,14 +26,14 @@ impl<S> Constraint<S> {
 
     /// Indicate that the constraint needs to be re-run when the specified variable is resolved.
     ///
-    /// The returned [`State`] must _NOT_ be modified.
+    /// The returned [`State`](crate::state::State) must _NOT_ be modified.
     pub fn on_1<A>(state: S, a: LVar<A>) -> Constraint<S> {
         Constraint::Waiting(state, WatchList(vec![a.id]))
     }
 
     /// Indicate that the constraint needs to be re-run when either of the the specified variables are resolved.
     ///
-    /// The returned [`State`] must _NOT_ be modified.
+    /// The returned [`State`](crate::state::State) must _NOT_ be modified.
     pub fn on_2<A, B>(state: S, a: LVar<A>, b: LVar<B>) -> Constraint<S> {
         Constraint::Waiting(state, WatchList(vec![a.id, b.id]))
     }
