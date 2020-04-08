@@ -35,8 +35,6 @@ use std::rc::Rc;
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
 type ConstraintFns<'s, D> =
     MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Constraint<State<'s, D>> + 's>>;
-#[doc(hidden)]
-pub use im_rc::HashMap;
 
 /// The core struct used to contain and manage [value](crate::value) bindings.
 ///
@@ -99,7 +97,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         D: DomainType<'a, T>,
     {
         match val {
-            Val::Var(var) => self.domain.values_as_ref().get(var).unwrap_or(val),
+            Val::Var(var) => self.domain.values_as_ref().0.get(var).unwrap_or(val),
             value => value,
         }
     }
@@ -108,7 +106,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     where
         D: DomainType<'a, T>,
     {
-        match self.domain.values_as_ref().get(&var) {
+        match self.domain.values_as_ref().0.get(&var) {
             Some(val) => val.resolved(),
             None => Err(var),
         }
@@ -134,7 +132,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
                 // TODO: Add occurs check?
 
                 // Assign lvar to value
-                self.domain.values_as_mut().insert(key, value);
+                self.domain.values_as_mut().0.insert(key, value);
 
                 // check constraints matching newly assigned lvar
                 if let Some(constraints) = self.constraints.extract(&key.id) {

@@ -35,7 +35,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
         D: DomainType<'a, T>,
     {
         match val {
-            Val::Var(var) => self.domain.values_as_ref().get(var).unwrap_or(val),
+            Val::Var(var) => self.domain.values_as_ref().0.get(var).unwrap_or(val),
             value => value,
         }
     }
@@ -44,7 +44,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
     where
         D: DomainType<'a, T>,
     {
-        match self.domain.values_as_ref().get(&var) {
+        match self.domain.values_as_ref().0.get(&var) {
             Some(val) => self.resolve_val(val).resolved(),
             None => Err(var),
         }

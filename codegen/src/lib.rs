@@ -79,14 +79,14 @@ impl quote::ToTokens for DomainDef {
         let result = quote! {
             #[derive(std::fmt::Debug)]
             #domain_visibility struct #domain_name {
-                #(#fields: #canrun_mod::state::HashMap<#canrun_mod::value::LVar<#domain_types>, #canrun_mod::value::Val<#domain_types>>),*
+                #(#fields: #canrun_mod::domains::DomainValues<#domain_types>),*
             }
 
             impl<'a> #canrun_mod::domains::Domain<'a> for #domain_name {
                 type Value = #value_name;
                 fn new() -> Self {
                     #domain_name {
-                        #(#fields: #canrun_mod::state::HashMap::new(),)*
+                        #(#fields: #canrun_mod::domains::DomainValues::new(),)*
                     }
                 }
                 fn unify_domain_values(
@@ -110,12 +110,12 @@ impl quote::ToTokens for DomainDef {
                 impl<'a> #canrun_mod::domains::DomainType<'a, #domain_types> for #domain_name {
                     fn values_as_ref(
                         &self,
-                    ) -> &#canrun_mod::state::HashMap<#canrun_mod::value::LVar<#domain_types>, #canrun_mod::value::Val<#domain_types>> {
+                    ) -> &#canrun_mod::domains::DomainValues<#domain_types> {
                         &self.#fields
                     }
                     fn values_as_mut(
                         &mut self,
-                    ) -> &mut #canrun_mod::state::HashMap<#canrun_mod::value::LVar<#domain_types>, #canrun_mod::value::Val<#domain_types>> {
+                    ) -> &mut #canrun_mod::domains::DomainValues<#domain_types> {
                         &mut self.#fields
                     }
                     fn into_domain_val(val: #canrun_mod::value::Val<#domain_types>) -> #value_name {

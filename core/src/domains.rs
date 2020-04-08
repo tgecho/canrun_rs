@@ -60,9 +60,23 @@ pub trait Domain<'a>: Clone + Debug {
     ) -> Option<State<'a, Self>>;
 }
 
+#[derive(Debug)]
+pub struct DomainValues<T>(pub(crate) HashMap<LVar<T>, Val<T>>);
+
+impl<T> DomainValues<T> {
+    pub fn new() -> Self {
+        DomainValues(HashMap::new())
+    }
+}
+impl<'a, T> Clone for DomainValues<T> {
+    fn clone(&self) -> Self {
+        DomainValues(self.0.clone())
+    }
+}
+
 pub trait DomainType<'a, T>: Domain<'a> {
-    fn values_as_ref(&self) -> &HashMap<LVar<T>, Val<T>>;
-    fn values_as_mut(&mut self) -> &mut HashMap<LVar<T>, Val<T>>;
+    fn values_as_ref(&self) -> &DomainValues<T>;
+    fn values_as_mut(&mut self) -> &mut DomainValues<T>;
     fn into_domain_val(val: Val<T>) -> Self::Value;
 }
 
