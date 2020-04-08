@@ -53,9 +53,9 @@ impl<I> fmt::Debug for Member<I> {
 #[cfg(test)]
 mod tests {
     use super::member;
+    use crate::lvec;
     use canrun::domains::example::VecI32;
     use canrun::goal::{either, unify, Goal};
-    use canrun::lvec;
     use canrun::util;
     use canrun::value::var;
 
