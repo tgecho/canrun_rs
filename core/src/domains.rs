@@ -75,8 +75,9 @@ impl<'a, T> Clone for DomainValues<T> {
 }
 
 /// Allows a [state](crate::state) to retrieve values of a specific type from a
-/// [domain](crate::domains). This trait is automatically implemented by the
-/// `domains!` macro.
+/// [domain](crate::domains).
+///
+/// This trait is automatically implemented by the `domains!` macro.
 ///
 /// As of now there shouldn't be much of a need to use this trait's
 /// functionality in user facing code. It may need to be used as a constraint,

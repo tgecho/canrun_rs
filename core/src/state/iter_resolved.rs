@@ -4,7 +4,34 @@ use crate::domains::Domain;
 
 pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<D>> + 's>;
 
+/// Iterate over [ResolvedStates](crate::state::ResolvedState).
+///
+/// This trait is implemented on the typical values that contain or represent an
+/// open state, such as [`Goal`](crate::goal::Goal) and of course
+/// [`State`](crate::state::State) itself.
 pub trait IterResolved<'a, D: Domain<'a> + 'a> {
+    /// Get an iterator of all valid, [resolved
+    /// states](crate::state::ResolvedState) that can be derived.
+    ///
+    /// Typically used indirectly through the
+    /// [Queryable](crate::query::Queryable) interface.
+    ///
+    /// This will iterate through all pending
+    /// [forks](crate::state::State::fork()), discarding any that fail. Any
+    /// unsatisfied [constraints](crate::state::State::constrain()) will also
+    /// cause a potential resolved state to fail.
+    ///
+    /// # Example:
+    /// ```
+    /// use canrun::{State, ResolvedState, IterResolved, val, var};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x = var();
+    ///
+    /// let state = State::new()
+    ///     .unify(&val!(x), &val!(1));
+    /// let results: Vec<ResolvedState<I32>> = state.iter_resolved().collect();
+    /// ```
     fn iter_resolved(self) -> ResolvedIter<'a, D>;
 }
 
