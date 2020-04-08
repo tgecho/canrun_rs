@@ -5,6 +5,39 @@ use canrun::Unify;
 use std::fmt;
 use std::iter::repeat;
 
+/// Create a [goal](canrun::goal) that attempts to unify a value with any of the items in a [vector](std::vec::Vec).
+///
+/// This goal will fork the state for each match found.
+///
+/// # Examples:
+/// ```
+/// use canrun::{Goal, val, var, all, unify};
+/// use canrun::domains::example::VecI32;
+/// use canrun_collections::{lvec, member};
+///
+/// let x = var();
+/// let xs = var();
+/// let goal: Goal<VecI32> = all![
+///     unify(x, 1),
+///     unify(xs, lvec![1, 2, 3]),
+///     member(x, xs),
+/// ];
+/// let results: Vec<_> = goal.query(x).collect();
+/// assert_eq!(results, vec![1]);
+/// ```
+///
+/// ```
+/// # use canrun::{Goal, val, var, all, unify};
+/// # use canrun::domains::example::VecI32;
+/// # use canrun_collections::{lvec, member};
+/// #
+/// let x = var();
+/// let goal: Goal<VecI32> = all![
+///     member(x, lvec![1, 2, 3]),
+/// ];
+/// let results: Vec<_> = goal.query(x).collect();
+/// assert_eq!(results, vec![1, 2, 3]);
+/// ```
 pub fn member<'a, I, IV, CV, D>(item: IV, collection: CV) -> Goal<'a, D>
 where
     I: 'a,

@@ -152,13 +152,18 @@ impl quote::ToTokens for DomainDef {
     }
 }
 
+/// Generate [Domain](../canrun/domains/index.html) structs and other associated types and impls.
+///
+/// See the [Canrun docs](../canrun/domains/macro.domains.html) for details.
 #[proc_macro]
 pub fn domains(item: TokenStream) -> TokenStream {
     let DomainDefs { defs } = parse_macro_input!(item as DomainDefs);
     quote!(#(#defs)*).into()
 }
 
+/// Internal use to allow domains to be generated inside the canrun crate without crate name weirdness
 #[proc_macro]
+#[doc(hidden)]
 pub fn canrun_internal_domains(item: TokenStream) -> TokenStream {
     let DomainDefs { defs } = parse_macro_input!(item as DomainDefs);
     let defs = defs.into_iter().map(|mut domain: DomainDef| {
