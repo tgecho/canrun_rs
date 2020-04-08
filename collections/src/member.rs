@@ -1,5 +1,5 @@
 use canrun::goal::{project::Project, unify, Goal};
-use canrun::state::{State, Watch};
+use canrun::state::{Constraint, State};
 use canrun::value::{IntoVal, Val};
 use canrun::Unify;
 use std::fmt;
@@ -28,7 +28,7 @@ impl<'a, I, D> Project<'a, D> for Member<I>
 where
     D: Unify<'a, I> + Unify<'a, Vec<Val<I>>>,
 {
-    fn attempt<'r>(&'r self, state: State<'a, D>) -> Watch<State<'a, D>> {
+    fn attempt<'r>(&'r self, state: State<'a, D>) -> Constraint<State<'a, D>> {
         let collection = state.resolve_val(&self.collection).resolved();
         match collection {
             Ok(collection) => {
@@ -37,9 +37,9 @@ where
                     .zip(repeat(self.item.clone()))
                     .map(|(a, b)| unify::<I, &Val<I>, Val<I>, D>(a, b) as Goal<D>)
                     .collect();
-                Watch::done(Goal::Any(goals).apply(state))
+                Constraint::done(Goal::Any(goals).apply(state))
             }
-            Err(var) => Watch::watch(state, var),
+            Err(var) => Constraint::on_1(state, var),
         }
     }
 }

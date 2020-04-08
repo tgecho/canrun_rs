@@ -1,8 +1,8 @@
 use super::Goal;
 use super::Project;
 use crate::domains::DomainType;
+use crate::state::Constraint;
 use crate::state::State;
-use crate::state::Watch;
 use crate::value::{
     IntoVal, Val,
     Val::{Resolved, Var},
@@ -43,10 +43,10 @@ impl<'a, A, Dom> Project<'a, Dom> for Assert1<'a, A>
 where
     Dom: DomainType<'a, A>,
 {
-    fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Watch<State<'a, Dom>> {
+    fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {
         let a = state.resolve_val(&self.a).clone();
         match a {
-            Resolved(a) => Watch::done({
+            Resolved(a) => Constraint::done({
                 let assert = self.f.clone();
                 if assert(&*a) {
                     Some(state)
@@ -54,7 +54,7 @@ where
                     None
                 }
             }),
-            Var(var) => Watch::watch(state, var),
+            Var(var) => Constraint::on_1(state, var),
         }
     }
 }

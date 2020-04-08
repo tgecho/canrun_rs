@@ -1,7 +1,7 @@
 use super::Goal;
 use super::Project;
+use crate::state::Constraint;
 use crate::state::State;
-use crate::state::Watch;
 use crate::unify::Unify;
 use crate::value::{
     IntoVal, Val,
@@ -66,19 +66,19 @@ impl<'a, A, B, Dom> Project<'a, Dom> for Map1<'a, A, B>
 where
     Dom: Unify<'a, A> + Unify<'a, B> + 'a,
 {
-    fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Watch<State<'a, Dom>> {
+    fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {
         let a = state.resolve_val(&self.a).clone();
         let b = state.resolve_val(&self.b).clone();
         match (a, b) {
             (Resolved(a), b) => {
                 let f = &self.a_to_b;
-                Watch::done(state.unify(&f(&*a).into_val(), &b))
+                Constraint::done(state.unify(&f(&*a).into_val(), &b))
             }
             (a, Resolved(b)) => {
                 let f = &self.b_to_a;
-                Watch::done(state.unify(&f(&*b).into_val(), &a))
+                Constraint::done(state.unify(&f(&*b).into_val(), &a))
             }
-            (Var(a), Var(b)) => Watch::watch(state, a).and(b),
+            (Var(a), Var(b)) => Constraint::on_2(state, a, b),
         }
     }
 }

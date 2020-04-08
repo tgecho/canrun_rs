@@ -1,4 +1,4 @@
-use super::{State, WatchFns};
+use super::{ConstraintFns, State};
 use crate::domains::{Domain, DomainType};
 use crate::value::{LVar, Val};
 
@@ -26,7 +26,7 @@ use crate::value::{LVar, Val};
 #[derive(Clone)]
 pub struct ResolvedState<'a, D: Domain<'a> + 'a> {
     pub(super) domain: D,
-    pub(super) watches: WatchFns<'a, D>,
+    pub(super) constraints: ConstraintFns<'a, D>,
 }
 
 impl<'a, D: Domain<'a> + 'a> ResolvedState<'a, D> {
@@ -53,7 +53,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<'a, D> {
     pub fn reopen(self) -> State<'a, D> {
         State {
             domain: self.domain,
-            watches: self.watches,
+            constraints: self.constraints,
             forks: im_rc::Vector::new(),
         }
     }

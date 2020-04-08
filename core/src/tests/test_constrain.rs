@@ -1,4 +1,4 @@
-use super::super::state::{State, Watch};
+use super::super::state::{Constraint, State};
 use crate as canrun;
 use crate::domains::example::I32;
 use crate::domains::DomainType;
@@ -12,7 +12,7 @@ use std::rc::Rc;
 pub(crate) fn assert<'a, T, V, D, F>(
     val: V,
     func: F,
-) -> Rc<dyn Fn(State<'a, D>) -> Watch<State<'a, D>> + 'a>
+) -> Rc<dyn Fn(State<'a, D>) -> Constraint<State<'a, D>> + 'a>
 where
     T: 'a,
     V: IntoVal<T> + Clone + 'a,
@@ -22,30 +22,30 @@ where
     Rc::new(move |s| {
         let val = val.clone().into_val();
         match s.resolve_val(&val).resolved() {
-            Ok(x) => Watch::Done(if func(x) { Some(s) } else { None }),
-            Err(x) => Watch::watch(s, x),
+            Ok(x) => Constraint::Done(if func(x) { Some(s) } else { None }),
+            Err(x) => Constraint::on_1(s, x),
         }
     })
 }
 
 #[test]
-fn basic_watch_succeeds() {
+fn basic_constrain_succeeds() {
     let x = var();
     let goals: Vec<Goal<I32>> = vec![
         unify(2, x),
-        custom(|s| s.watch(assert(x, |x| x > &1))),
-        custom(|s| s.watch(assert(x, |x| x > &0))),
+        custom(|s| s.constrain(assert(x, |x| x > &1))),
+        custom(|s| s.constrain(assert(x, |x| x > &0))),
     ];
     util::assert_permutations_resolve_to(goals, x, vec![2]);
 }
 
 #[test]
-fn basic_watch_fails() {
+fn basic_constrain_fails() {
     let x = var();
     let goals: Vec<Goal<I32>> = vec![
         unify(&val!(2), x.clone()),
-        custom(|s| s.watch(assert(x.clone(), |x| x > &1))),
-        custom(|s| s.watch(assert(x, |x| x > &3))),
+        custom(|s| s.constrain(assert(x.clone(), |x| x > &1))),
+        custom(|s| s.constrain(assert(x, |x| x > &3))),
     ];
     util::assert_permutations_resolve_to(goals, x, vec![]);
 }

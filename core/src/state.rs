@@ -13,10 +13,11 @@
 //! An open [State] is the initial struct that you will start with (explicitly
 //! or implicitly through a [goal](crate::goal)). Iterating through the
 //! potentially results will yield zero or more [ResolvedStates](ResolvedState).
+mod constraint;
+mod constraints;
 mod impls;
 mod iter_resolved;
 mod resolved;
-mod watch;
 
 use super::util::multikeymultivaluemap::MKMVMap;
 use crate::domains::{Domain, DomainType};
@@ -25,14 +26,15 @@ use crate::value::{
     LVar, LVarId, Val,
     Val::{Resolved, Var},
 };
+pub use constraints::{Constraint, WatchList};
 pub use iter_resolved::{IterResolved, ResolvedIter};
 pub use resolved::ResolvedState;
 use std::iter::once;
 use std::rc::Rc;
-pub use watch::{Watch, WatchList};
 
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
-type WatchFns<'s, D> = MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Watch<State<'s, D>> + 's>>;
+type ConstraintFns<'s, D> =
+    MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Constraint<State<'s, D>> + 's>>;
 #[doc(hidden)]
 pub use im_rc::HashMap;
 
@@ -64,7 +66,7 @@ pub use im_rc::HashMap;
 #[derive(Clone)]
 pub struct State<'a, D: Domain<'a> + 'a> {
     domain: D,
-    watches: WatchFns<'a, D>,
+    constraints: ConstraintFns<'a, D>,
     forks: im_rc::Vector<Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>>,
 }
 
@@ -72,7 +74,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     pub fn new() -> Self {
         State {
             domain: D::new(),
-            watches: MKMVMap::new(),
+            constraints: MKMVMap::new(),
             forks: im_rc::Vector::new(),
         }
     }
@@ -134,11 +136,11 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
                 // Assign lvar to value
                 self.domain.values_as_mut().insert(key, value);
 
-                // check watches matching newly assigned lvar
-                if let Some(watches) = self.watches.extract(&key.id) {
-                    watches
+                // check constraints matching newly assigned lvar
+                if let Some(constraints) = self.constraints.extract(&key.id) {
+                    constraints
                         .into_iter()
-                        .try_fold(self, |state, func| state.watch(func))
+                        .try_fold(self, |state, func| state.constrain(func))
                 } else {
                     Some(self)
                 }
@@ -146,11 +148,11 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    pub fn watch(self, func: Rc<dyn Fn(Self) -> Watch<Self> + 'a>) -> Option<Self> {
+    pub fn constrain(self, func: Rc<dyn Fn(Self) -> Constraint<Self> + 'a>) -> Option<Self> {
         match func(self) {
-            Watch::Done(state) => state,
-            Watch::Waiting(mut state, WatchList(vars)) => {
-                state.watches.add(vars, func);
+            Constraint::Done(state) => state,
+            Constraint::Waiting(mut state, WatchList(vars)) => {
+                state.constraints.add(vars, func);
                 Some(state)
             }
         }

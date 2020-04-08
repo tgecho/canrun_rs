@@ -12,7 +12,7 @@ impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for State<'a, D> {
     fn iter_resolved(self) -> ResolvedIter<'a, D> {
         Box::new(self.iter_forks().map(|s| ResolvedState {
             domain: s.domain,
-            watches: s.watches,
+            constraints: s.constraints,
         }))
     }
 }

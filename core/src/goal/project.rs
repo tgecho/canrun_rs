@@ -3,7 +3,7 @@
 //! Not all relationships can be expressed with the simpler low level
 //! operations, especially when involve values of different types.
 //!
-//! The project family of goals use [State.watch()](crate::State::watch()) to
+//! The project family of goals use [State.constrain()](crate::State::constrain()) to
 //! allow dealing with resolved values. These goals are relatively low level and
 //! may be a bit subtle to use correctly. They are provided as a foundation for
 //! building higher level goals.
@@ -23,8 +23,8 @@ pub use map_2::map_2;
 
 use super::Goal;
 use crate::domains::Domain;
+use crate::state::Constraint;
 use crate::state::State;
-use crate::state::Watch;
 use std::fmt;
 use std::rc::Rc;
 
@@ -35,12 +35,12 @@ pub(crate) fn run<'a, D>(
 where
     D: Domain<'a>,
 {
-    state.watch(Rc::new(move |s| proj.attempt(s)))
+    state.constrain(Rc::new(move |s| proj.attempt(s)))
 }
 
 /// Allows a chance to inspect the state and decide if the required values have been resolved.
 pub trait Project<'a, D: Domain<'a>>: fmt::Debug {
-    fn attempt<'r>(&'r self, state: State<'a, D>) -> Watch<State<'a, D>>;
+    fn attempt<'r>(&'r self, state: State<'a, D>) -> Constraint<State<'a, D>>;
 }
 
 #[cfg(test)]

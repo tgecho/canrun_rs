@@ -52,9 +52,9 @@ pub mod util;
 
 #[cfg(test)]
 mod tests {
+    mod test_constrain;
     mod test_fork;
     mod test_unify;
-    mod test_watch;
 }
 
 // #[macro_use]

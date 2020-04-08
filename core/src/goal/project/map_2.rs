@@ -1,7 +1,7 @@
 use super::Goal;
 use super::Project;
+use crate::state::Constraint;
 use crate::state::State;
-use crate::state::Watch;
 use crate::unify::Unify;
 use crate::value::{
     IntoVal, Val,
@@ -75,26 +75,26 @@ impl<'a, A, B, C, Dom> Project<'a, Dom> for Map2<'a, A, B, C>
 where
     Dom: Unify<'a, A> + Unify<'a, B> + Unify<'a, C> + 'a,
 {
-    fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Watch<State<'a, Dom>> {
+    fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {
         let a = state.resolve_val(&self.a).clone();
         let b = state.resolve_val(&self.b).clone();
         let c = state.resolve_val(&self.c).clone();
         match (a, b, c) {
             (Resolved(a), Resolved(b), c) => {
                 let f = &self.ab_to_c;
-                Watch::done(state.unify(&f(&*a, &*b).into_val(), &c))
+                Constraint::done(state.unify(&f(&*a, &*b).into_val(), &c))
             }
             (Resolved(a), b, Resolved(c)) => {
                 let f = &self.ac_to_b;
-                Watch::done(state.unify(&f(&*a, &*c).into_val(), &b))
+                Constraint::done(state.unify(&f(&*a, &*c).into_val(), &b))
             }
             (a, Resolved(b), Resolved(c)) => {
                 let f = &self.bc_to_a;
-                Watch::done(state.unify(&f(&*b, &*c).into_val(), &a))
+                Constraint::done(state.unify(&f(&*b, &*c).into_val(), &a))
             }
-            (Var(a), Var(b), _) => Watch::watch(state, a).and(b),
-            (Var(a), _, Var(c)) => Watch::watch(state, a).and(c),
-            (_, Var(b), Var(c)) => Watch::watch(state, b).and(c),
+            (Var(a), Var(b), _) => Constraint::on_2(state, a, b),
+            (Var(a), _, Var(c)) => Constraint::on_2(state, a, c),
+            (_, Var(b), Var(c)) => Constraint::on_2(state, b, c),
         }
     }
 }
