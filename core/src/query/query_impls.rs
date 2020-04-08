@@ -22,7 +22,7 @@ where
     T: Clone + 'a,
 {
     type Result = T;
-    fn query_in(&self, state: ResolvedState<'a, D>) -> Option<Self::Result> {
+    fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
         state.get(*self).ok().cloned()
     }
 }
@@ -47,7 +47,7 @@ where
     T2: Clone + 'a,
 {
     type Result = (T1, T2);
-    fn query_in(&self, state: ResolvedState<'a, D>) -> Option<Self::Result> {
+    fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
         Some((
             state.get(self.0).ok().cloned()?,
             state.get(self.1).ok().cloned()?,
@@ -76,7 +76,7 @@ where
     T3: Clone + 'a,
 {
     type Result = (T1, T2, T3);
-    fn query_in(&self, state: ResolvedState<'a, D>) -> Option<Self::Result> {
+    fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
         Some((
             state.get(self.0).ok().cloned()?,
             state.get(self.1).ok().cloned()?,

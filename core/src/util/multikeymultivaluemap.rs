@@ -9,6 +9,12 @@ pub(crate) struct MKMVMap<K: Eq + Hash + Clone + fmt::Debug, V: Clone> {
     values: HashMap<usize, Value<K, V>>,
 }
 
+impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
+    pub(crate) fn is_empty(&self) -> bool {
+        self.values.is_empty()
+    }
+}
+
 #[derive(Clone)]
 pub(crate) struct Value<K, V> {
     id: usize,

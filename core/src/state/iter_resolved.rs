@@ -2,7 +2,7 @@ use super::resolved::ResolvedState;
 use super::State;
 use crate::domains::Domain;
 
-pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<'s, D>> + 's>;
+pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<D>> + 's>;
 
 pub trait IterResolved<'a, D: Domain<'a> + 'a> {
     fn iter_resolved(self) -> ResolvedIter<'a, D>;
@@ -10,9 +10,12 @@ pub trait IterResolved<'a, D: Domain<'a> + 'a> {
 
 impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for State<'a, D> {
     fn iter_resolved(self) -> ResolvedIter<'a, D> {
-        Box::new(self.iter_forks().map(|s| ResolvedState {
-            domain: s.domain,
-            constraints: s.constraints,
+        Box::new(self.iter_forks().filter_map(|s: State<'a, D>| {
+            if s.constraints.is_empty() {
+                Some(ResolvedState { domain: s.domain })
+            } else {
+                None
+            }
         }))
     }
 }

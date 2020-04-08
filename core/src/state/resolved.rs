@@ -1,5 +1,6 @@
-use super::{ConstraintFns, State};
+use super::State;
 use crate::domains::{Domain, DomainType};
+use crate::util::multikeymultivaluemap::MKMVMap;
 use crate::value::{LVar, Val};
 
 /// Derived from an open [State](crate::state::State), depending on
@@ -24,12 +25,11 @@ use crate::value::{LVar, Val};
 /// assert_eq!(results, vec![Some(1)]);
 /// ```
 #[derive(Clone)]
-pub struct ResolvedState<'a, D: Domain<'a> + 'a> {
+pub struct ResolvedState<D> {
     pub(super) domain: D,
-    pub(super) constraints: ConstraintFns<'a, D>,
 }
 
-impl<'a, D: Domain<'a> + 'a> ResolvedState<'a, D> {
+impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
     fn resolve_val<'r, T>(&'r self, val: &'r Val<T>) -> &'r Val<T>
     where
         D: DomainType<'a, T>,
@@ -53,7 +53,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<'a, D> {
     pub fn reopen(self) -> State<'a, D> {
         State {
             domain: self.domain,
-            constraints: self.constraints,
+            constraints: MKMVMap::new(),
             forks: im_rc::Vector::new(),
         }
     }

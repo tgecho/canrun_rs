@@ -49,3 +49,15 @@ fn basic_constrain_fails() {
     ];
     util::assert_permutations_resolve_to(goals, x, vec![]);
 }
+
+#[test]
+fn unsatisfied_constrain_fails() {
+    let x = var();
+    let y = var();
+    let goals: Vec<Goal<I32>> = vec![
+        unify(&val!(1), x),
+        custom(|s| s.constrain(assert(y, |y| y < &3))),
+    ];
+    util::assert_permutations_resolve_to(goals.clone(), x, vec![]);
+    util::assert_permutations_resolve_to(goals, y, vec![]);
+}

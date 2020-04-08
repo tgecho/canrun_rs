@@ -112,5 +112,5 @@ impl<'a, D: Domain<'a> + 'a, S: IterResolved<'a, D>> Queryable<'a, D> for S {
 /// ```
 pub trait Query<'a, D: Domain<'a> + 'a> {
     type Result;
-    fn query_in(&self, state: ResolvedState<'a, D>) -> Option<Self::Result>;
+    fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result>;
 }
