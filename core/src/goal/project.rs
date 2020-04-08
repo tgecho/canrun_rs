@@ -38,6 +38,8 @@ where
 }
 
 /// Allows a chance to inspect the state and decide if the required values have been resolved.
+///
+/// TODO: More details
 pub trait Project<'a, D: Domain<'a>>: fmt::Debug {
     fn attempt<'r>(&'r self, state: State<'a, D>) -> Constraint<State<'a, D>>;
 }

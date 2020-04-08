@@ -84,6 +84,7 @@ pub trait Domain<'a>: Clone + Debug {
 pub struct DomainValues<T>(pub(crate) HashMap<LVar<T>, Val<T>>);
 
 impl<T> DomainValues<T> {
+    #[doc(hidden)]
     pub fn new() -> Self {
         DomainValues(HashMap::new())
     }
@@ -103,8 +104,11 @@ impl<'a, T> Clone for DomainValues<T> {
 /// functionality in user facing code. It may need to be used as a constraint,
 /// though [`Unify`](crate::Unify) is often the better, higher level choice.
 pub trait DomainType<'a, T>: Domain<'a> {
+    #[doc(hidden)]
     fn values_as_ref(&self) -> &DomainValues<T>;
+    #[doc(hidden)]
     fn values_as_mut(&mut self) -> &mut DomainValues<T>;
+    #[doc(hidden)]
     fn into_domain_val(val: Val<T>) -> Self::Value;
 }
 
