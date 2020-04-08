@@ -54,9 +54,6 @@ impl<T> LVar<T> {
             t: PhantomData,
         }
     }
-    pub fn into_val(self) -> Val<T> {
-        Val::Var(self)
-    }
 }
 
 impl<T> Hash for LVar<T> {
