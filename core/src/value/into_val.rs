@@ -8,6 +8,24 @@ use std::rc::Rc;
 /// to be contained in the shared [Val](crate::value::Val) enum. This trait
 /// provides a standard way to convert various types of values into this
 /// container enum without manual wrapping.
+///
+/// # TLDR: If you see a function that takes `IntoVal<T>`
+/// ```
+/// # use canrun::{Val, IntoVal};
+/// fn foo<T, TV: IntoVal<T>>(bar: TV) -> Val<T> {
+///      bar.into_val()
+/// }
+/// ```
+/// That means it can take any of these types and will take care of converting them into a `Val<T>` for you:
+/// ```
+/// # use canrun::{Val, var, IntoVal};
+/// # fn foo<T, TV: IntoVal<T>>(bar: TV) -> Val<T> {
+/// #     bar.into_val()
+/// # }
+/// let a: Val<i32> = foo(1); // a plain value of type `T`
+/// let b: Val<i32> = foo(var()); // an `LVar<T>`
+/// let c: Val<i32> = foo(a); // a `Val<T>`
+/// ```
 pub trait IntoVal<T> {
     /// Convert various `T` related values into a [`Val<T>`](crate::value::Val).
     ///
