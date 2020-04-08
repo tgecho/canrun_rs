@@ -2,7 +2,10 @@ use super::resolved::ResolvedState;
 use super::State;
 use crate::domains::Domain;
 
-pub type ResolvedIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<D>> + 's>;
+/// An Iterator of [ResolvedStates](crate::state::ResolvedStates).
+///
+/// Typically obtained through the [.iter_resolved()](IterResolved::iter_resolved()) trait.
+pub type ResolvedStateIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<D>> + 's>;
 
 /// Iterate over [ResolvedStates](crate::state::ResolvedState).
 ///
@@ -32,11 +35,11 @@ pub trait IterResolved<'a, D: Domain<'a> + 'a> {
     ///     .unify(&val!(x), &val!(1));
     /// let results: Vec<ResolvedState<I32>> = state.iter_resolved().collect();
     /// ```
-    fn iter_resolved(self) -> ResolvedIter<'a, D>;
+    fn iter_resolved(self) -> ResolvedStateIter<'a, D>;
 }
 
 impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for State<'a, D> {
-    fn iter_resolved(self) -> ResolvedIter<'a, D> {
+    fn iter_resolved(self) -> ResolvedStateIter<'a, D> {
         Box::new(self.iter_forks().filter_map(|s: State<'a, D>| {
             if s.constraints.is_empty() {
                 Some(ResolvedState { domain: s.domain })
@@ -48,7 +51,7 @@ impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for State<'a, D> {
 }
 
 impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Option<State<'a, D>> {
-    fn iter_resolved(self) -> ResolvedIter<'a, D> {
+    fn iter_resolved(self) -> ResolvedStateIter<'a, D> {
         Box::new(self.into_iter().flat_map(State::iter_resolved))
     }
 }

@@ -69,6 +69,11 @@ mod vec;
 /// should be able to implement Unify for outside types, so long as you don't
 /// conflict with an existing implementation.
 pub trait Unify<'a, T>: DomainType<'a, T> {
+    /// Attempt to unify two fully resolved values.
+    ///
+    /// This function accepts `Rc<T>`s to simplify the borrow checking. The
+    /// `Option<_>` allows recursive unification of structures that hold
+    /// additional values.
     fn unify_resolved(state: State<'a, Self>, a: Rc<T>, b: Rc<T>) -> Option<State<'a, Self>>;
 }
 

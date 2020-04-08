@@ -1,4 +1,4 @@
-#![deny(unused_braces)]
+#![warn(missing_docs)]
 //! Canrun is a [logic
 //! programming](https://en.wikipedia.org/wiki/Logic_programming) library
 //! inspired by the [\*Kanren](http://minikanren.org/) family of language DSLs.

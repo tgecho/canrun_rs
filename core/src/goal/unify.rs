@@ -11,9 +11,7 @@ where
     D::unify_domain_values(state, a, b)
 }
 
-// TODO: Write more documentation about what "unification" actually (practically) means?
-
-/// Create a [goal](crate::goal::Goal) that attempts to unify two values with each other.
+/// Create a [goal](crate::goal::Goal) that attempts to [unify](crate::unify) two values with each other.
 ///
 /// If one of the values is an unbound [LVar](crate::value::LVar), it will be bound to the other
 /// value. If both values are able to be resolved, they will be compared with

@@ -11,7 +11,7 @@
 use crate::domains::Domain;
 use crate::query::{Query, Queryable};
 use crate::state::State;
-use crate::state::{IterResolved, ResolvedIter};
+use crate::state::{IterResolved, ResolvedStateIter};
 use std::rc::Rc;
 
 mod all;
@@ -171,7 +171,7 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
 }
 
 impl<'a, D: Domain<'a> + 'a> IterResolved<'a, D> for Goal<'a, D> {
-    fn iter_resolved(self) -> ResolvedIter<'a, D> {
+    fn iter_resolved(self) -> ResolvedStateIter<'a, D> {
         self.apply(State::new()).iter_resolved()
     }
 }
