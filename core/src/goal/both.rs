@@ -1,11 +1,11 @@
-use super::Goal;
+use super::{Goal, GoalEnum};
 use crate::domains::Domain;
 use crate::state::State;
 
 pub(crate) fn run<'a, D>(
     state: State<'a, D>,
-    a: Goal<'a, D>,
-    b: Goal<'a, D>,
+    a: GoalEnum<'a, D>,
+    b: GoalEnum<'a, D>,
 ) -> Option<State<'a, D>>
 where
     D: Domain<'a>,
@@ -47,5 +47,5 @@ pub fn both<'a, D>(a: Goal<'a, D>, b: Goal<'a, D>) -> Goal<'a, D>
 where
     D: Domain<'a>,
 {
-    Goal::Both(Box::new(a), Box::new(b))
+    Goal(GoalEnum::Both(Box::new(a.0), Box::new(b.0)))
 }

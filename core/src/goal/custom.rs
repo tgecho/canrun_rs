@@ -1,4 +1,4 @@
-use super::Goal;
+use super::{Goal, GoalEnum};
 use crate::domains::Domain;
 use crate::state::State;
 use std::fmt;
@@ -51,7 +51,7 @@ where
     D: Domain<'a>,
     F: Fn(State<'a, D>) -> Option<State<'a, D>> + 'a,
 {
-    Goal::Custom(Custom(Rc::new(func)))
+    Goal(GoalEnum::Custom(Custom(Rc::new(func))))
 }
 
 impl<'a, D: Domain<'a>> fmt::Debug for Custom<'a, D> {

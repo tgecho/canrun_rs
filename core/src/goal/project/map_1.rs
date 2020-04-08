@@ -1,5 +1,5 @@
-use super::Goal;
 use super::Project;
+use crate::goal::{Goal, GoalEnum};
 use crate::state::Constraint;
 use crate::state::State;
 use crate::unify::Unify;
@@ -41,12 +41,12 @@ where
     AtoB: Fn(&A) -> B + 'a,
     BtoA: Fn(&B) -> A + 'a,
 {
-    Goal::Project(Rc::new(Map1 {
+    Goal(GoalEnum::Project(Rc::new(Map1 {
         a: a.into_val(),
         b: b.into_val(),
         a_to_b: Rc::new(a_to_b),
         b_to_a: Rc::new(b_to_a),
-    }))
+    })))
 }
 
 pub struct Map1<'a, A, B> {

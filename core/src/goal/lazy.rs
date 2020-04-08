@@ -1,4 +1,4 @@
-use super::Goal;
+use super::{Goal, GoalEnum};
 use crate::domains::Domain;
 use crate::state::State;
 use std::fmt;
@@ -44,7 +44,7 @@ where
     D: Domain<'a>,
     F: Fn() -> Goal<'a, D> + 'a,
 {
-    Goal::Lazy(Lazy(Rc::new(func)))
+    Goal(GoalEnum::Lazy(Lazy(Rc::new(func))))
 }
 
 impl<'a, D: Domain<'a>> fmt::Debug for Lazy<'a, D> {

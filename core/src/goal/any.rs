@@ -1,10 +1,10 @@
-use super::Goal;
+use super::GoalEnum;
 use crate::domains::Domain;
 use crate::state::State;
 use std::iter::repeat;
 use std::rc::Rc;
 
-pub(crate) fn run<'a, D>(state: State<'a, D>, goals: Vec<Goal<'a, D>>) -> Option<State<'a, D>>
+pub(crate) fn run<'a, D>(state: State<'a, D>, goals: Vec<GoalEnum<'a, D>>) -> Option<State<'a, D>>
 where
     D: Domain<'a>,
 {
@@ -34,7 +34,7 @@ where
 /// use canrun::domains::example::I32;
 ///
 /// let x = var();
-/// let goal: Goal<I32> = any!(unify(x, 1), unify(x, 2), unify(x, 3));
+/// let goal: Goal<I32> = any![unify(x, 1), unify(x, 2), unify(x, 3)];
 /// let result: Vec<_> = goal.query(x).collect();
 /// assert_eq!(result, vec![1, 2, 3])
 /// ```
@@ -61,7 +61,7 @@ where
 #[macro_export]
 macro_rules! any {
     ($($item:expr),* $(,)?) => {
-        canrun::Goal::Any(vec![$($item),*])
+        canrun::Goal::any(vec![$($item),*])
     };
 }
 pub use any;

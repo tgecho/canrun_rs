@@ -21,7 +21,6 @@ pub use map_1::map_1;
 #[doc(inline)]
 pub use map_2::map_2;
 
-use super::Goal;
 use crate::domains::Domain;
 use crate::state::Constraint;
 use crate::state::State;

@@ -1,8 +1,8 @@
-use super::Goal;
+use super::GoalEnum;
 use crate::domains::Domain;
 use crate::state::State;
 
-pub(crate) fn run<'a, D>(state: State<'a, D>, goals: Vec<Goal<'a, D>>) -> Option<State<'a, D>>
+pub(crate) fn run<'a, D>(state: State<'a, D>, goals: Vec<GoalEnum<'a, D>>) -> Option<State<'a, D>>
 where
     D: Domain<'a>,
 {
@@ -43,7 +43,7 @@ where
 #[macro_export]
 macro_rules! all {
     ($($item:expr),* $(,)?) => {
-        canrun::goal::Goal::All(vec![$($item),*])
+        canrun::goal::Goal::all(vec![$($item),*])
     };
 }
 pub use all;

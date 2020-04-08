@@ -1,5 +1,5 @@
-use super::Goal;
 use crate::domains::Domain;
+use crate::goal::{Goal, GoalEnum};
 use crate::state::State;
 use crate::value::IntoVal;
 use crate::Unify;
@@ -48,8 +48,8 @@ where
     A: IntoVal<T>,
     B: IntoVal<T>,
 {
-    Goal::Unify(
+    Goal(GoalEnum::Unify(
         D::into_domain_val(a.into_val()),
         D::into_domain_val(b.into_val()),
-    )
+    ))
 }

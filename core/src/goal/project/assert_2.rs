@@ -1,6 +1,6 @@
-use super::Goal;
 use super::Project;
 use crate::domains::DomainType;
+use crate::goal::{Goal, GoalEnum};
 use crate::state::Constraint;
 use crate::state::State;
 use crate::value::{
@@ -39,11 +39,11 @@ where
     D: DomainType<'a, A> + DomainType<'a, B>,
     F: Fn(&A, &B) -> bool + 'a,
 {
-    Goal::Project(Rc::new(Assert2 {
+    Goal(GoalEnum::Project(Rc::new(Assert2 {
         a: a.into_val(),
         b: b.into_val(),
         f: Rc::new(func),
-    }))
+    })))
 }
 
 impl<'a, A, B, Dom> Project<'a, Dom> for Assert2<'a, A, B>

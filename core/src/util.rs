@@ -23,7 +23,7 @@ where
     D: Domain<'a> + 'a,
     Q: Query<'a, D> + 'a,
 {
-    let goal = Goal::All(goals.to_owned());
+    let goal = Goal::all(goals.to_owned());
     goal_resolves_to(goal, query)
 }
 

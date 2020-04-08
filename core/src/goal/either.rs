@@ -1,12 +1,12 @@
-use super::Goal;
+use super::{Goal, GoalEnum};
 use crate::domains::Domain;
 use crate::state::State;
 use std::rc::Rc;
 
 pub(crate) fn run<'a, D>(
     state: State<'a, D>,
-    a: Goal<'a, D>,
-    b: Goal<'a, D>,
+    a: GoalEnum<'a, D>,
+    b: GoalEnum<'a, D>,
 ) -> Option<State<'a, D>>
 where
     D: Domain<'a>,
@@ -61,7 +61,7 @@ pub fn either<'a, D>(a: Goal<'a, D>, b: Goal<'a, D>) -> Goal<'a, D>
 where
     D: Domain<'a>,
 {
-    Goal::Either(Box::new(a), Box::new(b))
+    Goal(GoalEnum::Either(Box::new(a.0), Box::new(b.0)))
 }
 
 #[cfg(test)]

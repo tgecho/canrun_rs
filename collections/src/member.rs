@@ -4,7 +4,6 @@ use canrun::value::{IntoVal, Val};
 use canrun::Unify;
 use std::fmt;
 use std::iter::repeat;
-use std::rc::Rc;
 
 pub fn member<'a, I, IV, CV, D>(item: IV, collection: CV) -> Goal<'a, D>
 where
@@ -13,10 +12,10 @@ where
     CV: IntoVal<Vec<Val<I>>>,
     D: Unify<'a, I> + Unify<'a, Vec<Val<I>>>,
 {
-    Goal::Project(Rc::new(Member {
+    Goal::project(Member {
         item: item.into_val(),
         collection: collection.into_val(),
-    }))
+    })
 }
 
 struct Member<I> {
@@ -37,7 +36,7 @@ where
                     .zip(repeat(self.item.clone()))
                     .map(|(a, b)| unify::<I, &Val<I>, Val<I>, D>(a, b) as Goal<D>)
                     .collect();
-                Constraint::done(Goal::Any(goals).apply(state))
+                Constraint::done(Goal::any(goals).apply(state))
             }
             Err(var) => Constraint::on_1(state, var),
         }

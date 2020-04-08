@@ -1,7 +1,7 @@
 //! Make declarative assertions about the relationships between values.
 //!
-//! They provide a high level interface for defining logic programs.
-//! [Goals](crate::Goal) are composable, with many higher level goals being made
+//! [Goals](crate::Goal) provide a high level interface for defining logic programs.
+//! They are composable, with many higher level goals being made
 //! up of lower level primitives. Since the typical way of using goals are
 //! through simple functions, it is easy to build and reuse custom, first class
 //! goal constructors.
@@ -37,6 +37,17 @@ pub use either::either;
 pub use lazy::lazy;
 #[doc(inline)]
 pub use unify::unify;
+#[derive(Clone, Debug)]
+pub(crate) enum GoalEnum<'a, D: Domain<'a>> {
+    Unify(D::Value, D::Value),
+    Both(Box<GoalEnum<'a, D>>, Box<GoalEnum<'a, D>>),
+    All(Vec<GoalEnum<'a, D>>),
+    Either(Box<GoalEnum<'a, D>>, Box<GoalEnum<'a, D>>),
+    Any(Vec<GoalEnum<'a, D>>),
+    Lazy(lazy::Lazy<'a, D>),
+    Custom(custom::Custom<'a, D>),
+    Project(Rc<dyn project::Project<'a, D> + 'a>),
+}
 
 /// A container of one of many possible types of [goals](crate::goal).
 ///
@@ -46,31 +57,111 @@ pub use unify::unify;
 /// [value](crate::value) wrapping through [IntoVal](crate::value::IntoVal) and
 /// other niceties.
 #[derive(Clone, Debug)]
-pub enum Goal<'a, D: Domain<'a>> {
-    Unify(D::Value, D::Value),
-    Both(Box<Goal<'a, D>>, Box<Goal<'a, D>>),
-    All(Vec<Goal<'a, D>>),
-    Either(Box<Goal<'a, D>>, Box<Goal<'a, D>>),
-    Any(Vec<Goal<'a, D>>),
-    Lazy(lazy::Lazy<'a, D>),
-    Custom(custom::Custom<'a, D>),
-    Project(Rc<dyn project::Project<'a, D> + 'a>),
+pub struct Goal<'a, D: Domain<'a>>(GoalEnum<'a, D>);
+
+impl<'a, D: Domain<'a> + 'a> GoalEnum<'a, D> {
+    fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
+        match self {
+            GoalEnum::Unify(a, b) => unify::run(state, a, b),
+            GoalEnum::Both(a, b) => both::run(state, *a, *b),
+            GoalEnum::All(goals) => all::run(state, goals),
+            GoalEnum::Either(a, b) => either::run(state, *a, *b),
+            GoalEnum::Any(goals) => any::run(state, goals),
+            GoalEnum::Lazy(lazy) => lazy.run(state),
+            GoalEnum::Custom(custom) => custom.run(state),
+            GoalEnum::Project(proj) => project::run(proj, state),
+        }
+    }
 }
 
 impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
-    pub fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
-        match self {
-            Goal::Unify(a, b) => unify::run(state, a, b),
-            Goal::Both(a, b) => both::run(state, *a, *b),
-            Goal::All(goals) => all::run(state, goals),
-            Goal::Either(a, b) => either::run(state, *a, *b),
-            Goal::Any(goals) => any::run(state, goals),
-            Goal::Lazy(lazy) => lazy.run(state),
-            Goal::Custom(custom) => custom.run(state),
-            Goal::Project(proj) => project::run(proj, state),
-        }
+    /// Create a Goal that only succeeds if all sub-goals succeed.
+    ///
+    /// This constructor takes anything that implements
+    /// [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type.
+    /// See the [all!](crate::goal::all) macro for a slightly higher level
+    /// interface.
+    ///
+    /// # Example
+    /// ```
+    /// use canrun::{Goal, all, unify, var};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x = var();
+    /// let y = var();
+    /// let goal: Goal<I32> = Goal::all(vec![unify(y, x), unify(1, x), unify(y, 1)]);
+    /// let result: Vec<_> = goal.query((x, y)).collect();
+    /// assert_eq!(result, vec![(1, 1)])
+    /// ```
+    pub fn all<I: IntoIterator<Item = Goal<'a, D>>>(goals: I) -> Self {
+        Goal(GoalEnum::All(goals.into_iter().map(|g| g.0).collect()))
     }
 
+    /// Create a Goal that yields a state for every successful
+    /// sub-goal.
+    ///
+    /// This constructor takes anything that implements
+    /// [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type. See the
+    /// [all!](crate::goal::all) macro for a slightly higher level interface.
+    ///
+    /// # Example
+    /// ```
+    /// use canrun::{Goal, any, unify, var};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x = var();
+    /// let goal: Goal<I32> = Goal::any(vec![unify(x, 1), unify(x, 2), unify(x, 3)]);
+    /// let result: Vec<_> = goal.query(x).collect();
+    /// assert_eq!(result, vec![1, 2, 3])
+    /// ```
+    pub fn any<I: IntoIterator<Item = Goal<'a, D>>>(goals: I) -> Self {
+        Goal(GoalEnum::Any(goals.into_iter().map(|g| g.0).collect()))
+    }
+
+    /// Create a Goal that deals with resolved values.
+    ///
+    /// See the [Project](crate::goal::project::Project) trait for details.
+    pub fn project<P: project::Project<'a, D> + 'a>(proj: P) -> Self {
+        Goal(GoalEnum::Project(Rc::new(proj)))
+    }
+
+    /// Apply the Goal to an existing state.
+    ///
+    /// This will update the state, but not iterate through the possible
+    /// resolved states. For this you still need to use the
+    /// [.iter_resolved()][IterResolved::iter_resolved()] interface or
+    /// [.query()](Goal::query()).
+    ///
+    /// # Example
+    /// ```
+    /// use canrun::{Goal, State, unify, var};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x = var();
+    /// let state = State::new();
+    /// let goal: Goal<I32> = unify(x, 1);
+    /// let state: Option<State<I32>> = goal.apply(state);
+    /// ```
+    pub fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
+        self.0.apply(state)
+    }
+
+    /// Use the [query](crate::query) interface to get an iterator of result
+    /// values.
+    ///
+    /// This is a shorthand for creating a new state, applying the goal and
+    /// calling [.query()](crate::Queryable) on the resulting state.
+    ///
+    /// # Example:
+    /// ```
+    /// use canrun::{Goal, unify, var};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x = var();
+    /// let goal: Goal<I32> = unify(x, 1);
+    /// let result: Vec<_> = goal.query(x).collect();
+    /// assert_eq!(result, vec![1])
+    /// ```
     pub fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>
     where
         Q: Query<'a, D> + 'a,
