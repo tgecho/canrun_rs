@@ -80,6 +80,9 @@ pub trait Domain<'a>: Clone + Debug {
     ) -> Option<State<'a, Self>>;
 }
 
+/// A type specific container used by a [Domain](crate::domains::Domain) to hold values.
+///
+/// Created by the `domains!` macro and intended for internal use.
 #[derive(Debug)]
 pub struct DomainValues<T>(pub(crate) HashMap<LVar<T>, Val<T>>);
 
@@ -101,8 +104,9 @@ impl<'a, T> Clone for DomainValues<T> {
 /// This trait is automatically implemented by the `domains!` macro.
 ///
 /// As of now there shouldn't be much of a need to use this trait's
-/// functionality in user facing code. It may need to be used as a constraint,
-/// though [`Unify`](crate::Unify) is often the better, higher level choice.
+/// functionality in user facing code. The trait itself may need to be used as a
+/// constraint, though [`Unify`](crate::Unify) is often the better, higher level
+/// choice.
 pub trait DomainType<'a, T>: Domain<'a> {
     #[doc(hidden)]
     fn values_as_ref(&self) -> &DomainValues<T>;

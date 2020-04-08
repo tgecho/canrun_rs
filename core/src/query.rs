@@ -1,7 +1,7 @@
 //! Extract [values](crate::value) from the results of resolving potential states.
 //!
 //! [Goals](crate::Goal) and [States](crate::State) (and other types) are
-//! [Queryable], meaning you can call `.query()` on them with any type that
+//! [Queryable], meaning you can call [`.query()`](Queryable::query()) on them with any type that
 //! implements [Query] for a matching [Domain].
 //!
 //! Queries will typically only return results for states in which the requested
@@ -100,19 +100,23 @@ impl<'a, D: Domain<'a> + 'a, S: IterResolved<'a, D>> Queryable<'a, D> for S {
 /// values we're looking for. Types implementing the Query trait are typically
 /// passed as an argument to [Queryable] trait's [.query()](Queryable::query())
 /// method.
-///
-/// # Example:
-/// ```
-/// use canrun::{Goal, unify, var};
-/// use canrun::domains::example::I32;
-///
-/// let x = var();
-/// let goal: Goal<I32> = unify(x, 1);
-/// let query = x;
-/// let result: Vec<_> = goal.query(query).collect();
-/// assert_eq!(result, vec![1])
-/// ```
 pub trait Query<'a, D: Domain<'a> + 'a> {
+    /// The type returned by the [`.query_in()`](Query::query_in()) function.
     type Result;
+
+    /// Attempt to extract a [query result](Query::Result) from a
+    /// [ResolvedState].
+    ///
+    /// # Example:
+    /// ```
+    /// use canrun::{Goal, unify, var};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x = var();
+    /// let goal: Goal<I32> = unify(x, 1);
+    /// let query = x;
+    /// let result: Vec<_> = goal.query(query).collect();
+    /// assert_eq!(result, vec![1])
+    /// ```
     fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result>;
 }
