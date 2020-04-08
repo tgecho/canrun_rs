@@ -1,4 +1,3 @@
-use super::Val;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
@@ -11,6 +10,19 @@ fn get_id() -> LVarId {
     COUNTER.fetch_add(1, Ordering::Relaxed)
 }
 
+/// A logical variable that represents a potential value of type `T`.
+///
+/// They are typically created with the [`var()`](crate::value::var) function.
+///
+/// LVars are are passed into [goals][crate::goal] to relate
+/// [values](crate::value) and other variables to each other. They can also be
+/// used to [query](crate::Query) for values in a
+/// [`ResolvedState`](crate::state::ResolvedState).
+///
+/// The identity of each LVar is tracked using an internal id. While this id is
+/// visible through the `Debug` implementation, it should only be used for
+/// debugging purposes as no guarantees are made about the type or generation of
+/// the id value.
 #[derive(Default)]
 pub struct LVar<T: ?Sized> {
     pub(in super::super) id: LVarId,
@@ -40,6 +52,16 @@ impl<T> PartialEq for LVar<T> {
 impl<T> Eq for LVar<T> {}
 
 impl<T> LVar<T> {
+    /// Create a new [logical var](LVar).
+    ///
+    /// The [`var()`](crate::value::var) function is typically used as a shorthand.
+    ///
+    /// # Example:
+    /// ```
+    /// use canrun::{LVar};
+    ///
+    /// let x: LVar<i32> = LVar::new();
+    /// ```
     pub fn new() -> LVar<T> {
         LVar {
             id: get_id(),
@@ -47,6 +69,30 @@ impl<T> LVar<T> {
             t: PhantomData,
         }
     }
+
+    /// Create a labeled [logical var](LVar).
+    ///
+    /// LVars are primarily represented by an internal id. A textual label can
+    /// assist in debugging.
+    ///
+    /// No guarantees are made about the actual debug string. Two LVars created
+    /// separately are not considered to be the same, even if they have the same
+    /// label.
+    ///
+    /// # Examples:
+    /// ```
+    /// use canrun::{LVar};
+    ///
+    /// let x: LVar<i32> = LVar::labeled("foo");
+    /// assert!(format!("{:?}", x).contains("foo"));
+    /// ```
+    /// ```
+    /// # use canrun::{LVar};
+    /// let x: LVar<i32> = LVar::labeled("foo");
+    /// let y: LVar<i32> = LVar::labeled("foo");
+    /// assert_eq!(x, x);
+    /// assert_ne!(x, y);
+    /// ```
     pub fn labeled(label: &'static str) -> LVar<T> {
         LVar {
             id: get_id(),
