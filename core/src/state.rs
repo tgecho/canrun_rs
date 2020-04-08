@@ -245,6 +245,8 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// resolve](State::resolve_val) any variables before
     /// [Waiting](Constraint::Waiting) on them.
     ///
+    /// This is admittedly more than a bit rough.
+    ///
     /// # Example:
     /// ```
     /// use canrun::{State, Queryable, val, var};

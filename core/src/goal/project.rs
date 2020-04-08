@@ -39,8 +39,9 @@ where
 
 /// Allows a chance to inspect the state and decide if the required values have been resolved.
 ///
-/// TODO: More details
+/// TODO: More details on this and .attempt()
 pub trait Project<'a, D: Domain<'a>>: fmt::Debug {
+    /// Run as a [constraint function](crate::state::State::constrain()).
     fn attempt<'r>(&'r self, state: State<'a, D>) -> Constraint<State<'a, D>>;
 }
 
