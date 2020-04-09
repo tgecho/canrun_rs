@@ -1,12 +1,14 @@
 [workspace]
 members = [
-    "core",
     "codegen",
     "collections",
-    "readme_check"
+    "core",
+    "basic",
+    "readme_check",
 ]
 default-members = [
-    "core",
     "codegen",
-    "collections"
+    "collections",
+    "core",
+    "basic",
 ]

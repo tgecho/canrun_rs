@@ -1,6 +1,6 @@
 #![warn(missing_docs)]
 
-//! [Canrun](canrun) [goal](canrun) functions and other collections related miscellany.
+//! [Canrun](canrun) collection related [goal](canrun) functions and other miscellany.
 
 extern crate canrun;
 
