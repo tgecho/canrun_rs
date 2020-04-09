@@ -152,7 +152,7 @@ impl quote::ToTokens for DomainDef {
     }
 }
 
-/// Generate [Domain](../canrun/domains/index.html) structs and other associated types and impls.
+/// Generate [`Domain`](../canrun/domains/index.html) structs and other associated types and impls.
 ///
 /// See the [Canrun docs](../canrun/domains/macro.domains.html) for details.
 #[proc_macro]

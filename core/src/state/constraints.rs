@@ -2,7 +2,7 @@ use crate::value::{LVar, LVarId};
 
 /// A set of variables to watch on behalf of a [constraint function](crate::state::State::constrain()).
 ///
-/// Created with the [Constraint]::on_{n}() functions.
+/// Created with the `[Constraint]::on_{n}()` functions.
 // This is a private field because we actually strip the LVar type param for internal storage/lookup.
 #[derive(Debug)]
 pub struct WatchList(pub(crate) Vec<LVarId>);

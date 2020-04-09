@@ -1,12 +1,12 @@
 use crate::domains::{Domain, DomainType};
 use crate::value::{LVar, Val};
 
-/// Derived from an open [State](crate::state::State), depending on
+/// Derived from an open [`State`](crate::state::State), depending on
 /// the constraints that have been applied.
 ///
-/// Calling [.iter_resolved()](crate::IterResolved::iter_resolved()) is the
+/// Calling [`.iter_resolved()`](crate::IterResolved::iter_resolved()) is the
 /// lowest level way to get an iterator of the possible resolved states, though
-/// the [Query](crate::query::Query) interface is quite a bit nicer.
+/// the [`Query`](crate::query::Query) interface is quite a bit nicer.
 #[derive(Clone)]
 pub struct ResolvedState<D> {
     pub(super) domain: D,
@@ -25,7 +25,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
 
     /// Attempt to get the bound value of a [logical
     /// variable](crate::value::LVar) in a
-    /// [ResolvedState](crate::state::ResolvedState).
+    /// [`ResolvedState`](crate::state::ResolvedState).
     ///
     /// # Errors:
     /// An `Err(LVar<T>)` contains the last [`LVar`](crate::value::LVar) that

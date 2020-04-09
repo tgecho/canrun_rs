@@ -1,12 +1,12 @@
 //! Make declarative assertions about the relationships between values.
 //!
-//! [Goals](crate::Goal) provide a high level interface for defining logic programs.
+//! [`Goals`](crate::Goal) provide a high level interface for defining logic programs.
 //! They are composable, with many higher level goals being made
 //! up of lower level primitives. Since the typical way of using goals are
 //! through simple functions, it is easy to build and reuse custom, first class
 //! goal constructors.
 //!
-//! While [State] exposes a lower level API, in practice there really shouldn't
+//! While [`State`] exposes a lower level API, in practice there really shouldn't
 //! be anything that can't be expressed using goals.
 use crate::domains::Domain;
 use crate::query::{Query, Queryable};
@@ -52,9 +52,9 @@ pub(crate) enum GoalEnum<'a, D: Domain<'a>> {
 /// A container of one of many possible types of [goals](crate::goal).
 ///
 /// Values of this type are typically constructed with one of the many
-/// constructor [functions](crate::goal#functions) and
+/// [constructor functions](crate::goal#functions) and
 /// [macros](crate::goal#macros). These high level methods provide automatic
-/// [value](crate::value) wrapping through [IntoVal](crate::value::IntoVal) and
+/// [value](crate::value) wrapping through [`IntoVal`](crate::value::IntoVal) and
 /// other niceties.
 #[derive(Clone, Debug)]
 pub struct Goal<'a, D: Domain<'a>>(GoalEnum<'a, D>);
@@ -79,7 +79,7 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     ///
     /// This constructor takes anything that implements
     /// [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type.
-    /// See the [all!](crate::goal::all) macro for a slightly higher level
+    /// See the [`all!`](./macro.all.html) macro for a slightly higher level
     /// interface.
     ///
     /// # Example
@@ -102,7 +102,7 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     ///
     /// This constructor takes anything that implements
     /// [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type. See the
-    /// [all!](crate::goal::all) macro for a slightly higher level interface.
+    /// [`any!`](./macro.any.html) macro for a slightly higher level interface.
     ///
     /// # Example
     /// ```
@@ -120,7 +120,7 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
 
     /// Create a Goal that deals with resolved values.
     ///
-    /// See the [Project](crate::goal::project::Project) trait for details.
+    /// See the [`Project`](crate::goal::project::Project) trait for details.
     pub fn project<P: project::Project<'a, D> + 'a>(proj: P) -> Self {
         Goal(GoalEnum::Project(Rc::new(proj)))
     }
@@ -129,8 +129,8 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     ///
     /// This will update the state, but not iterate through the possible
     /// resolved states. For this you still need to use the
-    /// [.iter_resolved()][IterResolved::iter_resolved()] interface or
-    /// [.query()](Goal::query()).
+    /// [`.iter_resolved()`](IterResolved::iter_resolved()) interface or
+    /// [`.query()`](Goal::query()).
     ///
     /// # Example
     /// ```
@@ -150,7 +150,7 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     /// values.
     ///
     /// This is a shorthand for creating a new state, applying the goal and
-    /// calling [.query()](crate::Queryable) on the resulting state.
+    /// calling [`.query()`](crate::Queryable) on the resulting state.
     ///
     /// # Example:
     /// ```

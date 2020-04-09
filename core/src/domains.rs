@@ -8,11 +8,11 @@ use std::fmt::Debug;
 pub mod example {
     //! Basic domains for simple use cases.
     //!
-    //! | Domain   | Types |
-    //! | ------   | ----- |
-    //! | I32      | i32 |
-    //! | VecI32   | i32, Vec<Val<i32>> |
-    //! | TupleI32 | i32, (Val<i32>, Val<i32>) |
+    //! | Domain     | Types |
+    //! | ------     | ----- |
+    //! | `I32`      | `i32` |
+    //! | `VecI32`   | `i32`, `Vec<Val<i32>>` |
+    //! | `TupleI32` | `i32`, `(Val<i32>, Val<i32>)` |
 
     // Figure out how to get the macro to generate docs with these types listed out.
 
@@ -35,7 +35,7 @@ pub mod example {
 ///
 /// Works with the [`DomainType<T>`](DomainType) trait to allow access to actual values.
 ///
-/// Domains are typically generated with the [domains!](./macro.domains.html)
+/// Domains are typically generated with the [`domains!`](./macro.domains.html)
 /// macro. There isn't currently much use case for interacting with a domain
 /// directly in user code. The only reason it is public is to allow implementing
 /// custom domains through the macro.
@@ -66,7 +66,7 @@ pub trait Domain<'a>: Clone + Debug {
     /// Typically for internal use.
     fn new() -> Self;
 
-    /// Apply [.unify()](crate::state::State::unify()) to two [domain level
+    /// Apply [`.unify()`](crate::state::State::unify()) to two [domain level
     /// values](crate::domains::Domain::Value).
     ///
     /// The unification will fail if the inner values are not of the same type.
@@ -80,7 +80,7 @@ pub trait Domain<'a>: Clone + Debug {
     ) -> Option<State<'a, Self>>;
 }
 
-/// A type specific container used by a [Domain](crate::domains::Domain) to hold values.
+/// A type specific container used by a [`Domain`](crate::domains::Domain) to hold values.
 ///
 /// Created by the `domains!` macro and intended for internal use.
 #[derive(Debug)]
@@ -98,7 +98,7 @@ impl<'a, T> Clone for DomainValues<T> {
     }
 }
 
-/// Allows a [state](crate::state) to retrieve values of a specific type from a
+/// Allows a [`State`](crate::state) to retrieve values of a specific type from a
 /// [domain](crate::domains).
 ///
 /// This trait is automatically implemented by the `domains!` macro.
@@ -148,7 +148,7 @@ pub trait DomainType<'a, T>: Domain<'a> {
 /// ```
 ///
 /// You can define multiple values, include containers. Note that a wrapping
-/// [Val](crate::value::Val) is required in the Vec type.
+/// [`Val`](crate::value::Val) is required in the Vec type.
 /// ```
 /// # use canrun::domains;
 /// use canrun::Val;
@@ -163,11 +163,11 @@ pub trait DomainType<'a, T>: Domain<'a> {
 /// ```
 ///
 /// Any types you add to a domain must implement the
-/// [Unify](crate::unify::Unify) trait. Canrun includes default implementations
+/// [`Unify`](crate::unify::Unify) trait. Canrun includes default implementations
 /// for almost all primitive types and `Vec<Val<T: Unify>>`.
 ///
 /// Once you have a domain, you can use it to parameterize other types, such as
-/// [State](crate::state::State) and [Goal](crate::goal::Goal):
+/// [`State`](crate::state::State) and [`Goal`](crate::goal::Goal):
 /// ```
 /// # use canrun::domains;
 /// # use canrun::state::State;

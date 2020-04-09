@@ -20,9 +20,9 @@ impl<'a, D: Domain<'a>> Custom<'a, D> {
 // TODO: Add more illustrative examples
 
 /// Create a [goal](crate::goal::Goal) that gives access to the underlying
-/// [State](crate::state::State) struct.
+/// [`State`](crate::state::State) struct.
 ///
-/// Similar to [lazy](crate::goal::lazy()), the passed in callback is given access to
+/// Similar to [`lazy`](crate::goal::lazy()), the passed in callback is given access to
 /// the state so it can call the lower level [State] manipulation methods. This
 /// should approach should be used sparingly. Ideally most logic should be
 /// composable out of lower level primitive goals.

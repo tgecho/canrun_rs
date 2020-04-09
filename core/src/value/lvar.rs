@@ -14,12 +14,12 @@ fn get_id() -> LVarId {
 ///
 /// They are typically created with the [`var()`](crate::value::var) function.
 ///
-/// LVars are are passed into [goals][crate::goal] to relate
+/// `LVars` are are passed into [goals](crate::goal) to relate
 /// [values](crate::value) and other variables to each other. They can also be
 /// used to [query](crate::Query) for values in a
 /// [`ResolvedState`](crate::state::ResolvedState).
 ///
-/// The identity of each LVar is tracked using an internal id. While this id is
+/// The identity of each `LVar` is tracked using an internal id. While this id is
 /// visible through the `Debug` implementation, it should only be used for
 /// debugging purposes as no guarantees are made about the type or generation of
 /// the id value.
@@ -32,7 +32,7 @@ pub struct LVar<T: ?Sized> {
 
 /// Create a new [logical var](LVar).
 ///
-/// This is simply a shorthand for [LVar::new()].
+/// This is simply a shorthand for [`LVar::new()`].
 ///
 /// # Example:
 /// ```
@@ -72,10 +72,10 @@ impl<T> LVar<T> {
 
     /// Create a labeled [logical var](LVar).
     ///
-    /// LVars are primarily represented by an internal id. A textual label can
+    /// `LVars` are primarily represented by an internal id. A textual label can
     /// assist in debugging.
     ///
-    /// No guarantees are made about the actual debug string. Two LVars created
+    /// No guarantees are made about the actual debug string. Two `LVars` created
     /// separately are not considered to be the same, even if they have the same
     /// label.
     ///

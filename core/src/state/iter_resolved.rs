@@ -2,12 +2,12 @@ use super::resolved::ResolvedState;
 use super::State;
 use crate::domains::Domain;
 
-/// An Iterator of [ResolvedStates](crate::state::ResolvedState).
+/// An Iterator of [`ResolvedStates`](crate::state::ResolvedState).
 ///
-/// Typically obtained through the [.iter_resolved()](IterResolved::iter_resolved()) trait.
+/// Typically obtained through the [`.iter_resolved()`](IterResolved::iter_resolved()) trait.
 pub type ResolvedStateIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<D>> + 's>;
 
-/// Iterate over [ResolvedStates](crate::state::ResolvedState).
+/// Iterate over [`ResolvedStates`](crate::state::ResolvedState).
 ///
 /// This trait is implemented on the typical values that contain or represent an
 /// open state, such as [`Goal`](crate::goal::Goal) and of course
@@ -17,7 +17,7 @@ pub trait IterResolved<'a, D: Domain<'a> + 'a> {
     /// states](crate::state::ResolvedState) that can be derived.
     ///
     /// Typically used indirectly through the
-    /// [Queryable](crate::query::Queryable) interface.
+    /// [`Queryable`](crate::query::Queryable) interface.
     ///
     /// This will iterate through all pending
     /// [forks](crate::state::State::fork()), discarding any that fail. Any

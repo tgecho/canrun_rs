@@ -5,7 +5,7 @@ use std::rc::Rc;
 ///
 /// In order to be able to mix [resolved values](crate::value::Val) and [logical
 /// variables](crate::value::LVar) in the same [state](crate::state), they need
-/// to be contained in the shared [Val](crate::value::Val) enum. This trait
+/// to be contained in the shared [`Val`](crate::value::Val) enum. This trait
 /// provides a standard way to convert various types of values into this
 /// container enum without manual wrapping.
 ///

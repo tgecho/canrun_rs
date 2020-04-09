@@ -2,17 +2,17 @@
 //!
 //! State is the imperative core of each logic program. It manages the updates
 //! to the relationships between values while delegating the actual storage to a
-//! type specific [Domain](crate::domains).
+//! type specific [`Domain`](crate::domains).
 //!
 //! In general, it is preferred to deal with State indirectly through
 //! [goals](crate::goal). They are essentially equivalent in capability, and
 //! their declarative, higher level nature makes them much easier to use.
 //! Notably, goal functions provide automatic [value](crate::value) wrapping
-//! through [IntoVal](crate::value::IntoVal).
+//! through [`IntoVal`](crate::value::IntoVal).
 //!
 //! An open [State] is the initial struct that you will start with (explicitly
 //! or implicitly through a [goal](crate::goal)). Iterating through the
-//! potentially results will yield zero or more [ResolvedStates](ResolvedState).
+//! potentially results will yield zero or more [`ResolvedStates`](ResolvedState).
 
 mod constraints;
 mod impls;
@@ -45,7 +45,7 @@ type ConstraintFns<'s, D> =
 ///
 /// In general, it is most ergonomic to manipulate a state inside a function
 /// that returns an `Option<State<D>>` to allow the use of the question mark
-/// operator (Note that the [.apply()](State::apply()) function makes it easy to
+/// operator (Note that the [`.apply()`](State::apply()) function makes it easy to
 /// do this).
 ///
 /// ```
@@ -128,7 +128,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    /// Recursively resolve a [Val](crate::value::Val) as far as the currently
+    /// Recursively resolve a [`Val`](crate::value::Val) as far as the currently
     /// known variable bindings allow.
     ///
     /// This will return either the final [`Val::Resolved`] (if found) or the
@@ -166,7 +166,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// Attempt to [unify](module@crate::unify) two values with each other.
     ///
     /// If the unification fails, [`None`](std::option::Option::None) will be
-    /// returned. [Val::Var]s will be checked against relevant
+    /// returned. [`Val::Var`]s will be checked against relevant
     /// [constraints](State::constrain), which can also cause a state to fail.
     ///
     ///  # Examples:
@@ -229,7 +229,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// custom imperative code whenever certain bindings are updated.
     ///
     /// The constraint function will be run when it is initially added.
-    /// Returning a [Waiting](Constraint::Waiting) value signals that the
+    /// Returning a [`Waiting`](Constraint::Waiting) value signals that the
     /// constraint is not satisfied. It will be re-run whenever one of the
     /// specified variables is bound to another value.
     ///
@@ -243,7 +243,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     ///
     /// Additionally, the constraint function must take care to [fully
     /// resolve](State::resolve_val) any variables before
-    /// [Waiting](Constraint::Waiting) on them.
+    /// [`Waiting`](Constraint::Waiting) on them.
     ///
     /// This is admittedly more than a bit rough.
     ///
@@ -295,13 +295,13 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// possible alternate states.
     ///
     /// While this is not quite as finicky as the
-    /// [Constraints](State::constrain()), you still probably want to use the
+    /// [`Constraints`](State::constrain()), you still probably want to use the
     /// [`any`](crate::goal::any) or [`either`](crate::goal::either()) goals.
     ///
     /// [Unification](State::unify()) is performed eagerly as soon as it is
     /// called. [Constraints](State::constrain()) are run as variables are
     /// resolved. Forking is only executed at the end, when
-    /// [.iter_resolved()](crate::state::IterResolved::iter_resolved()) (or
+    /// [`.iter_resolved()`](crate::state::IterResolved::iter_resolved()) (or
     /// [`.query()](crate::query::Queryable::query())) is called.
     ///
     ///  # Example:

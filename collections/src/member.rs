@@ -5,7 +5,7 @@ use canrun::Unify;
 use std::fmt;
 use std::iter::repeat;
 
-/// Create a [goal](canrun::goal) that attempts to unify a value with any of the items in a [vector](std::vec::Vec).
+/// Create a [`Goal`](canrun::goal) that attempts to unify a `Val<T>` with any of the items in a `Vec<Val<T>>`.
 ///
 /// This goal will fork the state for each match found.
 ///

@@ -3,7 +3,7 @@ use crate::domains::DomainType;
 use crate::state::ResolvedState;
 use crate::value::LVar;
 
-/// Query for a single [LVar](crate::value::LVar)
+/// Query for a single [`LVar`](crate::value::LVar)
 ///
 /// # Example:
 /// ```
@@ -27,7 +27,7 @@ where
     }
 }
 
-/// Query for a tuple of two [LVars](crate::value::LVar)
+/// Query for a tuple of two [`LVars`](crate::value::LVar)
 ///
 /// # Example:
 /// ```
@@ -55,7 +55,7 @@ where
     }
 }
 
-/// Query for a tuple of three [LVars](crate::value::LVar)
+/// Query for a tuple of three [`LVars`](crate::value::LVar)
 ///
 /// # Example:
 /// ```

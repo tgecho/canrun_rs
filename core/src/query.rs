@@ -1,6 +1,6 @@
 //! Extract [values](crate::value) from the results of resolving potential states.
 //!
-//! [Goals](crate::Goal) and [States](crate::State) (and other types) are
+//! [`Goals`](crate::Goal) and [`States`](crate::State) (and other types) are
 //! [Queryable], meaning you can call [`.query()`](Queryable::query()) on them with any type that
 //! implements [Query] for a matching [Domain].
 //!
@@ -27,16 +27,16 @@ mod query_impls;
 /// Types that can be queried with the [Query] trait.
 ///
 /// This is a convenient wrapper around the pattern of iterating over a sequence
-/// of [ResolvedStates](crate::ResolvedState) and applying a [Query], returning
+/// of [`ResolvedStates`](crate::ResolvedState) and applying a [Query], returning
 /// only the valid, fully resolved results. Queryable is implemented on a
-/// variety of [State](crate::State) related types, allowing it to be used in
+/// variety of [`State`](crate::State) related types, allowing it to be used in
 /// many contexts.
 ///
-/// A blanket impl covers anything that implements [IterResolved], so many types
-/// including [Goal](crate::Goal) and [State](crate::State) are queryable.
+/// A blanket impl covers anything that implements [`IterResolved`], so many types
+/// including [`Goal`](crate::Goal) and [`State`](crate::State) are queryable.
 ///
 pub trait Queryable<'a, D: Domain<'a> + 'a> {
-    /// Applies a [Query] to an iterator of [ResolvedStates](crate::ResolvedState) to derive results.
+    /// Applies a [Query] to an iterator of [`ResolvedStates`](crate::ResolvedState) to derive results.
     ///
     /// # Examples:
     ///
@@ -63,8 +63,8 @@ pub trait Queryable<'a, D: Domain<'a> + 'a> {
     /// ```
     ///
     /// ### `Option<State<D>>`
-    /// Note that most of the lower level [State](crate::State) update methods
-    /// return an `Option<State<D>>`. Since [IterResolved] is implemented for this
+    /// Note that most of the lower level [`State`](crate::State) update methods
+    /// return an `Option<State<D>>`. Since [`IterResolved`] is implemented for this
     /// type, Queryable is as well!
     /// ```
     /// # use canrun::{State, IterResolved, Queryable, val, var};
@@ -92,20 +92,20 @@ impl<'a, D: Domain<'a> + 'a, S: IterResolved<'a, D>> Queryable<'a, D> for S {
 }
 
 /// Query for resolved values in a
-/// [ResolvedState](crate::state::ResolvedState).
+/// [`ResolvedState`](crate::state::ResolvedState).
 ///
 /// Manually extracting resolved values from a set of states can be tedious for
 /// simple cases. Every var is not guaranteed to be fully resolved, and we may
 /// need to search through a few potential states to find one with all of the
 /// values we're looking for. Types implementing the Query trait are typically
-/// passed as an argument to [Queryable] trait's [.query()](Queryable::query())
+/// passed as an argument to [Queryable] trait's [`.query()`](Queryable::query())
 /// method.
 pub trait Query<'a, D: Domain<'a> + 'a> {
     /// The type returned by the [`.query_in()`](Query::query_in()) function.
     type Result;
 
     /// Attempt to extract a [query result](Query::Result) from a
-    /// [ResolvedState].
+    /// [`ResolvedState`].
     ///
     /// # Example:
     /// ```

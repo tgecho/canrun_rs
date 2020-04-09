@@ -13,14 +13,14 @@ where
 
 /// Create a [goal](crate::goal::Goal) that attempts to [unify](module@crate::unify) two values with each other.
 ///
-/// If one of the values is an unbound [LVar](crate::value::LVar), it will be bound to the other
+/// If one of the values is an unbound [`LVar`](crate::value::LVar), it will be bound to the other
 /// value. If both values are able to be resolved, they will be compared with
-/// [Unify::unify_resolved](crate::unify::Unify#tymethod.unify_resolved). If
+/// [`Unify::unify_resolved`](crate::unify::Unify#tymethod.unify_resolved). If
 /// this unification fails, the goal will fail.
 ///
 /// # Examples
 ///
-/// Unifying a fresh LVar will bind it to the other value:
+/// Unifying a fresh `LVar` will bind it to the other value:
 /// ```
 /// use canrun::{Goal, unify, var};
 /// use canrun::domains::example::I32;

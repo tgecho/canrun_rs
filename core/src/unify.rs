@@ -65,7 +65,7 @@ mod vec;
 /// ```
 ///
 /// Because the trait is implemented for a [domain](crate::domains), which are
-/// typically generated through the [domains!](crate::domains#macro) macro, you
+/// typically generated through the [`domains!`](crate::domains#macro) macro, you
 /// should be able to implement Unify for outside types, so long as you don't
 /// conflict with an existing implementation.
 pub trait Unify<'a, T>: DomainType<'a, T> {
