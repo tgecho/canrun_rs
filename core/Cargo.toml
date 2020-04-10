@@ -13,3 +13,8 @@ canrun_codegen = {path = "../codegen"}
 
 [dev-dependencies]
 env_logger = "0.7.1"
+criterion = "0.1.2"
+
+[[bench]]
+name = "main"
+harness = false
