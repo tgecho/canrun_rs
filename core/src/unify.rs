@@ -41,11 +41,11 @@ mod vec;
 /// Default implementations are provided for most primitive types and some
 /// collections. You can implement it for your own types.
 /// ```
-/// use canrun::{domains, State, DomainType, Unify};
+/// use canrun::{State, DomainType, Unify};
 /// use std::rc::Rc;
 ///
-/// domains! {
-///     domain MyDomain { MyType }
+/// canrun::domain! {
+///     MyDomain { MyType }
 /// }
 ///
 /// #[derive(PartialEq, Debug)]
@@ -65,7 +65,7 @@ mod vec;
 /// ```
 ///
 /// Because the trait is implemented for a [domain](crate::domains), which are
-/// typically generated through the [`domains!`](crate::domains#macro) macro, you
+/// typically generated through the [`domain!`](crate::domains#macro) macro, you
 /// should be able to implement Unify for outside types, so long as you don't
 /// conflict with an existing implementation.
 pub trait Unify<'a, T>: DomainType<'a, T> {

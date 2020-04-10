@@ -1,50 +1,26 @@
 //! Constrain the set of types that you can reason about in a particular context.
 
+pub mod example;
+
 use crate::state::State;
 use crate::value::{LVar, Val};
 use im_rc::HashMap;
 use std::fmt::Debug;
 
-pub mod example {
-    //! Basic domains for simple use cases.
-    //!
-    //! | Domain     | Types |
-    //! | ------     | ----- |
-    //! | `I32`      | `i32` |
-    //! | `VecI32`   | `i32`, `Vec<Val<i32>>` |
-    //! | `TupleI32` | `i32`, `(Val<i32>, Val<i32>)` |
-
-    // Figure out how to get the macro to generate docs with these types listed out.
-
-    use crate::value::Val;
-
-    canrun_codegen::canrun_internal_domains! {
-        pub domain I32 { i32 }
-        pub domain VecI32 {
-            i32,
-            Vec<Val<i32>>,
-        }
-        pub domain TupleI32 {
-            i32,
-            (Val<i32>, Val<i32>),
-        }
-    }
-}
-
 /// Manage values for a set of specific types.
 ///
 /// Works with the [`DomainType<T>`](DomainType) trait to allow access to actual values.
 ///
-/// Domains are typically generated with the [`domains!`](./macro.domains.html)
+/// Domains are typically generated with the [`domain!`](./macro.domain.html)
 /// macro. There isn't currently much use case for interacting with a domain
 /// directly in user code. The only reason it is public is to allow implementing
 /// custom domains through the macro.
 ///
 /// ```
-/// use canrun::{domains, State, Goal, unify, var};
+/// use canrun::{State, Goal, unify, var};
 ///
-/// domains! {
-///     domain MyDomain {
+/// canrun::domain! {
+///     MyDomain {
 ///         i32
 ///     }
 /// }
@@ -82,7 +58,7 @@ pub trait Domain<'a>: Clone + Debug {
 
 /// A type specific container used by a [`Domain`](crate::domains::Domain) to hold values.
 ///
-/// Created by the `domains!` macro and intended for internal use.
+/// Created by the `domain!` macro and intended for internal use.
 #[derive(Debug)]
 pub struct DomainValues<T>(pub(crate) HashMap<LVar<T>, Val<T>>);
 
@@ -101,7 +77,7 @@ impl<'a, T> Clone for DomainValues<T> {
 /// Allows a [`State`](crate::state) to retrieve values of a specific type from a
 /// [domain](crate::domains).
 ///
-/// This trait is automatically implemented by the `domains!` macro.
+/// This trait is automatically implemented by the `domain!` macro.
 ///
 /// As of now there shouldn't be much of a need to use this trait's
 /// functionality in user facing code. The trait itself may need to be used as a
@@ -127,9 +103,8 @@ pub trait DomainType<'a, T>: Domain<'a> {
 /// # Examples
 /// Begin each declaration with the domain keyword.
 /// ```
-/// use canrun::domains;
-/// domains! {
-///     domain MyDomain { i32 }
+/// canrun::domain! {
+///     MyDomain { i32 }
 /// }
 /// # fn main() -> () {}
 /// # // keep this `-> ()` to quell `needless_doctest_main` warning
@@ -140,9 +115,8 @@ pub trait DomainType<'a, T>: Domain<'a> {
 /// modifier](https://doc.rust-lang.org/reference/visibility-and-privacy.html)
 /// works just as in normal Rust.
 /// ```
-/// # use canrun::domains;
-/// domains! {
-///     pub domain MyPublicDomain { i32 }
+/// canrun::domain! {
+///     pub MyPublicDomain { i32 }
 /// }
 /// # fn main() {}
 /// ```
@@ -150,10 +124,9 @@ pub trait DomainType<'a, T>: Domain<'a> {
 /// You can define multiple values, include containers. Note that a wrapping
 /// [`Val`](crate::value::Val) is required in the Vec type.
 /// ```
-/// # use canrun::domains;
 /// use canrun::Val;
-/// domains! {
-///     pub domain MyBigDomain {
+/// canrun::domain! {
+///     pub MyBigDomain {
 ///         i32,
 ///         String,
 ///         Vec<Val<i32>>,
@@ -169,16 +142,14 @@ pub trait DomainType<'a, T>: Domain<'a> {
 /// Once you have a domain, you can use it to parameterize other types, such as
 /// [`State`](crate::state::State) and [`Goal`](crate::goal::Goal):
 /// ```
-/// # use canrun::domains;
 /// # use canrun::state::State;
 /// # use canrun::goal::{Goal, unify};
 /// # use canrun::value::var;
-/// # domains! { domain MyDomain { i32 } }
+/// # canrun::domain! { MyDomain { i32 } }
 /// # fn main() {
 /// # let x = var();
 /// let state: State<MyDomain> = State::new();
 /// let goal: Goal<MyDomain> = unify(x, 1);
 /// # }
 /// ```
-#[doc(inline)]
-pub use canrun_codegen::domains;
+pub use canrun_codegen::domain;

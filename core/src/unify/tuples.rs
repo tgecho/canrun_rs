@@ -50,14 +50,16 @@ mod tests {
     use crate::goal::Goal;
     use crate::util;
     use crate::value::{val, var, Val};
-    use canrun_codegen::domains;
+    use canrun_codegen::domain;
 
-    domains! {
-        pub domain Tuples2 {
+    domain! {
+        pub Tuples2 {
             i32,
             (Val<i32>, Val<i32>),
         }
-        pub domain Tuples3 {
+    }
+    domain! {
+        pub Tuples3 {
             i32,
             (Val<i32>, Val<i32>, Val<i32>),
         }

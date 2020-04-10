@@ -31,7 +31,7 @@ mod unify;
 pub mod value;
 
 #[doc(inline)]
-pub use domains::DomainType;
+pub use domains::{Domain, DomainType};
 #[doc(inline)]
 pub use goal::project::{assert_1, assert_2, map_1, map_2};
 #[doc(inline)]
@@ -45,8 +45,8 @@ pub use unify::Unify;
 #[doc(inline)]
 pub use value::{var, IntoVal, LVar, ReifyVal, Val};
 
-#[doc(hidden)]
-pub use canrun_codegen::domains;
+#[doc(inline)]
+pub use domains::domain;
 
 pub mod util;
 
