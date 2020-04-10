@@ -6,10 +6,12 @@
 //! added to [states](crate::state) with a compatible [domain](crate::domains).
 mod into_val;
 mod lvar;
+mod reify_val;
 
 pub use into_val::IntoVal;
 pub(super) use lvar::LVarId;
 pub use lvar::{var, LVar};
+pub use reify_val::ReifyVal;
 use std::fmt;
 use std::rc::Rc;
 

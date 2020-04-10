@@ -1,43 +1,47 @@
 use super::Unify;
 use crate::domains::DomainType;
 use crate::state::State;
-use crate::value::Val;
+use crate::value::{ReifyVal, Val};
 use std::rc::Rc;
 
-impl<'a, A, B, D> Unify<'a, (Val<A>, Val<B>)> for D
-where
-    D: Unify<'a, A> + Unify<'a, B> + DomainType<'a, (Val<A>, Val<B>)>,
-{
-    fn unify_resolved(
-        state: State<'a, D>,
-        l: Rc<(Val<A>, Val<B>)>,
-        r: Rc<(Val<A>, Val<B>)>,
-    ) -> Option<State<'a, D>> {
-        Some(
-            state
-                .unify(&l.0.clone(), &r.0.clone())?
-                .unify(&l.1.clone(), &r.1.clone())?,
-        )
-    }
+macro_rules! impl_for_tuple {
+    ($($t:ident => $r:ident),+) => {
+        impl<'a, $($t,)* D> Unify<'a, ($(Val<$t>),*)> for D
+        where
+            D: $(Unify<'a, $t> + )* DomainType<'a, ($(Val<$t>),*)>
+        {
+            fn unify_resolved(
+                state: State<'a, D>,
+                l: Rc<($(Val<$t>),*)>,
+                r: Rc<($(Val<$t>),*)>,
+            ) -> Option<State<'a, D>> {
+                #![allow(non_snake_case)]
+                let ($($t),*) = &*l;
+                // Abusing the "reified" ident as "right" since
+                // it's available. If we did this as a proc-macro
+                // we could actually make up our own names.
+                let ($($r),*) = &*r;
+                Some(
+                    state
+                        $(.unify(&$t.clone(), &$r.clone())?)*
+                )
+            }
+        }
+
+        impl<$($t: ReifyVal<Reified = $r>, $r,)*> ReifyVal for Val<($($t),*)> {
+            type Reified = ($($t::Reified),*);
+            fn reify(&self) -> Option<Self::Reified> {
+                #![allow(non_snake_case)]
+                let tuple = self.resolved().ok()?;
+                let ($($t),*) = tuple;
+                Some(($($t.reify()?),*))
+            }
+        }
+    };
 }
 
-impl<'a, A, B, C, D> Unify<'a, (Val<A>, Val<B>, Val<C>)> for D
-where
-    D: Unify<'a, A> + Unify<'a, B> + Unify<'a, C> + DomainType<'a, (Val<A>, Val<B>, Val<C>)>,
-{
-    fn unify_resolved(
-        state: State<'a, D>,
-        l: Rc<(Val<A>, Val<B>, Val<C>)>,
-        r: Rc<(Val<A>, Val<B>, Val<C>)>,
-    ) -> Option<State<'a, D>> {
-        Some(
-            state
-                .unify(&l.0.clone(), &r.0.clone())?
-                .unify(&l.1.clone(), &r.1.clone())?
-                .unify(&l.2.clone(), &r.2.clone())?,
-        )
-    }
-}
+impl_for_tuple!(Av => Ar, Bv => Br);
+impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr);
 
 #[cfg(test)]
 mod tests {
@@ -64,7 +68,7 @@ mod tests {
         let x = var();
         let goals: Vec<Goal<Tuples2>> =
             vec![unify(x, (val!(1), val!(2))), unify(x, (val!(1), val!(2)))];
-        util::assert_permutations_resolve_to(goals, x, vec![(val!(1), val!(2))]);
+        util::assert_permutations_resolve_to(goals, x, vec![(1, 2)]);
     }
 
     #[test]
@@ -91,7 +95,7 @@ mod tests {
             unify(x, (val!(1), val!(2), val!(3))),
             unify(x, (val!(1), val!(2), val!(3))),
         ];
-        util::assert_permutations_resolve_to(goals, x, vec![(val!(1), val!(2), val!(3))]);
+        util::assert_permutations_resolve_to(goals, x, vec![(1, 2, 3)]);
     }
 
     #[test]

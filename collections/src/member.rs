@@ -110,7 +110,7 @@ mod tests {
         let x = var();
         let list = lvec![1, 2, 3];
         let goals: Vec<Goal<VecI32>> = vec![member(1, x), member(1, x), unify(x, list.clone())];
-        util::assert_permutations_resolve_to(goals, x, vec![list]);
+        util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2, 3]]);
     }
 
     #[test]
@@ -118,7 +118,7 @@ mod tests {
         let x = var();
         let list = lvec![1, 2, 3];
         let goals: Vec<Goal<VecI32>> = vec![member(1, x), member(2, x), unify(x, list.clone())];
-        util::assert_permutations_resolve_to(goals, x, vec![list]);
+        util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2, 3]]);
     }
 
     #[test]
@@ -130,7 +130,7 @@ mod tests {
             member(2, x),
             unify(x, list.clone()),
         ];
-        util::assert_permutations_resolve_to(goals, x, vec![list]);
+        util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2, 3]]);
     }
 
     #[test]

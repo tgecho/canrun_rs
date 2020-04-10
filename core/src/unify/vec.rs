@@ -39,7 +39,7 @@ mod tests {
             unify(x, vec![val!(1), val!(2)]),
             unify(x, vec![val!(1), val!(2)]),
         ];
-        util::assert_permutations_resolve_to(goals, x, vec![vec![val!(1), val!(2)]]);
+        util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2]]);
     }
 
     #[test]

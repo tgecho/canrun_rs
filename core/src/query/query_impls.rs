@@ -1,7 +1,7 @@
 use super::Query;
 use crate::domains::DomainType;
 use crate::state::ResolvedState;
-use crate::value::LVar;
+use crate::value::{LVar, ReifyVal, Val};
 
 /// Query for a single [`LVar`](crate::value::LVar)
 ///
@@ -16,14 +16,14 @@ use crate::value::LVar;
 /// let result: Vec<_> = goal.query(query).collect();
 /// assert_eq!(result, vec![1])
 /// ```
-impl<'a, D, T> Query<'a, D> for LVar<T>
+impl<'a, D, T, R> Query<'a, D> for LVar<T>
 where
     D: DomainType<'a, T> + 'a,
-    T: Clone + 'a,
+    Val<T>: ReifyVal<Reified = R>,
 {
-    type Result = T;
+    type Result = R;
     fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
-        state.get(*self).ok().cloned()
+        state.get(*self)
     }
 }
 
@@ -40,18 +40,15 @@ where
 /// let result: Vec<_> = goal.query(query).collect();
 /// assert_eq!(result, vec![(1, 2)])
 /// ```
-impl<'a, D, T1, T2> Query<'a, D> for (LVar<T1>, LVar<T2>)
+impl<'a, D, T1, R1, T2, R2> Query<'a, D> for (LVar<T1>, LVar<T2>)
 where
     D: DomainType<'a, T1> + DomainType<'a, T2> + 'a,
-    T1: Clone + 'a,
-    T2: Clone + 'a,
+    Val<T1>: ReifyVal<Reified = R1>,
+    Val<T2>: ReifyVal<Reified = R2>,
 {
-    type Result = (T1, T2);
+    type Result = (R1, R2);
     fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
-        Some((
-            state.get(self.0).ok().cloned()?,
-            state.get(self.1).ok().cloned()?,
-        ))
+        Some((state.get(self.0)?, state.get(self.1)?))
     }
 }
 
@@ -68,20 +65,16 @@ where
 /// let result: Vec<_> = goal.query(query).collect();
 /// assert_eq!(result, vec![(1, 2, 3)])
 /// ```
-impl<'a, D, T1, T2, T3> Query<'a, D> for (LVar<T1>, LVar<T2>, LVar<T3>)
+impl<'a, D, T1, R1, T2, R2, T3, R3> Query<'a, D> for (LVar<T1>, LVar<T2>, LVar<T3>)
 where
     D: DomainType<'a, T1> + DomainType<'a, T2> + DomainType<'a, T3> + 'a,
-    T1: Clone + 'a,
-    T2: Clone + 'a,
-    T3: Clone + 'a,
+    Val<T1>: ReifyVal<Reified = R1>,
+    Val<T2>: ReifyVal<Reified = R2>,
+    Val<T3>: ReifyVal<Reified = R3>,
 {
-    type Result = (T1, T2, T3);
+    type Result = (R1, R2, R3);
     fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
-        Some((
-            state.get(self.0).ok().cloned()?,
-            state.get(self.1).ok().cloned()?,
-            state.get(self.2).ok().cloned()?,
-        ))
+        Some((state.get(self.0)?, state.get(self.1)?, state.get(self.2)?))
     }
 }
 
@@ -98,21 +91,22 @@ where
 /// let result: Vec<_> = goal.query(query).collect();
 /// assert_eq!(result, vec![(0, 1, 2, 3)])
 /// ```
-impl<'a, D, T1, T2, T3, T4> Query<'a, D> for (LVar<T1>, LVar<T2>, LVar<T3>, LVar<T4>)
+impl<'a, D, T1, R1, T2, R2, T3, R3, T4, R4> Query<'a, D>
+    for (LVar<T1>, LVar<T2>, LVar<T3>, LVar<T4>)
 where
     D: DomainType<'a, T1> + DomainType<'a, T2> + DomainType<'a, T3> + DomainType<'a, T4> + 'a,
-    T1: Clone + 'a,
-    T2: Clone + 'a,
-    T3: Clone + 'a,
-    T4: Clone + 'a,
+    Val<T1>: ReifyVal<Reified = R1>,
+    Val<T2>: ReifyVal<Reified = R2>,
+    Val<T3>: ReifyVal<Reified = R3>,
+    Val<T4>: ReifyVal<Reified = R4>,
 {
-    type Result = (T1, T2, T3, T4);
+    type Result = (R1, R2, R3, R4);
     fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
         Some((
-            state.get(self.0).ok().cloned()?,
-            state.get(self.1).ok().cloned()?,
-            state.get(self.2).ok().cloned()?,
-            state.get(self.3).ok().cloned()?,
+            state.get(self.0)?,
+            state.get(self.1)?,
+            state.get(self.2)?,
+            state.get(self.3)?,
         ))
     }
 }
@@ -130,7 +124,8 @@ where
 /// let result: Vec<_> = goal.query(query).collect();
 /// assert_eq!(result, vec![(-1, 0, 1, 2, 3)])
 /// ```
-impl<'a, D, T1, T2, T3, T4, T5> Query<'a, D> for (LVar<T1>, LVar<T2>, LVar<T3>, LVar<T4>, LVar<T5>)
+impl<'a, D, T1, R1, T2, R2, T3, R3, T4, R4, T5, R5> Query<'a, D>
+    for (LVar<T1>, LVar<T2>, LVar<T3>, LVar<T4>, LVar<T5>)
 where
     D: DomainType<'a, T1>
         + DomainType<'a, T2>
@@ -138,20 +133,20 @@ where
         + DomainType<'a, T4>
         + DomainType<'a, T5>
         + 'a,
-    T1: Clone + 'a,
-    T2: Clone + 'a,
-    T3: Clone + 'a,
-    T4: Clone + 'a,
-    T5: Clone + 'a,
+    Val<T1>: ReifyVal<Reified = R1>,
+    Val<T2>: ReifyVal<Reified = R2>,
+    Val<T3>: ReifyVal<Reified = R3>,
+    Val<T4>: ReifyVal<Reified = R4>,
+    Val<T5>: ReifyVal<Reified = R5>,
 {
-    type Result = (T1, T2, T3, T4, T5);
+    type Result = (R1, R2, R3, R4, R5);
     fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
         Some((
-            state.get(self.0).ok().cloned()?,
-            state.get(self.1).ok().cloned()?,
-            state.get(self.2).ok().cloned()?,
-            state.get(self.3).ok().cloned()?,
-            state.get(self.4).ok().cloned()?,
+            state.get(self.0)?,
+            state.get(self.1)?,
+            state.get(self.2)?,
+            state.get(self.3)?,
+            state.get(self.4)?,
         ))
     }
 }

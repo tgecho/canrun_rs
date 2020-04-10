@@ -43,7 +43,7 @@ pub use state::{IterResolved, ResolvedState, State};
 #[doc(inline)]
 pub use unify::Unify;
 #[doc(inline)]
-pub use value::{var, IntoVal, LVar, Val};
+pub use value::{var, IntoVal, LVar, ReifyVal, Val};
 
 #[doc(hidden)]
 pub use canrun_codegen::domains;

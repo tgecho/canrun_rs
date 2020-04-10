@@ -1,5 +1,5 @@
 use crate::domains::{Domain, DomainType};
-use crate::value::{LVar, Val};
+use crate::value::{LVar, ReifyVal, Val};
 
 /// Derived from an open [`State`](crate::state::State), depending on
 /// the constraints that have been applied.
@@ -43,18 +43,17 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
     ///     .unify(&val!(x), &val!(1));
     ///
     /// let results: Vec<_> = state.iter_resolved()
-    ///     .map(|resolved: ResolvedState<I32>| resolved.get(x).ok().cloned())
+    ///     .map(|resolved: ResolvedState<I32>| resolved.get(x))
     ///     .collect();
     ///
     /// assert_eq!(results, vec![Some(1)]);
     /// ```
-    pub fn get<'g, T>(&'g self, var: LVar<T>) -> Result<&'g T, LVar<T>>
+    pub fn get<'g, T, R>(&'g self, var: LVar<T>) -> Option<R>
     where
         D: DomainType<'a, T>,
+        Val<T>: ReifyVal<Reified = R>,
     {
-        match self.domain.values_as_ref().0.get(&var) {
-            Some(val) => self.resolve_val(val).resolved(),
-            None => Err(var),
-        }
+        let val = self.domain.values_as_ref().0.get(&var)?;
+        self.resolve_val(val).reify()
     }
 }
