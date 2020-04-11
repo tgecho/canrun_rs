@@ -1,8 +1,8 @@
 use crate::{gt, gte};
 use canrun::goal::Goal;
 use canrun::value::IntoVal;
-use canrun::Unify;
 use canrun::{both, either, unify, val};
+use canrun::{DomainType, UnifyIn};
 
 /// Get the greater of two values according to [`std::cmp::max`].
 ///
@@ -24,11 +24,11 @@ use canrun::{both, either, unify, val};
 /// ```
 pub fn max<'a, T, A, B, C, D>(a: A, b: B, c: C) -> Goal<'a, D>
 where
-    T: PartialOrd + 'a,
+    T: PartialOrd + UnifyIn<'a, D> + 'a,
     A: IntoVal<T>,
     B: IntoVal<T>,
     C: IntoVal<T>,
-    D: Unify<'a, T>,
+    D: DomainType<'a, T>,
 {
     let a = val!(a);
     let b = val!(b);

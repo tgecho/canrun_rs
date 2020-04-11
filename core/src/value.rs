@@ -1,5 +1,5 @@
 //! Contain individual resolved values or variables that can be bound through
-//! [unification](crate::Unify).
+//! [unification](crate::UnifyIn).
 //!
 //! Values are parameterized with the type they can contain. This ensures that
 //! they can only be unified with values of the same type, and they can only be

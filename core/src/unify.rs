@@ -39,49 +39,75 @@ mod vec;
 /// # Implementation
 ///
 /// Default implementations are provided for most primitive types and some
-/// collections. You can implement it for your own types.
-/// ```
-/// use canrun::{State, DomainType, Unify};
-/// use std::rc::Rc;
+/// collections. You can also implement it for your own types.
 ///
-/// canrun::domain! {
-///     MyDomain { MyType }
-/// }
+/// TODO: Create a derive macro
+/// ```
+/// use canrun::{State, DomainType, UnifyIn};
+/// use std::rc::Rc;
 ///
 /// #[derive(PartialEq, Debug)]
 /// struct MyType;
 ///
-/// impl<'a> Unify<'a, MyType> for MyDomain {
+/// impl<'a, D> UnifyIn<'a, D> for MyType
+/// where
+///     // The domain must be constrained to
+///     // those that contain yur type
+///     D: DomainType<'a, Self>
+/// {
 ///     fn unify_resolved(
-///         state: State<'a, MyDomain>,
-///         a: Rc<MyType>,
-///         b: Rc<MyType>
-///     ) -> Option<State<'a, MyDomain>> {
+///         state: State<'a, D>,
+///         a: Rc<Self>,
+///         b: Rc<Self>
+///     ) -> Option<State<'a, D>> {
 ///         if a == b { Some(state) } else { None }
 ///     }
 /// }
-///
 /// # fn main() {}
 /// ```
+/// Because the trait is parameterized with a [domain](crate::domains), you
+/// should be able to implement UnifyIn for third-party types without running into
+/// the orphan trait rule, so long as you don't conflict with an existing
+/// implementation.
+/// ```
+/// # // Just a random foreign type to make this an accurate doctest.
+/// # // I'm pretty sure no one will want to unify this for real :)
+/// # use std::convert::Infallible as SomeForeignType;
+/// use canrun::{State, DomainType, UnifyIn};
+/// use std::rc::Rc;
 ///
-/// Because the trait is implemented for a [domain](crate::domains), which are
-/// typically generated through the [`domain!`](crate::domains#macro) macro, you
-/// should be able to implement Unify for outside types, so long as you don't
-/// conflict with an existing implementation.
-pub trait Unify<'a, T>: DomainType<'a, T> {
+/// canrun::domain! {
+///     MyDomain {
+///         SomeForeignType
+///     }
+/// }
+///
+/// impl<'a> UnifyIn<'a, MyDomain> for SomeForeignType {
+///     // ...
+/// #    fn unify_resolved(
+/// #        state: State<'a, MyDomain>,
+/// #        a: Rc<Self>,
+/// #        b: Rc<Self>
+/// #    ) -> Option<State<'a, MyDomain>> {
+/// #        if a == b { Some(state) } else { None }
+/// #    }
+/// }
+/// # fn main() {}
+/// ```
+pub trait UnifyIn<'a, D: DomainType<'a, Self>>: Sized {
     /// Attempt to unify two fully resolved values.
     ///
     /// This function accepts `Rc<T>`s to simplify the borrow checking. The
     /// `Option<_>` allows recursive unification of structures that hold
     /// additional values.
-    fn unify_resolved(state: State<'a, Self>, a: Rc<T>, b: Rc<T>) -> Option<State<'a, Self>>;
+    fn unify_resolved(state: State<'a, D>, a: Rc<Self>, b: Rc<Self>) -> Option<State<'a, D>>;
 }
 
 macro_rules! impl_unify_eq {
     ($($type:ty),+) => {
         $(
-            impl<'a, D: DomainType<'a, $type>> Unify<'a, $type> for D {
-                fn unify_resolved(state: State<'a, Self>, a: Rc<$type>, b: Rc<$type>) -> Option<State<'a, Self>> {
+            impl <'a, D: DomainType<'a, $type>> UnifyIn<'a, D> for $type {
+                fn unify_resolved(state: State<'a, D>, a: Rc<$type>, b: Rc<$type>) -> Option<State<'a, D>> {
                     if a == b {
                         Some(state)
                     } else {

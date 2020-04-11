@@ -81,7 +81,7 @@ impl<'a, T> Clone for DomainValues<T> {
 ///
 /// As of now there shouldn't be much of a need to use this trait's
 /// functionality in user facing code. The trait itself may need to be used as a
-/// constraint, though [`Unify`](crate::Unify) is often the better, higher level
+/// constraint, though [`UnifyIn`](crate::UnifyIn) is often the better, higher level
 /// choice.
 pub trait DomainType<'a, T>: Domain<'a> {
     #[doc(hidden)]
@@ -136,8 +136,8 @@ pub trait DomainType<'a, T>: Domain<'a> {
 /// ```
 ///
 /// Any types you add to a domain must implement the
-/// [`Unify`](crate::unify::Unify) trait. Canrun includes default implementations
-/// for almost all primitive types and `Vec<Val<T: Unify>>`.
+/// [`UnifyIn`](crate::unify::UnifyIn) trait. Canrun includes default implementations
+/// for almost all primitive types and `Vec<Val<T: UnifyIn>>`.
 ///
 /// Once you have a domain, you can use it to parameterize other types, such as
 /// [`State`](crate::state::State) and [`Goal`](crate::goal::Goal):

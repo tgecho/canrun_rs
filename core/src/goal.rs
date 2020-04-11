@@ -39,7 +39,7 @@ pub use lazy::lazy;
 pub use unify::unify;
 #[derive(Clone, Debug)]
 pub(crate) enum GoalEnum<'a, D: Domain<'a>> {
-    Unify(D::Value, D::Value),
+    UnifyIn(D::Value, D::Value),
     Both(Box<GoalEnum<'a, D>>, Box<GoalEnum<'a, D>>),
     All(Vec<GoalEnum<'a, D>>),
     Either(Box<GoalEnum<'a, D>>, Box<GoalEnum<'a, D>>),
@@ -62,7 +62,7 @@ pub struct Goal<'a, D: Domain<'a>>(GoalEnum<'a, D>);
 impl<'a, D: Domain<'a> + 'a> GoalEnum<'a, D> {
     fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
         match self {
-            GoalEnum::Unify(a, b) => unify::run(state, a, b),
+            GoalEnum::UnifyIn(a, b) => unify::run(state, a, b),
             GoalEnum::Both(a, b) => both::run(state, *a, *b),
             GoalEnum::All(goals) => all::run(state, goals),
             GoalEnum::Either(a, b) => either::run(state, *a, *b),

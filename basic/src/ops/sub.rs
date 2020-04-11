@@ -1,7 +1,7 @@
 use canrun::goal::Goal;
 use canrun::map_2;
 use canrun::value::IntoVal;
-use canrun::Unify;
+use canrun::{DomainType, UnifyIn};
 use std::ops::{Add, Sub};
 
 /// Subtract one value from another.
@@ -19,11 +19,11 @@ use std::ops::{Add, Sub};
 /// ```
 pub fn sub<'a, T, A, B, C, D>(a: A, b: B, c: C) -> Goal<'a, D>
 where
-    T: Add<Output = T> + Sub<Output = T> + Copy + 'a,
+    T: Add<Output = T> + Sub<Output = T> + UnifyIn<'a, D> + Copy + 'a,
     A: IntoVal<T>,
     B: IntoVal<T>,
     C: IntoVal<T>,
-    D: Unify<'a, T>,
+    D: DomainType<'a, T>,
 {
     map_2(a, b, c, |a, b| *a - *b, |a, c| *a - *c, |b, c| *b + *c)
 }

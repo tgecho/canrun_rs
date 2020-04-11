@@ -1,7 +1,7 @@
 use canrun::goal::Goal;
 use canrun::map_2;
 use canrun::value::IntoVal;
-use canrun::Unify;
+use canrun::{DomainType, UnifyIn};
 use std::ops::{Div, Mul};
 
 /// Multiply two values together.
@@ -19,11 +19,11 @@ use std::ops::{Div, Mul};
 /// ```
 pub fn mul<'a, T, A, B, C, D>(a: A, b: B, c: C) -> Goal<'a, D>
 where
-    T: Mul<Output = T> + Div<Output = T> + Copy + 'a,
+    T: Mul<Output = T> + Div<Output = T> + UnifyIn<'a, D> + Copy + 'a,
     A: IntoVal<T>,
     B: IntoVal<T>,
     C: IntoVal<T>,
-    D: Unify<'a, T>,
+    D: DomainType<'a, T>,
 {
     map_2(a, b, c, |a, b| *a * *b, |a, c| *c / *a, |b, c| *c / *b)
 }

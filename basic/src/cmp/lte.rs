@@ -1,7 +1,7 @@
 use canrun::assert_2;
 use canrun::goal::Goal;
 use canrun::value::IntoVal;
-use canrun::Unify;
+use canrun::DomainType;
 
 /// Ensure that one value is less than or equal to another.
 ///
@@ -28,7 +28,7 @@ where
     B: 'a,
     AV: IntoVal<A>,
     BV: IntoVal<B>,
-    D: Unify<'a, A> + Unify<'a, B>,
+    D: DomainType<'a, A> + DomainType<'a, B>,
 {
     assert_2(a, b, |a, b| a <= b)
 }

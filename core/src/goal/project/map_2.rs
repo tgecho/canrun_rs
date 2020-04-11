@@ -2,11 +2,12 @@ use super::Project;
 use crate::goal::{Goal, GoalEnum};
 use crate::state::Constraint;
 use crate::state::State;
-use crate::unify::Unify;
+use crate::unify::UnifyIn;
 use crate::value::{
     IntoVal, Val,
     Val::{Resolved, Var},
 };
+use crate::DomainType;
 use std::fmt;
 use std::rc::Rc;
 
@@ -29,7 +30,7 @@ use std::rc::Rc;
 /// let result: Vec<_> = goal.query(z).collect();
 /// assert_eq!(result, vec![3])
 /// ```
-pub fn map_2<'a, A: 'a, AV, B: 'a, BV, C: 'a, CV, D, ABtoC, ACtoB, BCtoA>(
+pub fn map_2<'a, A, AV, B, BV, C, CV, D, ABtoC, ACtoB, BCtoA>(
     a: AV,
     b: BV,
     c: CV,
@@ -38,10 +39,13 @@ pub fn map_2<'a, A: 'a, AV, B: 'a, BV, C: 'a, CV, D, ABtoC, ACtoB, BCtoA>(
     bc_to_a: BCtoA,
 ) -> Goal<'a, D>
 where
+    A: UnifyIn<'a, D> + 'a,
     AV: IntoVal<A>,
+    B: UnifyIn<'a, D> + 'a,
     BV: IntoVal<B>,
+    C: UnifyIn<'a, D> + 'a,
     CV: IntoVal<C>,
-    D: Unify<'a, A> + Unify<'a, B> + Unify<'a, C>,
+    D: DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C>,
     ABtoC: Fn(&A, &B) -> C + 'a,
     ACtoB: Fn(&A, &C) -> B + 'a,
     BCtoA: Fn(&B, &C) -> A + 'a,
@@ -73,7 +77,10 @@ impl<'a, A, B, C> fmt::Debug for Map2<'a, A, B, C> {
 
 impl<'a, A, B, C, Dom> Project<'a, Dom> for Map2<'a, A, B, C>
 where
-    Dom: Unify<'a, A> + Unify<'a, B> + Unify<'a, C> + 'a,
+    A: UnifyIn<'a, Dom> + 'a,
+    B: UnifyIn<'a, Dom> + 'a,
+    C: UnifyIn<'a, Dom> + 'a,
+    Dom: DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C> + 'a,
 {
     fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {
         let a = state.resolve_val(&self.a).clone();

@@ -21,7 +21,7 @@ mod resolved;
 
 use super::util::multikeymultivaluemap::MKMVMap;
 use crate::domains::{Domain, DomainType};
-use crate::unify::Unify;
+use crate::unify::UnifyIn;
 use crate::value::{
     LVarId, Val,
     Val::{Resolved, Var},
@@ -189,7 +189,8 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// ```
     pub fn unify<T>(mut self, a: &Val<T>, b: &Val<T>) -> Option<Self>
     where
-        D: Unify<'a, T>,
+        T: UnifyIn<'a, D>,
+        D: DomainType<'a, T>,
     {
         let a = self.resolve_val(a);
         let b = self.resolve_val(b);
@@ -197,7 +198,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
             (Resolved(a), Resolved(b)) => {
                 let a = a.clone();
                 let b = b.clone();
-                Unify::unify_resolved(self, a, b)
+                UnifyIn::unify_resolved(self, a, b)
             }
             (Var(a), Var(b)) if a == b => Some(self),
             (Var(var), val) | (val, Var(var)) => {

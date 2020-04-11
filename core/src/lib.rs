@@ -41,7 +41,7 @@ pub use query::{Query, Queryable};
 #[doc(inline)]
 pub use state::{IterResolved, ResolvedState, State};
 #[doc(inline)]
-pub use unify::Unify;
+pub use unify::UnifyIn;
 #[doc(inline)]
 pub use value::{var, IntoVal, LVar, ReifyVal, Val};
 

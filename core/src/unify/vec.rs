@@ -1,18 +1,19 @@
-use super::Unify;
+use super::UnifyIn;
 use crate::domains::DomainType;
 use crate::state::State;
 use crate::value::Val;
 use std::rc::Rc;
 
-impl<'a, T, D> Unify<'a, Vec<Val<T>>> for D
+impl<'a, T, D> UnifyIn<'a, D> for Vec<Val<T>>
 where
-    D: Unify<'a, T> + DomainType<'a, Vec<Val<T>>>,
+    T: UnifyIn<'a, D>,
+    D: DomainType<'a, T> + DomainType<'a, Vec<Val<T>>>,
 {
     fn unify_resolved(
-        state: State<'a, Self>,
+        state: State<'a, D>,
         a: Rc<Vec<Val<T>>>,
         b: Rc<Vec<Val<T>>>,
-    ) -> Option<State<'a, Self>> {
+    ) -> Option<State<'a, D>> {
         if a.len() == b.len() {
             a.iter()
                 .zip(b.iter())

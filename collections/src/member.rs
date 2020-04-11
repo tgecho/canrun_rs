@@ -1,7 +1,7 @@
 use canrun::goal::{project::Project, unify, Goal};
 use canrun::state::{Constraint, State};
 use canrun::value::{IntoVal, Val};
-use canrun::Unify;
+use canrun::{DomainType, UnifyIn};
 use std::fmt;
 use std::iter::repeat;
 
@@ -40,10 +40,11 @@ use std::iter::repeat;
 /// ```
 pub fn member<'a, I, IV, CV, D>(item: IV, collection: CV) -> Goal<'a, D>
 where
-    I: 'a,
+    I: UnifyIn<'a, D> + 'a,
     IV: IntoVal<I>,
+    Vec<Val<I>>: UnifyIn<'a, D>,
     CV: IntoVal<Vec<Val<I>>>,
-    D: Unify<'a, I> + Unify<'a, Vec<Val<I>>>,
+    D: DomainType<'a, I> + DomainType<'a, Vec<Val<I>>>,
 {
     Goal::project(Member {
         item: item.into_val(),
@@ -58,7 +59,8 @@ struct Member<I> {
 
 impl<'a, I, D> Project<'a, D> for Member<I>
 where
-    D: Unify<'a, I> + Unify<'a, Vec<Val<I>>>,
+    I: UnifyIn<'a, D>,
+    D: DomainType<'a, I> + DomainType<'a, Vec<Val<I>>>,
 {
     fn attempt<'r>(&'r self, state: State<'a, D>) -> Constraint<State<'a, D>> {
         let collection = state.resolve_val(&self.collection).resolved();

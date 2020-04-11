@@ -1,4 +1,4 @@
-use super::Unify;
+use super::UnifyIn;
 use crate::domains::DomainType;
 use crate::state::State;
 use crate::value::{ReifyVal, Val};
@@ -6,14 +6,15 @@ use std::rc::Rc;
 
 macro_rules! impl_for_tuple {
     ($($t:ident => $r:ident),+) => {
-        impl<'a, $($t,)* D> Unify<'a, ($(Val<$t>),*)> for D
+        impl<'a, $($t,)* D> UnifyIn<'a, D> for ($(Val<$t>),*)
         where
-            D: $(Unify<'a, $t> + )* DomainType<'a, ($(Val<$t>),*)>
+            $($t: UnifyIn<'a, D>, )*
+            D: $(DomainType<'a, $t> +)* DomainType<'a, Self>
         {
             fn unify_resolved(
                 state: State<'a, D>,
-                l: Rc<($(Val<$t>),*)>,
-                r: Rc<($(Val<$t>),*)>,
+                l: Rc<Self>,
+                r: Rc<Self>,
             ) -> Option<State<'a, D>> {
                 #![allow(non_snake_case)]
                 let ($($t),*) = &*l;
