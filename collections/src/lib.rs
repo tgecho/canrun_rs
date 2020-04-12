@@ -4,6 +4,7 @@
 
 extern crate canrun;
 
+mod lmap;
 mod macros;
 mod member;
 

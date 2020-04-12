@@ -13,6 +13,7 @@ pub(super) use lvar::LVarId;
 pub use lvar::{var, LVar};
 pub use reify_val::ReifyVal;
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
 /// The possible states a value can be in.
@@ -97,6 +98,16 @@ impl<T: PartialEq> PartialEq for Val<T> {
             (Resolved(s), Resolved(other)) => s == other,
             (Var(s), Var(other)) => s == other,
             _ => false,
+        }
+    }
+}
+impl<T: Eq> Eq for Val<T> {}
+
+impl<T: Hash> Hash for Val<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            Resolved(val) => val.hash(state),
+            Var(var) => var.hash(state),
         }
     }
 }
