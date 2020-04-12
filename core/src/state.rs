@@ -322,6 +322,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// let results: Vec<i32> = state.query(x).collect();
     /// assert_eq!(results, vec![1, 2]);
     /// ```
+    // TODO: Don't make the caller do the Rc wrapping?
     pub fn fork(mut self, func: Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>) -> Option<Self> {
         self.forks.push_back(func);
         Some(self)

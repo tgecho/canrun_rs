@@ -4,9 +4,11 @@
 #![allow(unused_imports)]
 
 use canrun::{DomainType, IntoVal, LVar, State, UnifyIn, Val};
-use std::collections::HashMap;
+use itertools::Itertools;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::hash::Hash;
+use std::iter::repeat;
 use std::rc::Rc;
 
 struct LMap<K, V> {
@@ -61,7 +63,7 @@ impl<K: Eq + Hash, V> LMap<K, V> {
     }
 }
 
-impl<'a, K: Eq + Hash, V, D> UnifyIn<'a, D> for LMap<K, V>
+impl<'a, K: Eq + Hash + 'a + fmt::Debug, V: 'a + fmt::Debug, D> UnifyIn<'a, D> for LMap<K, V>
 where
     K: UnifyIn<'a, D>,
     V: UnifyIn<'a, D>,
@@ -76,14 +78,38 @@ where
             return None;
         }
 
-        let a = a.resolve_in(&state)?;
-        let b = b.resolve_in(&state)?;
         let mut state = state;
 
-        for (a_key, a_value) in a.values.iter() {
-            let b_value = b.values.get(a_key)?;
-            state = state.unify(a_value, b_value)?;
-        }
+        // let a = a.resolve_in(&state)?;
+        // let b = b.resolve_in(&state)?;
+
+        // let mut a_vars: Vec<(&Val<K>, &Val<V>)> = Vec::new();
+        // let mut unified = HashSet::new();
+
+        // for (a_key, a_value) in a.values.iter() {
+        //     if let Some(b_value) = b.values.get(a_key) {
+        //         state = state.unify(a_value, b_value)?;
+        //     } else if a_key.is_var() {
+        //         a_vars.push((a_key, a_value));
+        //     }
+        // } // repeat this for b?
+        // if !a_vars.is_empty() { // also do this for b?
+
+        state = state.fork(Rc::new(move |state: State<'a, D>| {
+            let a_perms = a.values.clone().into_iter().permutations(a.values.len());
+            let values = repeat(b.values.clone()).zip(a_perms);
+            let iter = repeat(state)
+                .zip(values)
+                .filter_map(|(state, (b_values, a_values))| {
+                    b_values
+                        .into_iter()
+                        .zip(a_values.into_iter())
+                        .try_fold(state, |s, ((a_k, a_v), (b_k, b_v))| {
+                            s.unify(&a_k, &b_k)?.unify(&a_v, &b_v)
+                        })
+                });
+            Box::new(iter)
+        }))?;
 
         Some(state)
     }
@@ -135,5 +161,46 @@ mod tests {
         let goal: Goal<MapDomain> = unify(lmap! {1 => 2}, lmap! {1 => x});
         let results: Vec<_> = goal.query(x).collect();
         assert_eq!(results, vec![2]);
+    }
+
+    #[test]
+    fn succeeds_with_variable_key() {
+        let x = var();
+        let goal: Goal<MapDomain> = unify(lmap! {1 => 2}, lmap! {x => 2});
+        let results: Vec<_> = goal.query(x).collect();
+        assert_eq!(results, vec![1]);
+    }
+
+    #[test]
+    fn succeeds_with_variable_key_and_value() {
+        let x = var();
+        let y = var();
+        let goal: Goal<MapDomain> = unify(lmap! {1 => 2}, lmap! {x => y});
+        let results: Vec<_> = goal.query((x, y)).collect();
+        assert_eq!(results, vec![(1, 2)]);
+    }
+
+    #[test]
+    fn succeeds_with_crisscrossed_variable_key_and_value() {
+        let x = var();
+        let y = var();
+        let goal: Goal<MapDomain> = unify(lmap! {1 => y}, lmap! {x => 2});
+        let results: Vec<_> = goal.query((x, y)).collect();
+        assert_eq!(results, vec![(1, 2)]);
+    }
+
+    #[test]
+    fn succeeds_with_stress_test() {
+        let w = var();
+        let x = var();
+        let y = var();
+        let z = var();
+
+        let goal: Goal<MapDomain> = unify(
+            lmap! {1 => x, 2 => w, y => x, 4 => x},
+            lmap! {w => 2, x => 1, 3 => x, z => 2},
+        );
+        let results: Vec<_> = goal.query((w, x, y, z)).collect();
+        assert_eq!(results, vec![(1, 2, 3, 4)]);
     }
 }

@@ -55,6 +55,13 @@ impl<T> Val<T> {
             Var(x) => Err(*x),
         }
     }
+
+    pub fn is_var(&self) -> bool {
+        match self {
+            Var(_) => true,
+            _ => false,
+        }
+    }
 }
 
 /// Easy conversion of [`LVar<T>`](LVar) and `T` values into [`Val<T>`](Val).
