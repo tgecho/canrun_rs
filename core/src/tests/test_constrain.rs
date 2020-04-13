@@ -7,6 +7,7 @@ use crate::goal::unify;
 use crate::goal::Goal;
 use crate::util;
 use crate::value::{val, var, IntoVal};
+use std::fmt::Debug;
 use std::rc::Rc;
 
 pub(crate) fn assert<'a, T, V, D, F>(
@@ -14,7 +15,7 @@ pub(crate) fn assert<'a, T, V, D, F>(
     func: F,
 ) -> Rc<dyn Fn(State<'a, D>) -> Constraint<State<'a, D>> + 'a>
 where
-    T: 'a,
+    T: Debug + 'a,
     V: IntoVal<T> + Clone + 'a,
     D: DomainType<'a, T> + 'a,
     F: Fn(&T) -> bool + 'a,

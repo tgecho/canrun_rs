@@ -1,5 +1,6 @@
 use crate::domains::DomainType;
 use crate::state::State;
+use std::fmt::Debug;
 use std::rc::Rc;
 
 mod tuples;
@@ -94,7 +95,7 @@ mod vec;
 /// }
 /// # fn main() {}
 /// ```
-pub trait UnifyIn<'a, D: DomainType<'a, Self>>: Sized {
+pub trait UnifyIn<'a, D: DomainType<'a, Self>>: Sized + Debug {
     /// Attempt to unify two fully resolved values.
     ///
     /// This function accepts `Rc<T>`s to simplify the borrow checking. The

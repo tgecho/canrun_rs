@@ -1,4 +1,5 @@
 use super::{LVar, Val};
+use std::fmt::Debug;
 use std::rc::Rc;
 
 /// Helper for converting into [`Val<T>`](crate::value::Val).
@@ -26,7 +27,7 @@ use std::rc::Rc;
 /// let b: Val<i32> = foo(var()); // an `LVar<T>`
 /// let c: Val<i32> = foo(a); // a `Val<T>`
 /// ```
-pub trait IntoVal<T> {
+pub trait IntoVal<T: Debug> {
     /// Convert various `T` related values into a [`Val<T>`](crate::value::Val).
     ///
     /// # Example:
@@ -42,36 +43,36 @@ pub trait IntoVal<T> {
     fn into_val(self) -> Val<T>;
 }
 
-impl<T> IntoVal<T> for T {
+impl<T: Debug> IntoVal<T> for T {
     fn into_val(self) -> Val<T> {
         Val::Resolved(Rc::new(self))
     }
 }
 
-impl<T> IntoVal<T> for Val<T> {
+impl<T: Debug> IntoVal<T> for Val<T> {
     fn into_val(self) -> Val<T> {
         self
     }
 }
 
-impl<T> IntoVal<T> for &Val<T> {
+impl<T: Debug> IntoVal<T> for &Val<T> {
     fn into_val(self) -> Val<T> {
         self.clone()
     }
 }
 
-impl<T: Clone> IntoVal<T> for &T {
+impl<T: Clone + Debug> IntoVal<T> for &T {
     fn into_val(self) -> Val<T> {
         Val::Resolved(Rc::new(self.clone()))
     }
 }
 
-impl<T> IntoVal<T> for LVar<T> {
+impl<T: Debug> IntoVal<T> for LVar<T> {
     fn into_val(self) -> Val<T> {
         Val::Var(self)
     }
 }
-impl<T> IntoVal<T> for &LVar<T> {
+impl<T: Debug> IntoVal<T> for &LVar<T> {
     fn into_val(self) -> Val<T> {
         Val::Var(*self)
     }

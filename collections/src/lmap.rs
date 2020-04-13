@@ -7,15 +7,17 @@ use canrun::{DomainType, IntoVal, LVar, ReifyVal, ResolvedState, State, UnifyIn,
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use std::fmt::Debug;
 use std::hash::Hash;
 use std::iter::repeat;
 use std::rc::Rc;
 
-struct LMap<K, V> {
+#[derive(Debug)]
+struct LMap<K: Debug, V: Debug> {
     values: HashMap<Val<K>, Val<V>>,
 }
 
-impl<K: Eq + Hash, V> LMap<K, V> {
+impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
     pub fn new() -> Self {
         LMap {
             values: HashMap::new(),
@@ -90,7 +92,7 @@ where
     }
 }
 
-impl<'a, D, Kv, Kr, Vv, Vr> ReifyVal<'a, D> for LMap<Kv, Vv>
+impl<'a, D, Kv: Debug, Kr, Vv: Debug, Vr> ReifyVal<'a, D> for LMap<Kv, Vv>
 where
     D: DomainType<'a, Kv> + DomainType<'a, Vv> + 'a,
     Kv: ReifyVal<'a, D, Reified = Kr>,

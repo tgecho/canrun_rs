@@ -60,15 +60,15 @@ pub trait Domain<'a>: Clone + Debug {
 ///
 /// Created by the `domain!` macro and intended for internal use.
 #[derive(Debug)]
-pub struct DomainValues<T>(pub(crate) HashMap<LVar<T>, Val<T>>);
+pub struct DomainValues<T: Debug>(pub(crate) HashMap<LVar<T>, Val<T>>);
 
-impl<T> DomainValues<T> {
+impl<T: Debug> DomainValues<T> {
     #[doc(hidden)]
     pub fn new() -> Self {
         DomainValues(HashMap::new())
     }
 }
-impl<'a, T> Clone for DomainValues<T> {
+impl<'a, T: Debug> Clone for DomainValues<T> {
     fn clone(&self) -> Self {
         DomainValues(self.0.clone())
     }
@@ -83,7 +83,7 @@ impl<'a, T> Clone for DomainValues<T> {
 /// functionality in user facing code. The trait itself may need to be used as a
 /// constraint, though [`UnifyIn`](crate::UnifyIn) is often the better, higher level
 /// choice.
-pub trait DomainType<'a, T>: Domain<'a> {
+pub trait DomainType<'a, T: Debug>: Domain<'a> {
     #[doc(hidden)]
     fn values_as_ref(&self) -> &DomainValues<T>;
     #[doc(hidden)]

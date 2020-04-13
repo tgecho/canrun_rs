@@ -189,7 +189,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// ```
     pub fn unify<T>(mut self, a: &Val<T>, b: &Val<T>) -> Option<Self>
     where
-        T: UnifyIn<'a, D>,
+        T: UnifyIn<'a, D> + Debug,
         D: DomainType<'a, T>,
     {
         let a = self.resolve_val(a);

@@ -8,9 +8,10 @@ use crate::value::{
     Val::{Resolved, Var},
 };
 use std::fmt;
+use std::fmt::Debug;
 use std::rc::Rc;
 
-pub struct Assert2<'a, A, B> {
+pub struct Assert2<'a, A: Debug, B: Debug> {
     a: Val<A>,
     b: Val<B>,
     f: Rc<dyn Fn(&A, &B) -> bool + 'a>,
@@ -32,9 +33,11 @@ pub struct Assert2<'a, A, B> {
 /// let result: Vec<_> = goal.query((x, y)).collect();
 /// assert_eq!(result, vec![(1, 2)])
 /// ```
-pub fn assert_2<'a, A: 'a, AV, B: 'a, BV, D, F>(a: AV, b: BV, func: F) -> Goal<'a, D>
+pub fn assert_2<'a, A, AV, B, BV, D, F>(a: AV, b: BV, func: F) -> Goal<'a, D>
 where
+    A: Debug + 'a,
     AV: IntoVal<A>,
+    B: Debug + 'a,
     BV: IntoVal<B>,
     D: DomainType<'a, A> + DomainType<'a, B>,
     F: Fn(&A, &B) -> bool + 'a,
@@ -48,6 +51,8 @@ where
 
 impl<'a, A, B, Dom> Project<'a, Dom> for Assert2<'a, A, B>
 where
+    A: Debug,
+    B: Debug,
     Dom: DomainType<'a, A> + DomainType<'a, B>,
 {
     fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {
@@ -68,8 +73,8 @@ where
     }
 }
 
-impl<'a, A, B> fmt::Debug for Assert2<'a, A, B> {
+impl<'a, A: Debug, B: Debug> Debug for Assert2<'a, A, B> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Assert2 ??")
+        write!(f, "Assert2 {:?} {:?}", self.a, self.b)
     }
 }

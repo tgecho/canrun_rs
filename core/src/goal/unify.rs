@@ -3,6 +3,7 @@ use crate::goal::{Goal, GoalEnum};
 use crate::state::State;
 use crate::value::IntoVal;
 use crate::UnifyIn;
+use std::fmt::Debug;
 
 pub(super) fn run<'a, D>(state: State<'a, D>, a: D::Value, b: D::Value) -> Option<State<'a, D>>
 where
@@ -42,7 +43,7 @@ where
 /// ```
 pub fn unify<'a, T, A, B, D>(a: A, b: B) -> Goal<'a, D>
 where
-    T: UnifyIn<'a, D>,
+    T: UnifyIn<'a, D> + Debug,
     A: IntoVal<T>,
     B: IntoVal<T>,
     D: DomainType<'a, T>,

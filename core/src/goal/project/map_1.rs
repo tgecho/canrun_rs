@@ -9,6 +9,7 @@ use crate::value::{
 };
 use crate::DomainType;
 use std::fmt;
+use std::fmt::Debug;
 use std::rc::Rc;
 
 /// Create a [projection goal](super) that allows deriving one resolved value
@@ -36,8 +37,8 @@ pub fn map_1<'a, A, AV, B, BV, D, AtoB, BtoA>(
     b_to_a: BtoA,
 ) -> Goal<'a, D>
 where
-    A: UnifyIn<'a, D> + 'a,
-    B: UnifyIn<'a, D> + 'a,
+    A: UnifyIn<'a, D> + Debug + 'a,
+    B: UnifyIn<'a, D> + Debug + 'a,
     AV: IntoVal<A>,
     BV: IntoVal<B>,
     D: DomainType<'a, A> + DomainType<'a, B>,
@@ -52,23 +53,23 @@ where
     })))
 }
 
-pub struct Map1<'a, A, B> {
+pub struct Map1<'a, A: Debug, B: Debug> {
     a: Val<A>,
     b: Val<B>,
     a_to_b: Rc<dyn Fn(&A) -> B + 'a>,
     b_to_a: Rc<dyn Fn(&B) -> A + 'a>,
 }
 
-impl<'a, A, B> fmt::Debug for Map1<'a, A, B> {
+impl<'a, A: Debug, B: Debug> Debug for Map1<'a, A, B> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Map1 ??")
+        write!(f, "Map1 {:?} {:?}", self.a, self.b)
     }
 }
 
 impl<'a, A, B, Dom> Project<'a, Dom> for Map1<'a, A, B>
 where
-    A: UnifyIn<'a, Dom>,
-    B: UnifyIn<'a, Dom>,
+    A: UnifyIn<'a, Dom> + Debug,
+    B: UnifyIn<'a, Dom> + Debug,
     Dom: DomainType<'a, A> + DomainType<'a, B> + 'a,
 {
     fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {

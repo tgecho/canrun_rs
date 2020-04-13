@@ -1,5 +1,6 @@
 use crate::domains::{Domain, DomainType};
 use crate::value::{LVar, ReifyVal, Val};
+use std::fmt::Debug;
 
 /// Derived from an open [`State`](crate::state::State), depending on
 /// the constraints that have been applied.
@@ -15,6 +16,7 @@ pub struct ResolvedState<D> {
 impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
     fn resolve_val<'r, T>(&'r self, val: &'r Val<T>) -> &'r Val<T>
     where
+        T: Debug,
         D: DomainType<'a, T>,
     {
         match val {

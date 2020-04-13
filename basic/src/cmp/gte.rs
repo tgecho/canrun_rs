@@ -2,6 +2,7 @@ use canrun::assert_2;
 use canrun::goal::Goal;
 use canrun::value::IntoVal;
 use canrun::DomainType;
+use std::fmt::Debug;
 
 /// Ensure that one value is greater than or equal to another.
 ///
@@ -24,8 +25,8 @@ use canrun::DomainType;
 /// ```
 pub fn gte<'a, A, AV, B, BV, D>(a: AV, b: BV) -> Goal<'a, D>
 where
-    A: PartialOrd<B> + 'a,
-    B: 'a,
+    A: PartialOrd<B> + Debug + 'a,
+    B: Debug + 'a,
     AV: IntoVal<A>,
     BV: IntoVal<B>,
     D: DomainType<'a, A> + DomainType<'a, B>,

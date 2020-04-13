@@ -2,7 +2,7 @@ use canrun::goal::{project::Project, unify, Goal};
 use canrun::state::{Constraint, State};
 use canrun::value::{IntoVal, Val};
 use canrun::{DomainType, UnifyIn};
-use std::fmt;
+use std::fmt::Debug;
 use std::iter::repeat;
 
 /// Create a [`Goal`](canrun::goal) that attempts to unify a `Val<T>` with any of the items in a `Vec<Val<T>>`.
@@ -52,7 +52,8 @@ where
     })
 }
 
-struct Member<I> {
+#[derive(Debug)]
+struct Member<I: Debug> {
     item: Val<I>,
     collection: Val<Vec<Val<I>>>,
 }
@@ -75,12 +76,6 @@ where
             }
             Err(var) => Constraint::on_1(state, var),
         }
-    }
-}
-
-impl<I> fmt::Debug for Member<I> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Member ??")
     }
 }
 

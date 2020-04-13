@@ -9,6 +9,7 @@ use crate::value::{
 };
 use crate::DomainType;
 use std::fmt;
+use std::fmt::Debug;
 use std::rc::Rc;
 
 /// Create a [projection goal](super) that allows deriving one resolved value
@@ -39,11 +40,11 @@ pub fn map_2<'a, A, AV, B, BV, C, CV, D, ABtoC, ACtoB, BCtoA>(
     bc_to_a: BCtoA,
 ) -> Goal<'a, D>
 where
-    A: UnifyIn<'a, D> + 'a,
+    A: UnifyIn<'a, D> + Debug + 'a,
     AV: IntoVal<A>,
-    B: UnifyIn<'a, D> + 'a,
+    B: UnifyIn<'a, D> + Debug + 'a,
     BV: IntoVal<B>,
-    C: UnifyIn<'a, D> + 'a,
+    C: UnifyIn<'a, D> + Debug + 'a,
     CV: IntoVal<C>,
     D: DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C>,
     ABtoC: Fn(&A, &B) -> C + 'a,
@@ -60,7 +61,7 @@ where
     })))
 }
 
-pub struct Map2<'a, A, B, C> {
+pub struct Map2<'a, A: Debug, B: Debug, C: Debug> {
     a: Val<A>,
     b: Val<B>,
     c: Val<C>,
@@ -69,17 +70,17 @@ pub struct Map2<'a, A, B, C> {
     bc_to_a: Rc<dyn Fn(&B, &C) -> A + 'a>,
 }
 
-impl<'a, A, B, C> fmt::Debug for Map2<'a, A, B, C> {
+impl<'a, A: Debug, B: Debug, C: Debug> Debug for Map2<'a, A, B, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Map2 ??")
+        write!(f, "Map2 {:?} {:?} {:?}", self.a, self.b, self.c)
     }
 }
 
 impl<'a, A, B, C, Dom> Project<'a, Dom> for Map2<'a, A, B, C>
 where
-    A: UnifyIn<'a, Dom> + 'a,
-    B: UnifyIn<'a, Dom> + 'a,
-    C: UnifyIn<'a, Dom> + 'a,
+    A: UnifyIn<'a, Dom> + Debug + 'a,
+    B: UnifyIn<'a, Dom> + Debug + 'a,
+    C: UnifyIn<'a, Dom> + Debug + 'a,
     Dom: DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C> + 'a,
 {
     fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {

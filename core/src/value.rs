@@ -13,11 +13,12 @@ pub(super) use lvar::LVarId;
 pub use lvar::{var, LVar};
 pub use reify_val::ReifyVal;
 use std::fmt;
+use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
 /// The possible states a value can be in.
-pub enum Val<T: ?Sized> {
+pub enum Val<T: Debug + ?Sized> {
     /// A [logical variable](LVar).
     Var(LVar<T>),
     /// A resolved value.
@@ -32,7 +33,7 @@ pub enum Val<T: ?Sized> {
 
 use Val::{Resolved, Var};
 
-impl<T> Val<T> {
+impl<T: Debug> Val<T> {
     /// Attempt to extract a reference to resolved value (`&T`) or return the
     /// `LVar` if the value is not yet resolved.
     ///
@@ -109,7 +110,7 @@ macro_rules! val {
 #[doc(inline)]
 pub use val;
 
-impl<T> Clone for Val<T> {
+impl<T: Debug> Clone for Val<T> {
     fn clone(&self) -> Self {
         match self {
             Val::Var(var) => Val::Var(*var),
@@ -118,7 +119,7 @@ impl<T> Clone for Val<T> {
     }
 }
 
-impl<T: PartialEq> PartialEq for Val<T> {
+impl<T: PartialEq + Debug> PartialEq for Val<T> {
     fn eq(&self, other: &Val<T>) -> bool {
         match (self, other) {
             (Resolved(s), Resolved(other)) => s == other,
@@ -127,9 +128,9 @@ impl<T: PartialEq> PartialEq for Val<T> {
         }
     }
 }
-impl<T: Eq> Eq for Val<T> {}
+impl<T: Eq + Debug> Eq for Val<T> {}
 
-impl<T: Hash> Hash for Val<T> {
+impl<T: Hash + Debug> Hash for Val<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
             Resolved(val) => val.hash(state),
