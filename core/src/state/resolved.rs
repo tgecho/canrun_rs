@@ -1,5 +1,5 @@
 use crate::domains::{Domain, DomainType};
-use crate::value::{LVar, ReifyVal, Val};
+use crate::value::{ReifyIn, Val};
 use std::fmt::Debug;
 
 /// Derived from an open [`State`](crate::state::State), depending on
@@ -22,7 +22,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
         self.domain.values_as_ref().resolve(val)
     }
 
-    /// Attempt to [reify](crate::value::ReifyVal) the value of a [logic
+    /// Attempt to [reify](crate::value::ReifyIn) the value of a [logic
     /// variable](crate::value::LVar) in a resolved state.
     ///
     /// # Example:
@@ -36,45 +36,16 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
     ///     .unify(&val!(x), &val!(1));
     ///
     /// let results: Vec<_> = state.iter_resolved()
-    ///     .map(|resolved: ResolvedState<I32>| resolved.reify_var(x))
+    ///     .map(|resolved: ResolvedState<I32>| resolved.reify(x))
     ///     .collect();
     ///
     /// assert_eq!(results, vec![Some(1)]);
     /// ```
-    pub fn reify_var<T, R>(&self, var: LVar<T>) -> Option<R>
+    pub fn reify<T, R>(&self, value: T) -> Option<R>
     where
-        D: DomainType<'a, T>,
-        T: ReifyVal<'a, D, Reified = R>,
+        D: Domain<'a>,
+        T: ReifyIn<'a, D, Reified = R>,
     {
-        let val = self.domain.values_as_ref().0.get(&var)?;
-        self.reify_val(val)
-    }
-
-    /// Attempt to [reify](crate::value::ReifyVal) a [`Val`] in a resolved
-    /// state.
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::{State, ResolvedState, IterResolved, val, var, Val};
-    /// use canrun::domains::example::I32;
-    ///
-    /// let x: Val<i32> = val!(var());
-    ///
-    /// let state = State::new()
-    ///     .unify(&x, &val!(1));
-    ///
-    /// let results: Vec<_> = state.iter_resolved()
-    ///     .map(|resolved: ResolvedState<I32>| resolved.reify_val(&x))
-    ///     .collect();
-    ///
-    /// assert_eq!(results, vec![Some(1)]);
-    /// ```
-    pub fn reify_val<T, R>(&self, val: &Val<T>) -> Option<R>
-    where
-        D: DomainType<'a, T>,
-        T: ReifyVal<'a, D, Reified = R>,
-    {
-        let resolved = self.resolve_val(val).resolved().ok()?;
-        resolved.reify_in(self)
+        value.reify_in(self)
     }
 }

@@ -13,14 +13,16 @@ use std::rc::Rc;
 /// # TLDR: If you see a function that takes `IntoVal<T>`
 /// ```
 /// # use canrun::{Val, IntoVal};
-/// fn foo<T, TV: IntoVal<T>>(bar: TV) -> Val<T> {
+/// # use std::fmt::Debug;
+/// fn foo<T: Debug, TV: IntoVal<T>>(bar: TV) -> Val<T> {
 ///      bar.into_val()
 /// }
 /// ```
 /// That means it can take any of these types and will take care of converting them into a `Val<T>` for you:
 /// ```
 /// # use canrun::{Val, var, IntoVal};
-/// # fn foo<T, TV: IntoVal<T>>(bar: TV) -> Val<T> {
+/// # use std::fmt::Debug;
+/// # fn foo<T: Debug, TV: IntoVal<T>>(bar: TV) -> Val<T> {
 /// #     bar.into_val()
 /// # }
 /// let a: Val<i32> = foo(1); // a plain value of type `T`

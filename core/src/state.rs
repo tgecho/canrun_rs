@@ -29,6 +29,7 @@ use crate::value::{
 pub use constraints::{Constraint, WatchList};
 pub use iter_resolved::{IterResolved, ResolvedStateIter};
 pub use resolved::ResolvedState;
+use std::fmt::Debug;
 use std::iter::once;
 use std::rc::Rc;
 
@@ -101,7 +102,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     ///
     /// # Example:
     /// ```
-    /// use canrun::{State, Queryable, val, var};
+    /// use canrun::{State, Query, val, var};
     /// use canrun::domains::example::I32;
     ///
     /// let s: State<I32> = State::new();
@@ -138,7 +139,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     ///
     /// # Example:
     /// ```
-    /// use canrun::{State, Queryable, val, var};
+    /// use canrun::{State, Query, val, var};
     /// use canrun::domains::example::I32;
     ///
     /// # fn test() -> Option<()> {
@@ -169,7 +170,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     ///
     ///  # Examples:
     /// ```
-    /// use canrun::{State, Queryable, val, var};
+    /// use canrun::{State, Query, val, var};
     /// use canrun::domains::example::I32;
     ///
     /// let x = val!(var());
@@ -179,7 +180,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// assert!(state.is_some());
     /// ```
     /// ```
-    /// # use canrun::{State, Queryable, val};
+    /// # use canrun::{State, Query, val};
     /// # use canrun::domains::example::I32;
     /// let state: State<I32> = State::new();
     /// let state = state.unify(&val!(1), &val!(2));
@@ -248,7 +249,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     ///
     /// # Example:
     /// ```
-    /// use canrun::{State, Queryable, val, var};
+    /// use canrun::{State, Query, val, var};
     /// use canrun::state::Constraint;
     /// use canrun::domains::example::I32;
     /// use std::rc::Rc;
@@ -301,11 +302,11 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// called. [Constraints](State::constrain()) are run as variables are
     /// resolved. Forking is only executed at the end, when
     /// [`.iter_resolved()`](crate::state::IterResolved::iter_resolved()) (or
-    /// [`.query()](crate::query::Queryable::query())) is called.
+    /// [`.query()](crate::query::Query::query())) is called.
     ///
     ///  # Example:
     /// ```
-    /// use canrun::{State, Queryable, val, var};
+    /// use canrun::{State, Query, val, var};
     /// use canrun::domains::example::I32;
     /// use std::rc::Rc;
     ///

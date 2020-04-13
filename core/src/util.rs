@@ -4,7 +4,8 @@ pub(super) mod multikeymultivaluemap;
 use super::state::State;
 use crate::domains::Domain;
 use crate::goal::Goal;
-use crate::query::{Query, Queryable};
+use crate::query::Query;
+use crate::ReifyIn;
 use itertools::Itertools;
 use std::fmt::Debug;
 
@@ -18,19 +19,19 @@ where
     goals.into_iter().permutations(goals_len)
 }
 
-pub(crate) fn goals_resolve_to<'a, D, Q>(goals: &[Goal<'a, D>], query: Q) -> Vec<Q::Result>
+pub(crate) fn goals_resolve_to<'a, D, Q>(goals: &[Goal<'a, D>], query: Q) -> Vec<Q::Reified>
 where
     D: Domain<'a> + 'a,
-    Q: Query<'a, D> + 'a,
+    Q: ReifyIn<'a, D> + 'a,
 {
     let goal = Goal::all(goals.to_owned());
     goal_resolves_to(goal, query)
 }
 
-pub(crate) fn goal_resolves_to<'a, D, Q>(goal: Goal<'a, D>, query: Q) -> Vec<Q::Result>
+pub(crate) fn goal_resolves_to<'a, D, Q>(goal: Goal<'a, D>, query: Q) -> Vec<Q::Reified>
 where
     D: Domain<'a> + 'a,
-    Q: Query<'a, D> + 'a,
+    Q: ReifyIn<'a, D> + 'a,
 {
     let state = goal.apply(State::new());
     state.query(query).collect()
@@ -64,19 +65,19 @@ where
 pub fn assert_permutations_resolve_to<'a, D, Q>(
     goals: Vec<Goal<'a, D>>,
     query: Q,
-    expected: Vec<Q::Result>,
+    expected: Vec<Q::Reified>,
 ) where
     D: Domain<'a> + Debug + 'a,
-    Q: Query<'a, D> + Clone + 'a,
-    Q::Result: PartialEq + Clone + Debug,
+    Q: ReifyIn<'a, D> + Clone + 'a,
+    Q::Reified: PartialEq + Clone + Debug,
 {
     for permutation in all_permutations(goals) {
-        let results: Vec<Q::Result> = goals_resolve_to(&permutation, query.clone());
+        let results: Vec<Q::Reified> = goals_resolve_to(&permutation, query.clone());
         if !expected
             .clone()
             .into_iter()
             .permutations(expected.len())
-            .any(|e: Vec<Q::Result>| e == results)
+            .any(|e: Vec<Q::Reified>| e == results)
         {
             dbg!(permutation, results, expected);
             panic!("The permutation of the goals printed above failed!");

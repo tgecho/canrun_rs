@@ -9,9 +9,10 @@
 //! While [`State`] exposes a lower level API, in practice there really shouldn't
 //! be anything that can't be expressed using goals.
 use crate::domains::Domain;
-use crate::query::{Query, Queryable};
+use crate::query::Query;
 use crate::state::State;
 use crate::state::{IterResolved, ResolvedStateIter};
+use crate::ReifyIn;
 use std::rc::Rc;
 
 mod all;
@@ -150,7 +151,7 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     /// values.
     ///
     /// This is a shorthand for creating a new state, applying the goal and
-    /// calling [`.query()`](crate::Queryable) on the resulting state.
+    /// calling [`.query()`](crate::Query) on the resulting state.
     ///
     /// # Example:
     /// ```
@@ -162,11 +163,11 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     /// let result: Vec<_> = goal.query(x).collect();
     /// assert_eq!(result, vec![1])
     /// ```
-    pub fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Result> + 'a>
+    pub fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Reified> + 'a>
     where
-        Q: Query<'a, D> + 'a,
+        Q: ReifyIn<'a, D> + 'a,
     {
-        Queryable::query(self, query)
+        Query::query(self, query)
     }
 }
 

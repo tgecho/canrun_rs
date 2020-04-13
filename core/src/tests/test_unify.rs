@@ -1,7 +1,7 @@
 use super::super::state::State;
 use crate as canrun;
 use crate::domains::example::I32;
-use crate::query::Queryable;
+use crate::query::Query;
 use crate::value::{val, var, IntoVal};
 
 #[test]
@@ -57,7 +57,10 @@ fn multipart_unifying_vars() {
     let s: State<I32> = State::new();
     let x = var();
     let y = var();
-    let s = s.apply(|s| s.unify(&val!(x), &val!(y))?.unify(&val!(1), &val!(y)));
+    let s = s.apply(|s| {
+        let s = s.unify(&val!(x), &val!(y))?;
+        s.unify(&val!(1), &val!(y))
+    });
     let results: Vec<_> = s.query((x, y)).collect();
     assert_eq!(results, vec![(1, 1)]);
 }

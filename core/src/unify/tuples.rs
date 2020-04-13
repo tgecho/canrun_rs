@@ -1,7 +1,7 @@
 use super::UnifyIn;
 use crate::domains::DomainType;
 use crate::state::State;
-use crate::value::{ReifyVal, Val};
+use crate::value::{ReifyIn, Val};
 use crate::ResolvedState;
 use std::rc::Rc;
 
@@ -30,12 +30,12 @@ macro_rules! impl_for_tuple {
             }
         }
 
-        impl<'a, D: $(DomainType<'a, $t> + )* 'a, $($t: ReifyVal<'a, D, Reified = $r>, $r,)*> ReifyVal<'a, D> for ($(Val<$t>),*) {
+        impl<'a, D: 'a, $($t: ReifyIn<'a, D, Reified = $r>, $r,)*> ReifyIn<'a, D> for ($($t),*) {
             type Reified = ($($t::Reified),*);
             fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
                 #![allow(non_snake_case)]
                 let ($($t),*) = self;
-                Some(($(state.reify_val($t)?),*))
+                Some(($($t.reify_in(state)?),*))
             }
         }
     };
@@ -43,6 +43,7 @@ macro_rules! impl_for_tuple {
 
 impl_for_tuple!(Av => Ar, Bv => Br);
 impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr);
+impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr, Ev => Er);
 
 #[cfg(test)]
 mod tests {

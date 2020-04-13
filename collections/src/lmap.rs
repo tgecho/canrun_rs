@@ -3,7 +3,7 @@
 #![allow(unused_macros)]
 #![allow(unused_imports)]
 
-use canrun::{DomainType, IntoVal, LVar, ReifyVal, ResolvedState, State, UnifyIn, Val};
+use canrun::{DomainType, IntoVal, LVar, ReifyIn, ResolvedState, State, UnifyIn, Val};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -92,20 +92,20 @@ where
     }
 }
 
-impl<'a, D, Kv: Debug, Kr, Vv: Debug, Vr> ReifyVal<'a, D> for LMap<Kv, Vv>
+impl<'a, D, Kv: Debug, Kr, Vv: Debug, Vr> ReifyIn<'a, D> for LMap<Kv, Vv>
 where
     D: DomainType<'a, Kv> + DomainType<'a, Vv> + 'a,
-    Kv: ReifyVal<'a, D, Reified = Kr>,
+    Kv: ReifyIn<'a, D, Reified = Kr>,
     Kr: Eq + Hash,
-    Vv: ReifyVal<'a, D, Reified = Vr>,
+    Vv: ReifyIn<'a, D, Reified = Vr>,
 {
     type Reified = HashMap<Kr, Vr>;
     fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
         let LMap { values } = self;
         let init = HashMap::with_capacity(values.len());
         values.iter().try_fold(init, |mut map, (k, v)| {
-            let key = state.reify_val(k)?;
-            let value = state.reify_val(v)?;
+            let key = state.reify(k)?;
+            let value = state.reify(v)?;
             map.insert(key, value);
             Some(map)
         })
@@ -129,12 +129,6 @@ macro_rules! hash_map {
             map
         }
     };
-}
-
-impl<'a, K, V> fmt::Debug for LMap<K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "LMap ??")
-    }
 }
 
 #[cfg(test)]

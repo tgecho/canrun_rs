@@ -17,7 +17,7 @@ pub trait IterResolved<'a, D: Domain<'a> + 'a> {
     /// states](crate::state::ResolvedState) that can be derived.
     ///
     /// Typically used indirectly through the
-    /// [`Queryable`](crate::query::Queryable) interface.
+    /// [`Query`](crate::query::Query) interface.
     ///
     /// This will iterate through all pending
     /// [forks](crate::state::State::fork()), discarding any that fail. Any

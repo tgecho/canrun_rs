@@ -25,7 +25,7 @@
 
 pub mod domains;
 pub mod goal;
-pub mod query;
+mod query;
 pub mod state;
 mod unify;
 pub mod value;
@@ -37,13 +37,13 @@ pub use goal::project::{assert_1, assert_2, map_1, map_2};
 #[doc(inline)]
 pub use goal::{both, custom, either, lazy, unify, Goal};
 #[doc(inline)]
-pub use query::{Query, Queryable};
+pub use query::Query;
 #[doc(inline)]
 pub use state::{IterResolved, ResolvedState, State};
 #[doc(inline)]
 pub use unify::UnifyIn;
 #[doc(inline)]
-pub use value::{var, IntoVal, LVar, ReifyVal, Val};
+pub use value::{var, IntoVal, LVar, ReifyIn, Val};
 
 #[doc(inline)]
 pub use domains::domain;
