@@ -53,3 +53,16 @@ where
         D::into_domain_val(b.into_val()),
     ))
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::domains::example::I32;
+    use crate::{unify, util, var, Goal};
+
+    #[test]
+    fn deeply_nested_vars() {
+        let (w, x, y, z) = (var(), var(), var(), var());
+        let goals: Vec<Goal<I32>> = vec![unify(w, 1), unify(w, x), unify(x, y), unify(y, z)];
+        util::assert_permutations_resolve_to(goals, z, vec![1])
+    }
+}

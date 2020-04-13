@@ -14,13 +14,20 @@ pub struct ResolvedState<D> {
 }
 
 impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
-    fn resolve_val<'r, T>(&'r self, val: &'r Val<T>) -> &'r Val<T>
+    pub(crate) fn resolve_val<'r, T>(&'r self, val: &'r Val<T>) -> &'r Val<T>
     where
         T: Debug,
         D: DomainType<'a, T>,
     {
         match val {
-            Val::Var(var) => self.domain.values_as_ref().0.get(var).unwrap_or(val),
+            Val::Var(var) => {
+                let resolved = self.domain.values_as_ref().0.get(var);
+                match resolved {
+                    Some(Val::Var(found)) if found == var => val,
+                    Some(found) => self.resolve_val(found),
+                    _ => val,
+                }
+            }
             value => value,
         }
     }
