@@ -158,17 +158,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         T: Debug,
         D: DomainType<'a, T>,
     {
-        match val {
-            Val::Var(var) => {
-                let resolved = self.domain.values_as_ref().0.get(var);
-                match resolved {
-                    Some(Val::Var(found)) if found == var => val,
-                    Some(found) => self.resolve_val(found),
-                    _ => val,
-                }
-            }
-            value => value,
-        }
+        self.domain.values_as_ref().resolve(val)
     }
 
     /// Attempt to [unify](module@crate::unify) two values with each other.

@@ -63,6 +63,25 @@ pub trait Domain<'a>: Clone + Debug {
 pub struct DomainValues<T: Debug>(pub(crate) HashMap<LVar<T>, Val<T>>);
 
 impl<T: Debug> DomainValues<T> {
+    pub(crate) fn resolve<'a>(&'a self, val: &'a Val<T>) -> &'a Val<T>
+    where
+        T: Debug,
+    {
+        match val {
+            Val::Var(var) => {
+                let resolved = self.0.get(var);
+                match resolved {
+                    Some(Val::Var(found)) if found == var => val,
+                    Some(found) => self.resolve(found),
+                    _ => val,
+                }
+            }
+            value => value,
+        }
+    }
+}
+
+impl<T: Debug> DomainValues<T> {
     #[doc(hidden)]
     pub fn new() -> Self {
         DomainValues(HashMap::new())
