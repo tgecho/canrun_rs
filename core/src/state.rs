@@ -159,7 +159,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         T: Debug,
         D: DomainType<'a, T>,
     {
-        self.domain.values_as_ref().resolve(val)
+        self.domain.resolve(val)
     }
 
     /// Attempt to [unify](module@crate::unify) two values with each other.
@@ -206,8 +206,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
 
                 // TODO: Add occurs check?
 
-                // Assign lvar to value
-                self.domain.values_as_mut().0.insert(key, value);
+                self.domain.update(key, value);
 
                 // check constraints matching newly assigned lvar
                 if let Some(constraints) = self.constraints.extract(&key.id) {

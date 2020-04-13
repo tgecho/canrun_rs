@@ -63,25 +63,6 @@ pub trait Domain<'a>: Clone + Debug {
 pub struct DomainValues<T: Debug>(pub(crate) HashMap<LVar<T>, Val<T>>);
 
 impl<T: Debug> DomainValues<T> {
-    pub(crate) fn resolve<'a>(&'a self, val: &'a Val<T>) -> &'a Val<T>
-    where
-        T: Debug,
-    {
-        match val {
-            Val::Var(var) => {
-                let resolved = self.0.get(var);
-                match resolved {
-                    Some(Val::Var(found)) if found == var => val,
-                    Some(found) => self.resolve(found),
-                    _ => val,
-                }
-            }
-            value => value,
-        }
-    }
-}
-
-impl<T: Debug> DomainValues<T> {
     #[doc(hidden)]
     pub fn new() -> Self {
         DomainValues(HashMap::new())
@@ -103,6 +84,29 @@ impl<'a, T: Debug> Clone for DomainValues<T> {
 /// constraint, though [`UnifyIn`](crate::UnifyIn) is often the better, higher level
 /// choice.
 pub trait DomainType<'a, T: Debug>: Domain<'a> {
+    #[doc(hidden)]
+    fn resolve<'r>(&'r self, val: &'r Val<T>) -> &'r Val<T>
+    where
+        T: Debug,
+    {
+        match val {
+            Val::Var(var) => {
+                let resolved = self.values_as_ref().0.get(var);
+                match resolved {
+                    Some(Val::Var(found)) if found == var => val,
+                    Some(found) => self.resolve(found),
+                    _ => val,
+                }
+            }
+            value => value,
+        }
+    }
+
+    #[doc(hidden)]
+    fn update(&mut self, key: LVar<T>, value: Val<T>) {
+        self.values_as_mut().0.insert(key, value);
+    }
+
     #[doc(hidden)]
     fn values_as_ref(&self) -> &DomainValues<T>;
     #[doc(hidden)]

@@ -82,12 +82,7 @@ where
 {
     type Reified = T::Reified;
     fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
-        // dbg!("reify Val before", self);
-        // dbg!(state.domain.values_as_ref());
-        let resolved = state.resolve_val(self).resolved();
-        // dbg!("reify Val resolved", resolved);
-        let resolved = resolved.ok()?;
-        // dbg!("reify Val after");
+        let resolved = state.resolve_val(self).resolved().ok()?;
         resolved.reify_in(state)
     }
 }

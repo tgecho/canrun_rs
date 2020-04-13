@@ -19,7 +19,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
         T: Debug,
         D: DomainType<'a, T>,
     {
-        self.domain.values_as_ref().resolve(val)
+        self.domain.resolve(val)
     }
 
     /// Attempt to [reify](crate::value::ReifyIn) the value of a [logic
