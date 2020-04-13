@@ -1,7 +1,7 @@
-use super::UnifyIn;
 use crate::domains::DomainType;
 use crate::state::State;
 use crate::value::Val;
+use crate::UnifyIn;
 use std::rc::Rc;
 
 impl<'a, T, D> UnifyIn<'a, D> for Vec<Val<T>>

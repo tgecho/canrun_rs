@@ -3,9 +3,6 @@ use crate::state::State;
 use std::fmt::Debug;
 use std::rc::Rc;
 
-mod tuples;
-mod vec;
-
 /// How compatible values are matched with each other.
 ///
 /// See
@@ -103,22 +100,3 @@ pub trait UnifyIn<'a, D: DomainType<'a, Self>>: Sized + Debug {
     /// additional values.
     fn unify_resolved(state: State<'a, D>, a: Rc<Self>, b: Rc<Self>) -> Option<State<'a, D>>;
 }
-
-macro_rules! impl_unify_eq {
-    ($($type:ty),+) => {
-        $(
-            impl <'a, D: DomainType<'a, $type>> UnifyIn<'a, D> for $type {
-                fn unify_resolved(state: State<'a, D>, a: Rc<$type>, b: Rc<$type>) -> Option<State<'a, D>> {
-                    if a == b {
-                        Some(state)
-                    } else {
-                        None
-                    }
-                }
-            }
-        )+
-    };
-}
-
-impl_unify_eq!(bool, char, String);
-impl_unify_eq!(i8, i16, i32, i64, u8, u16, u32, u64, isize, usize, f32, f64);

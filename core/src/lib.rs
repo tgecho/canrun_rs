@@ -25,6 +25,7 @@
 
 pub mod domains;
 pub mod goal;
+mod impls;
 mod query;
 pub mod state;
 mod unify;

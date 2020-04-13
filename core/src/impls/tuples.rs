@@ -1,8 +1,8 @@
-use super::UnifyIn;
 use crate::domains::DomainType;
 use crate::state::State;
 use crate::value::{ReifyIn, Val};
 use crate::ResolvedState;
+use crate::UnifyIn;
 use std::rc::Rc;
 
 macro_rules! impl_for_tuple {
