@@ -4,8 +4,10 @@
 
 extern crate canrun;
 
-mod lmap;
+pub mod example;
+pub mod lmap;
 mod macros;
 mod member;
 
+pub use lmap::LMap;
 pub use member::member;

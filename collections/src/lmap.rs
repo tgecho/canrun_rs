@@ -13,7 +13,7 @@ use std::iter::repeat;
 use std::rc::Rc;
 
 #[derive(Debug)]
-struct LMap<K: Debug, V: Debug> {
+pub struct LMap<K: Debug, V: Debug> {
     values: HashMap<Val<K>, Val<V>>,
 }
 
@@ -112,6 +112,7 @@ where
     }
 }
 
+#[macro_export]
 macro_rules! lmap {
     ($($key:expr => $value:expr),*) => {
         {
@@ -135,31 +136,25 @@ macro_rules! hash_map {
 mod tests {
     use super::LMap;
     use crate as canrun_collections;
+    use crate::example::LMapI32;
     use canrun::{all, unify, util, val, var, Goal, IterResolved, State, UnifyIn};
-
-    canrun::domain! {
-        MapDomain {
-            i32,
-            LMap<i32, i32>,
-        }
-    }
 
     #[test]
     fn succeeds_with_identical() {
-        let goal: Goal<MapDomain> = unify(lmap! {1 => 2}, lmap! {1 => 2});
+        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {1 => 2});
         assert_eq!(goal.iter_resolved().count(), 1);
     }
 
     #[test]
     fn fails_with_different() {
-        let goal: Goal<MapDomain> = unify(lmap! {1 => 2}, lmap! {1 => 2});
+        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {1 => 2});
         assert_eq!(goal.iter_resolved().count(), 1);
     }
 
     #[test]
     fn succeeds_with_variable_value() {
         let x = var();
-        let goal: Goal<MapDomain> = unify(lmap! {1 => 2}, lmap! {1 => x});
+        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {1 => x});
         let results: Vec<_> = goal.query(x).collect();
         assert_eq!(results, vec![2]);
     }
@@ -167,7 +162,7 @@ mod tests {
     #[test]
     fn succeeds_with_variable_key() {
         let x = var();
-        let goal: Goal<MapDomain> = unify(lmap! {1 => 2}, lmap! {x => 2});
+        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {x => 2});
         let results: Vec<_> = goal.query(x).collect();
         assert_eq!(results, vec![1]);
     }
@@ -176,7 +171,7 @@ mod tests {
     fn succeeds_with_variable_key_and_value() {
         let x = var();
         let y = var();
-        let goal: Goal<MapDomain> = unify(lmap! {1 => 2}, lmap! {x => y});
+        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {x => y});
         let results: Vec<_> = goal.query((x, y)).collect();
         assert_eq!(results, vec![(1, 2)]);
     }
@@ -185,7 +180,7 @@ mod tests {
     fn succeeds_with_crisscrossed_variable_key_and_value() {
         let x = var();
         let y = var();
-        let goal: Goal<MapDomain> = unify(lmap! {1 => y}, lmap! {x => 2});
+        let goal: Goal<LMapI32> = unify(lmap! {1 => y}, lmap! {x => 2});
         let results: Vec<_> = goal.query((x, y)).collect();
         assert_eq!(results, vec![(1, 2)]);
     }
@@ -198,7 +193,7 @@ mod tests {
         let y = var();
         let z = var();
 
-        let goals: Vec<Goal<MapDomain>> = vec![
+        let goals: Vec<Goal<LMapI32>> = vec![
             unify(m, lmap! {1 => x, 2 => w, y => x, 4 => x}),
             unify(m, lmap! {w => 2, x => 1, 3 => x, z => x}),
         ];
