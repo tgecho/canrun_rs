@@ -38,58 +38,83 @@ impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
     {
         self.values.get(&key.into_val())
     }
+
+    fn resolve_in<'a, D>(&self, state: State<'a, D>) -> Option<(State<'a, D>, Self)>
+    where
+        V: UnifyIn<'a, D>,
+        K: UnifyIn<'a, D>,
+        D: DomainType<'a, K> + DomainType<'a, V>,
+    {
+        let mut state = state;
+        let mut resolved: HashMap<Val<K>, Val<V>> = HashMap::new();
+        for (key, value) in self.values.iter() {
+            let resolved_key = state.resolve_val(&key).clone();
+            let resolved_value = state.resolve_val(&value).clone();
+            let existing = resolved.insert(resolved_key, resolved_value);
+            if let Some(existing_value) = existing {
+                // A variable key could end up being the same as an already
+                // resolved one. They're allowed to merge IF the values unify.
+                state = state.unify(&value, &existing_value)?;
+            }
+        }
+        Some((state, LMap { values: resolved }))
+    }
 }
 
-impl<'a, K: Eq + Hash + 'a + fmt::Debug, V: 'a + fmt::Debug, D> UnifyIn<'a, D> for LMap<K, V>
+impl<'a, K, V, D> UnifyIn<'a, D> for LMap<K, V>
 where
-    K: UnifyIn<'a, D>,
-    V: UnifyIn<'a, D>,
+    K: UnifyIn<'a, D> + Eq + Hash + fmt::Debug + 'a,
+    V: UnifyIn<'a, D> + fmt::Debug + 'a,
     D: DomainType<'a, K> + DomainType<'a, V> + DomainType<'a, Self>,
 {
-    fn unify_resolved(
-        state: canrun::State<'a, D>,
-        a: std::rc::Rc<Self>,
-        b: std::rc::Rc<Self>,
-    ) -> Option<canrun::State<'a, D>> {
-        if a.values.len() != b.values.len() {
-            return None;
-        }
-
-        let mut state = state;
-
-        // let a = a.resolve_in(&state)?;
-        // let b = b.resolve_in(&state)?;
-
-        // let mut a_vars: Vec<(&Val<K>, &Val<V>)> = Vec::new();
-        // let mut unified = HashSet::new();
-
-        // for (a_key, a_value) in a.values.iter() {
-        //     if let Some(b_value) = b.values.get(a_key) {
-        //         state = state.unify(a_value, b_value)?;
-        //     } else if a_key.is_var() {
-        //         a_vars.push((a_key, a_value));
-        //     }
-        // } // repeat this for b?
-        // if !a_vars.is_empty() { // also do this for b?
-
-        state = state.fork(Rc::new(move |state: State<'a, D>| {
-            let a_perms = a.values.clone().into_iter().permutations(a.values.len());
-            let values = repeat(b.values.clone()).zip(a_perms);
-            let iter = repeat(state)
-                .zip(values)
-                .filter_map(|(state, (b_values, a_values))| {
-                    b_values
-                        .into_iter()
-                        .zip(a_values.into_iter())
-                        .try_fold(state, |s, ((a_k, a_v), (b_k, b_v))| {
-                            s.unify(&a_k, &b_k)?.unify(&a_v, &b_v)
-                        })
-                });
-            Box::new(iter)
-        }))?;
-
+    fn unify_resolved(state: State<'a, D>, a: Rc<Self>, b: Rc<Self>) -> Option<State<'a, D>> {
+        let (state, a) = a.resolve_in(state)?;
+        let (state, b) = b.resolve_in(state)?;
+        let state = unify_entries(state, &a.values, &b.values)?;
+        let state = unify_entries(state, &b.values, &a.values)?;
         Some(state)
     }
+}
+
+fn unify_entries<'a, K, V, D>(
+    mut state: State<'a, D>,
+    a_entries: &HashMap<Val<K>, Val<V>>,
+    b_entries: &HashMap<Val<K>, Val<V>>,
+) -> Option<State<'a, D>>
+where
+    K: UnifyIn<'a, D> + Eq + Hash + fmt::Debug + 'a,
+    V: UnifyIn<'a, D> + fmt::Debug + 'a,
+    D: DomainType<'a, K> + DomainType<'a, V>,
+{
+    for (a_key, a_value) in a_entries.iter() {
+        // In the best case, all of the keys in `a` exist in both maps
+        if let Some(b_value) = b_entries.get(a_key) {
+            // So we can unify directly and continue or bail
+            state = state.unify(a_value, b_value)?;
+        } else {
+            // Otherwise, we need to consider every possible match, which means
+            // forking. The bad news is that this could blow up to a lot of
+            // alternates if the map is large The good news is that even if we
+            // queue up a fork, any other matching keys that fail to unify will
+            // abort the whole state.
+            //
+            // TODO: Either figure out a way to not do so much ugly cloning
+            // (especially b_values) or make sure the cost is not bad and/or
+            // mitigated with something like im::HashMap. Measure!
+            let a_key = a_key.clone();
+            let a_value = a_value.clone();
+            let b_values = b_entries.clone();
+            state = state.fork(Rc::new(move |s: State<'a, D>| {
+                let a_key = a_key.clone();
+                let a_value = a_value.clone();
+                let b_values = b_values.clone();
+                Box::new(b_values.into_iter().filter_map(move |(b_key, b_value)| {
+                    s.clone().unify(&a_key, &b_key)?.unify(&a_value, &b_value)
+                }))
+            }))?;
+        }
+    }
+    Some(state)
 }
 
 impl<'a, D, Kv: Debug, Kr, Vv: Debug, Vr> ReifyIn<'a, D> for LMap<Kv, Vv>
@@ -205,5 +230,18 @@ mod tests {
                 (hash_map!(2 => 2, 1 => 1, 3 => 1, 4 => 1), 2, 1, 3, 4),
             ],
         );
+    }
+
+    #[test]
+    fn lmap_size_question() {
+        // Should this pass? You wouldn't write this normally, but it could
+        // appear as a result of some sort of concat function.
+
+        let m = var();
+        let x = var();
+
+        let goals: Vec<Goal<LMapI32>> =
+            vec![unify(m, lmap!(x => 1, 1 => 1)), unify(m, lmap!(1 => 1))];
+        util::assert_permutations_resolve_to(goals, (m, x), vec![(hash_map!(1 => 1), 1)]);
     }
 }
