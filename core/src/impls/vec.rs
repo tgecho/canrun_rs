@@ -1,7 +1,8 @@
 use crate::domains::DomainType;
 use crate::state::State;
 use crate::value::Val;
-use crate::UnifyIn;
+use crate::{ReifyIn, ResolvedState, UnifyIn};
+use std::fmt::Debug;
 use std::rc::Rc;
 
 impl<'a, T, D> UnifyIn<'a, D> for Vec<Val<T>>
@@ -21,6 +22,17 @@ where
         } else {
             None
         }
+    }
+}
+
+impl<'a, D, T> ReifyIn<'a, D> for Vec<Val<T>>
+where
+    T: ReifyIn<'a, D> + Debug,
+    D: DomainType<'a, T> + 'a,
+{
+    type Reified = Vec<T::Reified>;
+    fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
+        self.into_iter().map(|v: &Val<T>| state.reify(v)).collect()
     }
 }
 

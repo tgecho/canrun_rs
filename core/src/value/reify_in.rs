@@ -103,24 +103,6 @@ where
     }
 }
 
-impl<'a, D: Domain<'a>> ReifyIn<'a, D> for i32 {
-    type Reified = i32;
-    fn reify_in(&self, _: &ResolvedState<D>) -> Option<Self::Reified> {
-        Some(*self)
-    }
-}
-
-impl<'a, D, T> ReifyIn<'a, D> for Vec<Val<T>>
-where
-    T: ReifyIn<'a, D> + Debug,
-    D: DomainType<'a, T> + 'a,
-{
-    type Reified = Vec<T::Reified>;
-    fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
-        self.into_iter().map(|v: &Val<T>| state.reify(v)).collect()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate as canrun;
