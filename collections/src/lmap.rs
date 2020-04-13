@@ -102,8 +102,8 @@ where
         let LMap { values } = self;
         let init = HashMap::with_capacity(values.len());
         values.iter().try_fold(init, |mut map, (k, v)| {
-            let key = state.reify(k)?;
-            let value = state.reify(v)?;
+            let key = state.reify_val(k)?;
+            let value = state.reify_val(v)?;
             map.insert(key, value);
             Some(map)
         })

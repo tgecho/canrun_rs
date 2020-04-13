@@ -23,7 +23,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
         }
     }
 
-    /// Attempt to get the bound value of a [logical
+    /// Attempt to [reify](crate::value::ReifyVal) the value of a [logic
     /// variable](crate::value::LVar) in a resolved state.
     ///
     /// # Example:
@@ -37,24 +37,40 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
     ///     .unify(&val!(x), &val!(1));
     ///
     /// let results: Vec<_> = state.iter_resolved()
-    ///     .map(|resolved: ResolvedState<I32>| resolved.get(x))
+    ///     .map(|resolved: ResolvedState<I32>| resolved.reify_var(x))
     ///     .collect();
     ///
     /// assert_eq!(results, vec![Some(1)]);
     /// ```
-    pub fn get<T, R>(&self, var: LVar<T>) -> Option<R>
+    pub fn reify_var<T, R>(&self, var: LVar<T>) -> Option<R>
     where
         D: DomainType<'a, T>,
         T: ReifyVal<'a, D, Reified = R>,
     {
         let val = self.domain.values_as_ref().0.get(&var)?;
-        self.reify(val)
+        self.reify_val(val)
     }
 
-    /// Attempt to get derive a fully reified value from a [`Val`] in a resolved state.
+    /// Attempt to [reify](crate::value::ReifyVal) a [`Val`] in a resolved
+    /// state.
     ///
-    /// This will
-    pub fn reify<T, R>(&self, val: &Val<T>) -> Option<R>
+    /// # Example:
+    /// ```
+    /// use canrun::{State, ResolvedState, IterResolved, val, var, Val};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x: Val<i32> = val!(var());
+    ///
+    /// let state = State::new()
+    ///     .unify(&x, &val!(1));
+    ///
+    /// let results: Vec<_> = state.iter_resolved()
+    ///     .map(|resolved: ResolvedState<I32>| resolved.reify_val(&x))
+    ///     .collect();
+    ///
+    /// assert_eq!(results, vec![Some(1)]);
+    /// ```
+    pub fn reify_val<T, R>(&self, val: &Val<T>) -> Option<R>
     where
         D: DomainType<'a, T>,
         T: ReifyVal<'a, D, Reified = R>,

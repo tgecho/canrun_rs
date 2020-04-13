@@ -20,7 +20,7 @@ pub trait ReifyVal<'a, D>: Sized {
     ///     .iter_resolved()
     ///     .for_each(|state: ResolvedState<I32>| {
     ///         let x = val!(1);
-    ///         assert_eq!(state.reify(&x), Some(1));
+    ///         assert_eq!(state.reify_val(&x), Some(1));
     ///     });
     /// ```
     /// Structures containing additional `Val`s should be recursively reified.
@@ -31,7 +31,7 @@ pub trait ReifyVal<'a, D>: Sized {
     ///     .iter_resolved()
     ///     .for_each(|state: ResolvedState<VecI32>| {
     ///         let x = val!(vec![val!(1), val!(2)]);
-    ///         assert_eq!(state.reify(&x), Some(vec![1, 2]));
+    ///         assert_eq!(state.reify_val(&x), Some(vec![1, 2]));
     ///     });
     /// ```
     /// Returns `None` if the [`Val`] is unresolved.
@@ -42,7 +42,7 @@ pub trait ReifyVal<'a, D>: Sized {
     ///     .iter_resolved()
     ///     .for_each(|state: ResolvedState<I32>| {
     ///         let x: Val<i32> = val!(var());
-    ///         assert_eq!(state.reify(&x), None);
+    ///         assert_eq!(state.reify_val(&x), None);
     ///     });
     /// ```
     /// Also returns `None` if `Self` is a structure containing any unresolved
@@ -55,7 +55,7 @@ pub trait ReifyVal<'a, D>: Sized {
     ///     .for_each(|state: ResolvedState<VecI32>| {
     ///         let x: Val<i32> = val!(var());
     ///         let y = val!(vec![x, val!(2)]);
-    ///         assert_eq!(state.reify(&y), None);
+    ///         assert_eq!(state.reify_val(&y), None);
     ///     });
     /// ```
     fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified>
@@ -77,7 +77,9 @@ where
 {
     type Reified = Vec<T::Reified>;
     fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
-        self.into_iter().map(|v: &Val<T>| state.reify(v)).collect()
+        self.into_iter()
+            .map(|v: &Val<T>| state.reify_val(v))
+            .collect()
     }
 }
 
@@ -93,7 +95,7 @@ mod tests {
         State::new()
             .iter_resolved()
             .for_each(|state: ResolvedState<I32>| {
-                assert_eq!(state.reify(&x), None);
+                assert_eq!(state.reify_val(&x), None);
             });
     }
 
@@ -103,7 +105,7 @@ mod tests {
         State::new()
             .iter_resolved()
             .for_each(|state: ResolvedState<I32>| {
-                assert_eq!(state.reify(&x), Some(1));
+                assert_eq!(state.reify_val(&x), Some(1));
             });
     }
 
@@ -113,7 +115,7 @@ mod tests {
         State::new()
             .iter_resolved()
             .for_each(|state: ResolvedState<VecI32>| {
-                assert_eq!(state.reify(&x), Some(vec![1, 2]));
+                assert_eq!(state.reify_val(&x), Some(vec![1, 2]));
             });
     }
 }

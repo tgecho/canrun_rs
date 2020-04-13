@@ -23,7 +23,7 @@ where
 {
     type Result = R;
     fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
-        state.get(*self)
+        state.reify_var(*self)
     }
 }
 
@@ -39,7 +39,7 @@ macro_rules! impl_tuple_query {
             fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
                 #![allow(non_snake_case)]
                 let ($($t),*) = *self;
-                Some(($(state.get($t)?),*))
+                Some(($(state.reify_var($t)?),*))
             }
         }
     };

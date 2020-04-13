@@ -35,7 +35,7 @@ macro_rules! impl_for_tuple {
             fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
                 #![allow(non_snake_case)]
                 let ($($t),*) = self;
-                Some(($(state.reify($t)?),*))
+                Some(($(state.reify_val($t)?),*))
             }
         }
     };
