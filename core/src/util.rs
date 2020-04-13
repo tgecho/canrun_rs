@@ -68,10 +68,18 @@ pub fn assert_permutations_resolve_to<'a, D, Q>(
 ) where
     D: Domain<'a> + Debug + 'a,
     Q: Query<'a, D> + Clone + 'a,
-    Q::Result: PartialEq + Debug,
+    Q::Result: PartialEq + Clone + Debug,
 {
     for permutation in all_permutations(goals) {
-        dbg!(&permutation);
-        assert_eq!(goals_resolve_to(&permutation, query.clone()), expected);
+        let results: Vec<Q::Result> = goals_resolve_to(&permutation, query.clone());
+        if !expected
+            .clone()
+            .into_iter()
+            .permutations(expected.len())
+            .any(|e: Vec<Q::Result>| e == results)
+        {
+            dbg!(permutation, results, expected);
+            panic!("The permutation of the goals printed above failed!");
+        }
     }
 }

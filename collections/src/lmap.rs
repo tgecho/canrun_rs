@@ -3,7 +3,7 @@
 #![allow(unused_macros)]
 #![allow(unused_imports)]
 
-use canrun::{DomainType, IntoVal, LVar, State, UnifyIn, Val};
+use canrun::{DomainType, IntoVal, LVar, ReifyVal, ResolvedState, State, UnifyIn, Val};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -35,31 +35,6 @@ impl<K: Eq + Hash, V> LMap<K, V> {
         Ki: IntoVal<K>,
     {
         self.values.get(&key.into_val())
-    }
-
-    pub fn resolve_in<'a, D>(&self, state: &State<'a, D>) -> Option<Self>
-    where
-        D: DomainType<'a, K> + DomainType<'a, V>,
-    {
-        let values: HashMap<Val<K>, Val<V>> = self
-            .values
-            .iter()
-            .map(|(key, value)| {
-                let key = state.resolve_val(key).clone();
-                let value = state.resolve_val(value).clone();
-                (key, value)
-            })
-            .collect();
-        if values.len() == self.values.len() {
-            Some(LMap { values })
-        } else {
-            // If the lengths changed, then one of the keys was a var that
-            // resolved to a match with one of the other keys. In theory this
-            // could be ok if the values can unify, but we're going to play it
-            // safe until we add support for checking.
-            // When we do that, be sure to add a post resolve .len() check in the unify fn.
-            None
-        }
     }
 }
 
@@ -115,10 +90,39 @@ where
     }
 }
 
+impl<'a, D, Kv, Kr, Vv, Vr> ReifyVal<'a, D> for LMap<Kv, Vv>
+where
+    D: DomainType<'a, Kv> + DomainType<'a, Vv> + 'a,
+    Kv: ReifyVal<'a, D, Reified = Kr>,
+    Kr: Eq + Hash,
+    Vv: ReifyVal<'a, D, Reified = Vr>,
+{
+    type Reified = HashMap<Kr, Vr>;
+    fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
+        let LMap { values } = self;
+        let init = HashMap::with_capacity(values.len());
+        values.iter().try_fold(init, |mut map, (k, v)| {
+            let key = state.reify(k)?;
+            let value = state.reify(v)?;
+            map.insert(key, value);
+            Some(map)
+        })
+    }
+}
+
 macro_rules! lmap {
     ($($key:expr => $value:expr),*) => {
         {
-            let mut map = LMap::new();
+            let mut map = canrun_collections::lmap::LMap::new();
+            $(map.insert($key, $value);)*
+            map
+        }
+    };
+}
+macro_rules! hash_map {
+    ($($key:expr => $value:expr),*) => {
+        {
+            let mut map = std::collections::HashMap::new();
             $(map.insert($key, $value);)*
             map
         }
@@ -134,7 +138,8 @@ impl<'a, K, V> fmt::Debug for LMap<K, V> {
 #[cfg(test)]
 mod tests {
     use super::LMap;
-    use canrun::{unify, util, val, var, Goal, IterResolved, State, UnifyIn};
+    use crate as canrun_collections;
+    use canrun::{all, unify, util, val, var, Goal, IterResolved, State, UnifyIn};
 
     canrun::domain! {
         MapDomain {
@@ -191,16 +196,23 @@ mod tests {
 
     #[test]
     fn succeeds_with_stress_test() {
+        let m = var();
         let w = var();
         let x = var();
         let y = var();
         let z = var();
 
-        let goal: Goal<MapDomain> = unify(
-            lmap! {1 => x, 2 => w, y => x, 4 => x},
-            lmap! {w => 2, x => 1, 3 => x, z => 2},
+        let goals: Vec<Goal<MapDomain>> = vec![
+            unify(m, lmap! {1 => x, 2 => w, y => x, 4 => x}),
+            unify(m, lmap! {w => 2, x => 1, 3 => x, z => x}),
+        ];
+        util::assert_permutations_resolve_to(
+            goals,
+            (m, w, x, y, z),
+            vec![
+                (hash_map!(1 => 2, 2 => 1, 3 => 2, 4 => 2), 1, 2, 3, 4),
+                (hash_map!(2 => 2, 1 => 1, 3 => 1, 4 => 1), 2, 1, 3, 4),
+            ],
         );
-        let results: Vec<_> = goal.query((w, x, y, z)).collect();
-        assert_eq!(results, vec![(1, 2, 3, 4)]);
     }
 }

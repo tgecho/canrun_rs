@@ -24,13 +24,7 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
     }
 
     /// Attempt to get the bound value of a [logical
-    /// variable](crate::value::LVar) in a
-    /// [`ResolvedState`](crate::state::ResolvedState).
-    ///
-    /// # Errors:
-    /// An `Err(LVar<T>)` contains the last [`LVar`](crate::value::LVar) that
-    /// failed to resolve as the state's bindings were walked through
-    /// recursively.
+    /// variable](crate::value::LVar) in a resolved state.
     ///
     /// # Example:
     /// ```
@@ -48,12 +42,24 @@ impl<'a, D: Domain<'a> + 'a> ResolvedState<D> {
     ///
     /// assert_eq!(results, vec![Some(1)]);
     /// ```
-    pub fn get<'g, T, R>(&'g self, var: LVar<T>) -> Option<R>
+    pub fn get<T, R>(&self, var: LVar<T>) -> Option<R>
     where
         D: DomainType<'a, T>,
-        Val<T>: ReifyVal<Reified = R>,
+        T: ReifyVal<'a, D, Reified = R>,
     {
         let val = self.domain.values_as_ref().0.get(&var)?;
-        self.resolve_val(val).reify()
+        self.reify(val)
+    }
+
+    /// Attempt to get derive a fully reified value from a [`Val`] in a resolved state.
+    ///
+    /// This will
+    pub fn reify<T, R>(&self, val: &Val<T>) -> Option<R>
+    where
+        D: DomainType<'a, T>,
+        T: ReifyVal<'a, D, Reified = R>,
+    {
+        let resolved = self.resolve_val(val).resolved().ok()?;
+        resolved.reify_in(self)
     }
 }

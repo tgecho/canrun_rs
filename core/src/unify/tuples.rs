@@ -2,6 +2,7 @@ use super::UnifyIn;
 use crate::domains::DomainType;
 use crate::state::State;
 use crate::value::{ReifyVal, Val};
+use crate::ResolvedState;
 use std::rc::Rc;
 
 macro_rules! impl_for_tuple {
@@ -29,13 +30,12 @@ macro_rules! impl_for_tuple {
             }
         }
 
-        impl<$($t: ReifyVal<Reified = $r>, $r,)*> ReifyVal for Val<($($t),*)> {
+        impl<'a, D: $(DomainType<'a, $t> + )* 'a, $($t: ReifyVal<'a, D, Reified = $r>, $r,)*> ReifyVal<'a, D> for ($(Val<$t>),*) {
             type Reified = ($($t::Reified),*);
-            fn reify(&self) -> Option<Self::Reified> {
+            fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
                 #![allow(non_snake_case)]
-                let tuple = self.resolved().ok()?;
-                let ($($t),*) = tuple;
-                Some(($($t.reify()?),*))
+                let ($($t),*) = self;
+                Some(($(state.reify($t)?),*))
             }
         }
     };

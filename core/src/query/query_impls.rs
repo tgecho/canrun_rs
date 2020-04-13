@@ -1,7 +1,7 @@
 use super::Query;
 use crate::domains::DomainType;
 use crate::state::ResolvedState;
-use crate::value::{LVar, ReifyVal, Val};
+use crate::value::{LVar, ReifyVal};
 
 /// Query for a single [`LVar`](crate::value::LVar)
 ///
@@ -19,7 +19,7 @@ use crate::value::{LVar, ReifyVal, Val};
 impl<'a, D, T, R> Query<'a, D> for LVar<T>
 where
     D: DomainType<'a, T> + 'a,
-    Val<T>: ReifyVal<Reified = R>,
+    T: ReifyVal<'a, D, Reified = R>,
 {
     type Result = R;
     fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {
@@ -33,7 +33,7 @@ macro_rules! impl_tuple_query {
         impl<'a, D, $($t, $r),*> Query<'a, D> for ($(LVar<$t>,)*)
         where
             D: $(DomainType<'a, $t> +)* 'a,
-            $(Val<$t>: ReifyVal<Reified = $r>),*
+            $($t: ReifyVal<'a, D, Reified = $r>),*
         {
             type Result = ($($r,)*);
             fn query_in(&self, state: ResolvedState<D>) -> Option<Self::Result> {

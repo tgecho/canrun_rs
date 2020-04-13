@@ -56,11 +56,30 @@ impl<T> Val<T> {
         }
     }
 
+    /// Return `true` if the `Val` is an unresolved variable.
+    ///
+    /// Example:
+    /// ```
+    /// use canrun::{var, val, Val};
+    ///
+    /// let x: Val<i32> = val!(var());
+    /// assert!(x.is_var());
+    /// ```
     pub fn is_var(&self) -> bool {
-        match self {
-            Var(_) => true,
-            _ => false,
-        }
+        matches!(self, Var(_))
+    }
+
+    /// Return `true` if the `Val` is a resolved value.
+    ///
+    /// Example:
+    /// ```
+    /// use canrun::{var, val, Val};
+    ///
+    /// let x: Val<i32> = val!(1);
+    /// assert!(x.is_resolved());
+    /// ```
+    pub fn is_resolved(&self) -> bool {
+        matches!(self, Resolved(_))
     }
 }
 
