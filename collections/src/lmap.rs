@@ -12,7 +12,7 @@ pub use compare::{is_subset, is_superset};
 
 /// A map-like data structure with [`LVar`](canrun::value::LVar) keys and values.
 #[derive(Debug, Clone)]
-pub struct LMap<K: Debug, V: Debug> {
+pub struct LMap<K: Eq + Hash + Debug, V: Debug> {
     values: HashMap<Val<K>, Val<V>>,
 }
 
@@ -128,7 +128,7 @@ where
     Some(state)
 }
 
-impl<'a, D, Kv: Debug, Kr, Vv: Debug, Vr> ReifyIn<'a, D> for LMap<Kv, Vv>
+impl<'a, D, Kv: Eq + Hash + Debug, Kr, Vv: Debug, Vr> ReifyIn<'a, D> for LMap<Kv, Vv>
 where
     D: DomainType<'a, Kv> + DomainType<'a, Vv> + 'a,
     Kv: ReifyIn<'a, D, Reified = Kr>,
