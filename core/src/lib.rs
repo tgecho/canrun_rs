@@ -40,7 +40,7 @@ pub use goal::{both, custom, either, lazy, unify, Goal};
 #[doc(inline)]
 pub use query::Query;
 #[doc(inline)]
-pub use state::{IterResolved, ResolvedState, State};
+pub use state::{Fork, IterResolved, ResolvedState, State, StateIter};
 #[doc(inline)]
 pub use unify::UnifyIn;
 #[doc(inline)]

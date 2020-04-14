@@ -1,22 +1,25 @@
 use super::GoalEnum;
 use crate::domains::Domain;
-use crate::state::State;
+use crate::state::{Fork, State};
 use std::iter::repeat;
-use std::rc::Rc;
 
-pub(crate) fn run<'a, D>(state: State<'a, D>, goals: Vec<GoalEnum<'a, D>>) -> Option<State<'a, D>>
+#[derive(Debug)]
+pub(super) struct Any<'a, D>
 where
     D: Domain<'a>,
 {
-    state.fork(Rc::new(move |s| {
-        Box::new(
-            goals
-                .clone()
-                .into_iter()
-                .zip(repeat(s))
-                .flat_map(|(g, s)| g.apply(s).into_iter()),
-        )
-    }))
+    pub(super) goals: Vec<GoalEnum<'a, D>>,
+}
+
+impl<'a, D> Fork<'a, D> for Any<'a, D>
+where
+    D: Domain<'a>,
+{
+    fn fork(&self, state: State<'a, D>) -> crate::state::StateIter<'a, D> {
+        let goals = self.goals.clone().into_iter();
+        let states = repeat(state);
+        Box::new(goals.zip(states).flat_map(|(g, s)| g.apply(s).into_iter()))
+    }
 }
 
 /// Create a [goal](crate::goal::Goal) that yields a state for every successful

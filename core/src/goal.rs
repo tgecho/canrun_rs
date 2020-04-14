@@ -10,7 +10,7 @@
 //! be anything that can't be expressed using goals.
 use crate::domains::Domain;
 use crate::query::Query;
-use crate::state::State;
+use crate::state::{Fork, State};
 use crate::state::{IterResolved, ResolvedStateIter};
 use crate::ReifyIn;
 use std::rc::Rc;
@@ -41,13 +41,12 @@ pub use unify::unify;
 
 #[derive(Clone, Debug)]
 pub(crate) enum GoalEnum<'a, D: Domain<'a>> {
-    UnifyIn(D::Value, D::Value),
     Succeed,
     Fail,
+    UnifyIn(D::Value, D::Value),
+    Fork(Rc<dyn Fork<'a, D> + 'a>),
     Both(Box<GoalEnum<'a, D>>, Box<GoalEnum<'a, D>>),
     All(Vec<GoalEnum<'a, D>>),
-    Either(Box<GoalEnum<'a, D>>, Box<GoalEnum<'a, D>>),
-    Any(Vec<GoalEnum<'a, D>>),
     Lazy(lazy::Lazy<'a, D>),
     Custom(custom::Custom<'a, D>),
     Project(Rc<dyn project::Project<'a, D> + 'a>),
@@ -69,10 +68,9 @@ impl<'a, D: Domain<'a> + 'a> GoalEnum<'a, D> {
             GoalEnum::Succeed => Some(state),
             GoalEnum::Fail => None,
             GoalEnum::UnifyIn(a, b) => unify::run(state, a, b),
+            GoalEnum::Fork(fork) => state.fork(fork),
             GoalEnum::Both(a, b) => both::run(state, *a, *b),
             GoalEnum::All(goals) => all::run(state, goals),
-            GoalEnum::Either(a, b) => either::run(state, *a, *b),
-            GoalEnum::Any(goals) => any::run(state, goals),
             GoalEnum::Lazy(lazy) => lazy.run(state),
             GoalEnum::Custom(custom) => custom.run(state),
             GoalEnum::Project(proj) => project::run(proj, state),
@@ -112,6 +110,12 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     pub fn fail() -> Self {
         Goal(GoalEnum::Fail)
     }
+
+    /// Create a goal containing a [`Fork` object](crate::state::Fork).
+    pub fn fork<F: Fork<'a, D> + 'a>(fork: F) -> Self {
+        Goal(GoalEnum::Fork(Rc::new(fork)))
+    }
+
     /// Create a Goal that only succeeds if all sub-goals succeed.
     ///
     /// This constructor takes anything that implements
@@ -152,7 +156,9 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     /// assert_eq!(result, vec![1, 2, 3])
     /// ```
     pub fn any<I: IntoIterator<Item = Goal<'a, D>>>(goals: I) -> Self {
-        Goal(GoalEnum::Any(goals.into_iter().map(|g| g.0).collect()))
+        Goal::fork(any::Any {
+            goals: goals.into_iter().map(|g| g.0).collect(),
+        })
     }
 
     /// Create a Goal that deals with resolved values.

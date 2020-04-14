@@ -1,4 +1,5 @@
 //! A map-like data structure with [`LVar`](canrun::value::LVar) keys and values.
+use canrun::state::{Fork, StateIter};
 use canrun::{DomainType, IntoVal, ReifyIn, ResolvedState, State, UnifyIn, Val};
 use std::collections::HashMap;
 use std::fmt;
@@ -111,21 +112,42 @@ where
             //
             // TODO: Either figure out a way to not do so much ugly cloning
             // (especially b_values) or make sure the cost is not bad and/or
-            // mitigated with something like im::HashMap. Measure!
-            let a_key = a_key.clone();
-            let a_value = a_value.clone();
-            let b_values = b_entries.clone();
-            state = state.fork(Rc::new(move |s: State<'a, D>| {
-                let a_key = a_key.clone();
-                let a_value = a_value.clone();
-                let b_values = b_values.clone();
-                Box::new(b_values.into_iter().filter_map(move |(b_key, b_value)| {
-                    s.clone().unify(&a_key, &b_key)?.unify(&a_value, &b_value)
-                }))
+            // mitigated with something like im::HashMap. Also look in LMapFork.
+            // Measure!
+            state = state.fork(Rc::new(LMapFork {
+                a_key: a_key.clone(),
+                a_value: a_value.clone(),
+                b_values: b_entries.clone(),
             }))?;
         }
     }
     Some(state)
+}
+
+#[derive(Debug)]
+struct LMapFork<K: Eq + Hash + Debug, V: Debug> {
+    a_key: Val<K>,
+    a_value: Val<V>,
+    b_values: HashMap<Val<K>, Val<V>>,
+}
+
+impl<'a, K: Eq + Hash + Debug, V: Debug, D> Fork<'a, D> for LMapFork<K, V>
+where
+    K: UnifyIn<'a, D> + 'a,
+    V: UnifyIn<'a, D> + 'a,
+    D: DomainType<'a, K> + DomainType<'a, V>,
+{
+    fn fork(&self, state: State<'a, D>) -> StateIter<'a, D> {
+        let a_key = self.a_key.clone();
+        let a_value = self.a_value.clone();
+        let b_values = self.b_values.clone();
+        Box::new(b_values.into_iter().filter_map(move |(b_key, b_value)| {
+            state
+                .clone()
+                .unify(&a_key, &b_key)?
+                .unify(&a_value, &b_value)
+        }))
+    }
 }
 
 impl<'a, D, Kv: Eq + Hash + Debug, Kr, Vv: Debug, Vr> ReifyIn<'a, D> for LMap<Kv, Vv>

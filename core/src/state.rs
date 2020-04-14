@@ -33,7 +33,8 @@ use std::fmt::Debug;
 use std::iter::once;
 use std::rc::Rc;
 
-pub(crate) type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
+/// Type alias for an [`Iterator`] of [`States`](crate::state::State)
+pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
 type ConstraintFns<'s, D> =
     MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Constraint<State<'s, D>> + 's>>;
 
@@ -66,7 +67,7 @@ type ConstraintFns<'s, D> =
 pub struct State<'a, D: Domain<'a> + 'a> {
     domain: D,
     constraints: ConstraintFns<'a, D>,
-    forks: im_rc::Vector<Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>>,
+    forks: im_rc::Vector<Rc<dyn Fork<'a, D> + 'a>>,
 }
 
 impl<'a, D: Domain<'a> + 'a> State<'a, D> {
@@ -125,7 +126,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         let fork = self.forks.pop_front();
         match fork {
             None => Box::new(once(self)),
-            Some(fork) => Box::new(fork(self).flat_map(State::iter_forks)),
+            Some(fork) => Box::new(fork.fork(self).flat_map(State::iter_forks)),
         }
     }
 
@@ -287,10 +288,10 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         }
     }
 
-    /// Add a potential fork function to the state.
+    /// Add a potential fork point to the state.
     ///
     /// If there are many possibilities for a certain value or set of values,
-    /// this method allows you to add a function that can enumerate those
+    /// this method allows you to add a [`Fork`] object that can enumerate those
     /// possible alternate states.
     ///
     /// While this is not quite as finicky as the
@@ -299,30 +300,78 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     ///
     /// [Unification](State::unify()) is performed eagerly as soon as it is
     /// called. [Constraints](State::constrain()) are run as variables are
-    /// resolved. Forking is only executed at the end, when
+    /// resolved. Forking is executed lazily at the end, when
     /// [`.iter_resolved()`](crate::state::IterResolved::iter_resolved()) (or
     /// [`.query()](crate::query::Query::query())) is called.
-    ///
-    ///  # Example:
-    /// ```
-    /// use canrun::{State, Query, val, var};
-    /// use canrun::domains::example::I32;
-    /// use std::rc::Rc;
-    ///
-    /// let x = var();
-    /// let state: State<I32> = State::new();
-    ///
-    /// let state = state.fork(Rc::new(|s: State<I32>| {
-    ///     let s1: Option<State<I32>> = s.clone().unify(&val!(x), &val!(1));
-    ///     let s2: Option<State<I32>> = s.unify(&val!(x), &val!(2));
-    ///     Box::new(s1.into_iter().chain(s2.into_iter()))
-    /// }));
-    /// let results: Vec<i32> = state.query(x).collect();
-    /// assert_eq!(results, vec![1, 2]);
-    /// ```
-    // TODO: Don't make the caller do the Rc wrapping?
-    pub fn fork(mut self, func: Rc<dyn Fn(Self) -> StateIter<'a, D> + 'a>) -> Option<Self> {
-        self.forks.push_back(func);
+    pub fn fork(mut self, fork: Rc<dyn Fork<'a, D> + 'a>) -> Option<Self> {
+        self.forks.push_back(fork);
         Some(self)
+    }
+}
+
+/// Fork a [`State`] into zero or more alternate states.
+///
+/// Added to a [`State`] with [`.fork()`](crate::state::State::fork()).
+///
+/// # Example:
+/// ```
+/// use canrun::{val, var, Fork, Query, State, StateIter, Val};
+/// use canrun::domains::example::I32;
+/// use std::rc::Rc;
+///
+/// #[derive(Debug)]
+/// struct Is1or2 {
+///     x: Val<i32>,
+/// }
+///
+/// impl<'a> Fork<'a, I32> for Is1or2 {
+///     fn fork(&self, state: State<'a, I32>) -> StateIter<'a, I32> {
+///         let s1 = state.clone().unify(&self.x, &val!(1));
+///         let s2 = state.unify(&self.x, &val!(2));
+///         Box::new(s1.into_iter().chain(s2.into_iter()))
+///     }
+/// }
+///
+/// # fn main() {
+/// let x = var();
+/// let state: State<I32> = State::new();
+/// let state = state.fork(Rc::new(Is1or2 { x: val!(x) }));
+/// let results: Vec<i32> = state.query(x).collect();
+/// assert_eq!(results, vec![1, 2]);
+/// # }
+/// ```
+pub trait Fork<'a, D: Domain<'a>>: Debug {
+    /// Given a [`State`], return an iterator of states that result from the
+    /// fork operation.
+    fn fork(&self, state: State<'a, D>) -> StateIter<'a, D>;
+}
+
+#[cfg(test)]
+mod test {
+    use crate::domains::example::I32;
+    use crate::{val, var, Fork, Query, State, StateIter, Val};
+    use std::rc::Rc;
+
+    #[derive(Debug)]
+    struct Is1or2 {
+        x: Val<i32>,
+    }
+
+    impl<'a> Fork<'a, I32> for Is1or2 {
+        fn fork(&self, state: State<'a, I32>) -> StateIter<'a, I32> {
+            let s1 = state.clone().unify(&self.x, &val!(1));
+            let s2 = state.unify(&self.x, &val!(2));
+            Box::new(s1.into_iter().chain(s2.into_iter()))
+        }
+    }
+
+    #[test]
+    fn doctest() {
+        let x = var();
+        let state: State<I32> = State::new();
+
+        let state = state.fork(Rc::new(Is1or2 { x: val!(x) }));
+        let results: Vec<i32> = state.query(x).collect();
+        assert_eq!(results, vec![1, 2]);
     }
 }

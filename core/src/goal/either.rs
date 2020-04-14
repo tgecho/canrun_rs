@@ -1,21 +1,25 @@
 use super::{Goal, GoalEnum};
 use crate::domains::Domain;
-use crate::state::State;
-use std::rc::Rc;
+use crate::state::{Fork, State};
 
-pub(crate) fn run<'a, D>(
-    state: State<'a, D>,
-    a: GoalEnum<'a, D>,
-    b: GoalEnum<'a, D>,
-) -> Option<State<'a, D>>
+#[derive(Debug)]
+struct Either<'a, D>
 where
     D: Domain<'a>,
 {
-    state.fork(Rc::new(move |s| {
-        let a = a.clone().apply(s.clone()).into_iter();
-        let b = b.clone().apply(s).into_iter();
+    a: GoalEnum<'a, D>,
+    b: GoalEnum<'a, D>,
+}
+
+impl<'a, D> Fork<'a, D> for Either<'a, D>
+where
+    D: Domain<'a>,
+{
+    fn fork(&self, state: State<'a, D>) -> crate::state::StateIter<'a, D> {
+        let a = self.a.clone().apply(state.clone()).into_iter();
+        let b = self.b.clone().apply(state).into_iter();
         Box::new(a.chain(b))
-    }))
+    }
 }
 
 /// Create a [goal](crate::goal::Goal) that succeeds if either sub-goal succeed.
@@ -61,7 +65,7 @@ pub fn either<'a, D>(a: Goal<'a, D>, b: Goal<'a, D>) -> Goal<'a, D>
 where
     D: Domain<'a>,
 {
-    Goal(GoalEnum::Either(Box::new(a.0), Box::new(b.0)))
+    Goal::fork(Either { a: a.0, b: b.0 })
 }
 
 #[cfg(test)]
