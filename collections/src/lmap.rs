@@ -1,15 +1,8 @@
-#![allow(unused_variables)]
-#![allow(dead_code)]
-#![allow(unused_macros)]
-#![allow(unused_imports)]
-
-use canrun::{DomainType, IntoVal, LVar, ReifyIn, ResolvedState, State, UnifyIn, Val};
-use itertools::Itertools;
-use std::collections::{HashMap, HashSet};
+use canrun::{DomainType, IntoVal, ReifyIn, ResolvedState, State, UnifyIn, Val};
+use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::iter::repeat;
 use std::rc::Rc;
 
 #[derive(Debug)]
@@ -141,16 +134,7 @@ where
 macro_rules! lmap {
     ($($key:expr => $value:expr),*) => {
         {
-            let mut map = canrun_collections::lmap::LMap::new();
-            $(map.insert($key, $value);)*
-            map
-        }
-    };
-}
-macro_rules! hash_map {
-    ($($key:expr => $value:expr),*) => {
-        {
-            let mut map = std::collections::HashMap::new();
+            let mut map = canrun_collections::LMap::new();
             $(map.insert($key, $value);)*
             map
         }
@@ -159,10 +143,19 @@ macro_rules! hash_map {
 
 #[cfg(test)]
 mod tests {
-    use super::LMap;
     use crate as canrun_collections;
     use crate::example::LMapI32;
-    use canrun::{all, unify, util, val, var, Goal, IterResolved, State, UnifyIn};
+    use canrun::{unify, util, var, Goal, IterResolved};
+
+    macro_rules! hash_map {
+        ($($key:expr => $value:expr),*) => {
+            {
+                let mut map = std::collections::HashMap::new();
+                $(map.insert($key, $value);)*
+                map
+            }
+        };
+    }
 
     #[test]
     fn succeeds_with_identical() {

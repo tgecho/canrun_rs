@@ -4,8 +4,9 @@
 
 extern crate canrun;
 
+/// Example domains for canrun collections
 pub mod example;
-pub mod lmap;
+mod lmap;
 mod macros;
 mod member;
 
