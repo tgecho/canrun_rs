@@ -34,7 +34,7 @@ pub mod value;
 #[doc(inline)]
 pub use domains::{Domain, DomainType};
 #[doc(inline)]
-pub use goal::project::{assert_1, assert_2, map_1, map_2};
+pub use goal::project::{assert_1, assert_2, map_1, map_2, project_1, project_2};
 #[doc(inline)]
 pub use goal::{both, custom, either, lazy, unify, Goal};
 #[doc(inline)]

@@ -11,6 +11,8 @@ mod assert_1;
 mod assert_2;
 mod map_1;
 mod map_2;
+mod project_1;
+mod project_2;
 
 #[doc(inline)]
 pub use assert_1::assert_1;
@@ -20,6 +22,10 @@ pub use assert_2::assert_2;
 pub use map_1::map_1;
 #[doc(inline)]
 pub use map_2::map_2;
+#[doc(inline)]
+pub use project_1::project_1;
+#[doc(inline)]
+pub use project_2::project_2;
 
 use crate::domains::Domain;
 use crate::state::Constraint;

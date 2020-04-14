@@ -38,9 +38,12 @@ pub use either::either;
 pub use lazy::lazy;
 #[doc(inline)]
 pub use unify::unify;
+
 #[derive(Clone, Debug)]
 pub(crate) enum GoalEnum<'a, D: Domain<'a>> {
     UnifyIn(D::Value, D::Value),
+    Succeed,
+    Fail,
     Both(Box<GoalEnum<'a, D>>, Box<GoalEnum<'a, D>>),
     All(Vec<GoalEnum<'a, D>>),
     Either(Box<GoalEnum<'a, D>>, Box<GoalEnum<'a, D>>),
@@ -63,6 +66,8 @@ pub struct Goal<'a, D: Domain<'a>>(GoalEnum<'a, D>);
 impl<'a, D: Domain<'a> + 'a> GoalEnum<'a, D> {
     fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
         match self {
+            GoalEnum::Succeed => Some(state),
+            GoalEnum::Fail => None,
             GoalEnum::UnifyIn(a, b) => unify::run(state, a, b),
             GoalEnum::Both(a, b) => both::run(state, *a, *b),
             GoalEnum::All(goals) => all::run(state, goals),
@@ -76,6 +81,37 @@ impl<'a, D: Domain<'a> + 'a> GoalEnum<'a, D> {
 }
 
 impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
+    /// Create a Goal that always succeeds.
+    ///
+    /// # Example
+    /// ```
+    /// use canrun::{Goal, all, unify, var};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x = var();
+    /// let goal: Goal<I32> = all![unify(x, 1), Goal::succeed()];
+    /// let result: Vec<_> = goal.query(x).collect();
+    /// assert_eq!(result, vec![1])
+    /// ```
+    pub fn succeed() -> Self {
+        Goal(GoalEnum::Succeed)
+    }
+
+    /// Create a Goal that always fails.
+    ///
+    /// # Example
+    /// ```
+    /// use canrun::{Goal, all, unify, var};
+    /// use canrun::domains::example::I32;
+    ///
+    /// let x = var();
+    /// let goal: Goal<I32> = all![unify(x, 1), Goal::fail()];
+    /// let result: Vec<_> = goal.query(x).collect();
+    /// assert_eq!(result, vec![])
+    /// ```
+    pub fn fail() -> Self {
+        Goal(GoalEnum::Fail)
+    }
     /// Create a Goal that only succeeds if all sub-goals succeed.
     ///
     /// This constructor takes anything that implements
