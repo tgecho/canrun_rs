@@ -1,3 +1,4 @@
+//! Example domains for Canrun collections
 use crate::lmap::LMap;
 
 canrun::domain! {

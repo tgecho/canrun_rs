@@ -1,3 +1,4 @@
+//! A map-like data structure with [`LVar`](canrun::value::LVar) keys and values.
 use canrun::{DomainType, IntoVal, ReifyIn, ResolvedState, State, UnifyIn, Val};
 use std::collections::HashMap;
 use std::fmt;
@@ -5,31 +6,48 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::rc::Rc;
 
-#[derive(Debug)]
+mod compare;
+
+pub use compare::{is_subset, is_superset};
+
+/// A map-like data structure with [`LVar`](canrun::value::LVar) keys and values.
+#[derive(Debug, Clone)]
 pub struct LMap<K: Debug, V: Debug> {
     values: HashMap<Val<K>, Val<V>>,
 }
 
 impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
+    /// Create a new [`LMap`] value.
+    ///
+    /// You may also be interested in the [`lmap!`] macro.
+    ///
+    /// # Example:
+    /// ```
+    /// use canrun_collections::lmap::LMap;
+    ///
+    /// let map: LMap<i32, i32> = LMap::new();
+    /// ```
     pub fn new() -> Self {
         LMap {
             values: HashMap::new(),
         }
     }
 
+    /// Add a key/value pair to an existing [`LMap`].
+    ///
+    /// # Example:
+    /// ```
+    /// use canrun_collections::lmap::LMap;
+    ///
+    /// let mut map: LMap<i32, i32> = LMap::new();
+    /// map.insert(1, 2);
+    /// ```
     pub fn insert<Ki, Vi>(&mut self, key: Ki, value: Vi)
     where
         Ki: IntoVal<K>,
         Vi: IntoVal<V>,
     {
         self.values.insert(key.into_val(), value.into_val());
-    }
-
-    pub fn get<Ki>(&self, key: Ki) -> Option<&Val<V>>
-    where
-        Ki: IntoVal<K>,
-    {
-        self.values.get(&key.into_val())
     }
 
     fn resolve_in<'a, D>(&self, state: State<'a, D>) -> Option<(State<'a, D>, Self)>
@@ -130,21 +148,34 @@ where
     }
 }
 
+/// Create an [`LMap`](crate::lmap::LMap).
+///
+/// # Example:
+/// ```
+/// use canrun::var;
+/// use canrun_collections::lmap::{lmap, LMap};
+///
+/// let x = var();
+/// let map: LMap<i32, i32> = lmap!(x => 1, 2 => 3);
+/// ```
 #[macro_export]
 macro_rules! lmap {
     ($($key:expr => $value:expr),*) => {
         {
-            let mut map = canrun_collections::LMap::new();
+            let mut map = $crate::lmap::LMap::new();
             $(map.insert($key, $value);)*
             map
         }
     };
 }
 
+#[doc(inline)]
+pub use lmap;
+
 #[cfg(test)]
 mod tests {
-    use crate as canrun_collections;
     use crate::example::LMapI32;
+    use crate::lmap;
     use canrun::{unify, util, var, Goal, IterResolved};
 
     macro_rules! hash_map {
@@ -226,15 +257,22 @@ mod tests {
     }
 
     #[test]
-    fn lmap_size_question() {
-        // Should this pass? You wouldn't write this normally, but it could
-        // appear as a result of some sort of concat function.
-
+    fn mergeable_keys() {
         let m = var();
         let x = var();
 
         let goals: Vec<Goal<LMapI32>> =
             vec![unify(m, lmap!(x => 1, 1 => 1)), unify(m, lmap!(1 => 1))];
         util::assert_permutations_resolve_to(goals, (m, x), vec![(hash_map!(1 => 1), 1)]);
+    }
+
+    #[test]
+    fn unmergeable_keys() {
+        let m = var();
+        let x = var();
+
+        let goals: Vec<Goal<LMapI32>> =
+            vec![unify(m, lmap!(x => 1, 1 => 2)), unify(m, lmap!(1 => 2))];
+        util::assert_permutations_resolve_to(goals, (m, x), vec![]);
     }
 }
