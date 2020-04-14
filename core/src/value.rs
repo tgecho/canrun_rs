@@ -103,7 +103,7 @@ impl<T: Debug> Val<T> {
 #[macro_export]
 macro_rules! val {
     ($value:expr) => {
-        canrun::value::IntoVal::into_val($value)
+        $crate::value::IntoVal::into_val($value)
     };
 }
 

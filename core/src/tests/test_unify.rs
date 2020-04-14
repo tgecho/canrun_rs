@@ -1,5 +1,4 @@
 use super::super::state::State;
-use crate as canrun;
 use crate::domains::example::I32;
 use crate::query::Query;
 use crate::value::{val, var, IntoVal};

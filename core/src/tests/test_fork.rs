@@ -1,5 +1,4 @@
 use super::super::state::{IterResolved, State, StateIter};
-use crate as canrun;
 use crate::domains::example::I32;
 use crate::domains::Domain;
 use crate::value::val;

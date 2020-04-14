@@ -1,5 +1,4 @@
 use super::super::state::{Constraint, State};
-use crate as canrun;
 use crate::domains::example::I32;
 use crate::domains::DomainType;
 use crate::goal::custom;

@@ -38,7 +38,6 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate as canrun;
     use crate::domains::example::VecI32;
     use crate::goal::unify;
     use crate::goal::Goal;
