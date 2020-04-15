@@ -1,3 +1,6 @@
+//! Operator goals including [`add`](add::add), [`sub`](sub::sub),
+//! [`mul`](mul::mul) and [`div`](div::div).
+
 mod add;
 mod div;
 mod mul;

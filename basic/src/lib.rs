@@ -4,8 +4,10 @@
 
 extern crate canrun;
 
-mod cmp;
-mod ops;
+pub mod cmp;
+pub mod ops;
 
+#[doc(hidden)]
 pub use cmp::*;
+#[doc(hidden)]
 pub use ops::*;

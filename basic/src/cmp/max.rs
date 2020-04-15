@@ -1,4 +1,4 @@
-use crate::{gt, gte};
+use crate::cmp::{gt, gte};
 use canrun::goal::Goal;
 use canrun::value::IntoVal;
 use canrun::{both, either, unify, val};

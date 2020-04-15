@@ -1,3 +1,6 @@
+//! Comparison goals including [`lt`](lt::lt), [`lte`](lte::lte),
+//! [`gt`](gt::gt), [`gte`](gte::gte), [`min`](min::min) and [`max`](max::max).
+
 mod gt;
 mod gte;
 mod lt;
