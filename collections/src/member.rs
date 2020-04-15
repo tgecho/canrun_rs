@@ -1,5 +1,8 @@
-use canrun::goal::{project::Project, unify, Goal};
-use canrun::state::{Constraint, State};
+use canrun::goal::{unify, Goal};
+use canrun::state::{
+    constraints::{resolve_1, Constraint, ResolveFn, VarWatch},
+    State,
+};
 use canrun::value::{IntoVal, Val};
 use canrun::{DomainType, UnifyIn};
 use std::fmt::Debug;
@@ -46,7 +49,7 @@ where
     CV: IntoVal<Vec<Val<I>>>,
     D: DomainType<'a, I> + DomainType<'a, Vec<Val<I>>>,
 {
-    Goal::project(Member {
+    Goal::constraint(Member {
         item: item.into_val(),
         collection: collection.into_val(),
     })
@@ -58,24 +61,19 @@ struct Member<I: Debug> {
     collection: Val<Vec<Val<I>>>,
 }
 
-impl<'a, I, D> Project<'a, D> for Member<I>
+impl<'a, I, D> Constraint<'a, D> for Member<I>
 where
     I: UnifyIn<'a, D>,
     D: DomainType<'a, I> + DomainType<'a, Vec<Val<I>>>,
 {
-    fn attempt<'r>(&'r self, state: State<'a, D>) -> Constraint<State<'a, D>> {
-        let collection = state.resolve_val(&self.collection).resolved();
-        match collection {
-            Ok(collection) => {
-                let goals: Vec<_> = collection
-                    .iter()
-                    .zip(repeat(self.item.clone()))
-                    .map(|(a, b)| unify::<I, &Val<I>, Val<I>, D>(a, b) as Goal<D>)
-                    .collect();
-                Constraint::done(Goal::any(goals).apply(state))
-            }
-            Err(var) => Constraint::on_1(state, var),
-        }
+    fn attempt(&self, state: &State<'a, D>) -> Result<ResolveFn<'a, D>, VarWatch> {
+        let collection = resolve_1(&self.collection, state)?;
+        let goals: Vec<_> = collection
+            .iter()
+            .zip(repeat(self.item.clone()))
+            .map(|(a, b)| unify::<I, &Val<I>, Val<I>, D>(a, b) as Goal<D>)
+            .collect();
+        Ok(Box::new(|state| Goal::any(goals).apply(state)))
     }
 }
 

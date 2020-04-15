@@ -1,12 +1,8 @@
-use super::Project;
 use crate::domains::DomainType;
-use crate::goal::{Goal, GoalEnum};
-use crate::state::Constraint;
+use crate::goal::Goal;
+use crate::state::constraints::{resolve_2, Constraint, ResolveFn, VarWatch};
 use crate::state::State;
-use crate::value::{
-    IntoVal, Val,
-    Val::{Resolved, Var},
-};
+use crate::value::{IntoVal, Val};
 use std::fmt;
 use std::fmt::Debug;
 use std::rc::Rc;
@@ -42,33 +38,25 @@ where
     D: DomainType<'a, A> + DomainType<'a, B>,
     F: Fn(&A, &B) -> bool + 'a,
 {
-    Goal(GoalEnum::Project(Rc::new(Assert2 {
+    Goal::constraint(Assert2 {
         a: a.into_val(),
         b: b.into_val(),
         f: Rc::new(func),
-    })))
+    })
 }
 
-impl<'a, A, B, Dom> Project<'a, Dom> for Assert2<'a, A, B>
+impl<'a, A, B, Dom> Constraint<'a, Dom> for Assert2<'a, A, B>
 where
-    A: Debug,
-    B: Debug,
+    A: Debug + 'a,
+    B: Debug + 'a,
     Dom: DomainType<'a, A> + DomainType<'a, B>,
 {
-    fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {
-        let a = state.resolve_val(&self.a).clone();
-        let b = state.resolve_val(&self.b).clone();
-        match (a, b) {
-            (Resolved(a), Resolved(b)) => Constraint::done({
-                if (*self.f)(&*a, &*b) {
-                    Some(state)
-                } else {
-                    None
-                }
-            }),
-            (Var(var), _) => Constraint::on_1(state, var),
-            (_, Var(var)) => Constraint::on_1(state, var),
-        }
+    fn attempt(&self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
+        let (a, b) = resolve_2(&self.a, &self.b, state)?;
+        let assert = self.f.clone();
+        Ok(Box::new(
+            move |state| if assert(&*a, &*b) { Some(state) } else { None },
+        ))
     }
 }
 

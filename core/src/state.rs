@@ -14,7 +14,7 @@
 //! or implicitly through a [goal](crate::goal)). Iterating through the
 //! potentially results will yield zero or more [`ResolvedStates`](ResolvedState).
 
-mod constraints;
+pub mod constraints;
 mod impls;
 mod iter_resolved;
 mod resolved;
@@ -26,7 +26,8 @@ use crate::value::{
     LVarId, Val,
     Val::{Resolved, Var},
 };
-pub use constraints::{Constraint, WatchList};
+#[doc(hidden)]
+pub use constraints::Constraint;
 pub use iter_resolved::{IterResolved, ResolvedStateIter};
 pub use resolved::ResolvedState;
 use std::fmt::Debug;
@@ -35,8 +36,7 @@ use std::rc::Rc;
 
 /// Type alias for an [`Iterator`] of [`States`](crate::state::State)
 pub type StateIter<'s, D> = Box<dyn Iterator<Item = State<'s, D>> + 's>;
-type ConstraintFns<'s, D> =
-    MKMVMap<LVarId, Rc<dyn Fn(State<'s, D>) -> Constraint<State<'s, D>> + 's>>;
+type ConstraintFns<'s, D> = MKMVMap<LVarId, Rc<dyn Constraint<'s, D> + 's>>;
 
 /// The core struct used to contain and manage [value](crate::value) bindings.
 ///
@@ -228,62 +228,13 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// values are available. `.constrain()` provides a low level way to run
     /// custom imperative code whenever certain bindings are updated.
     ///
-    /// The constraint function will be run when it is initially added.
-    /// Returning a [`Waiting`](Constraint::Waiting) value signals that the
-    /// constraint is not satisfied. It will be re-run whenever one of the
-    /// specified variables is bound to another value.
-    ///
-    /// *This is a pretty raw interface.* You should probably use the higher level
-    /// [goal projection](crate::goal::project) functionality.
-    ///
-    /// # Invariants:
-    /// If the constraint is able to fully resolve enough values to complete, it
-    /// may update the state to reflect additional assignments or constraints.
-    /// It must only update the state IF it is satisfied.
-    ///
-    /// Additionally, the constraint function must take care to [fully
-    /// resolve](State::resolve_val) any variables before
-    /// [`Waiting`](Constraint::Waiting) on them.
-    ///
-    /// This is admittedly more than a bit rough.
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::{State, Query, val, var};
-    /// use canrun::state::Constraint;
-    /// use canrun::domains::example::I32;
-    /// use std::rc::Rc;
-    ///
-    /// # fn test() -> Option<()> {
-    /// let x = var();
-    ///
-    /// let state: State<I32> = State::new();
-    /// let state = state.constrain(Rc::new(move |s| {
-    ///     match s.resolve_val(&val!(x)).resolved() {
-    ///         Ok(resolved) => Constraint::Done(
-    ///             if *resolved > 0 {
-    ///                 Some(s)
-    ///             } else {
-    ///                 None
-    ///             }
-    ///         ),
-    ///         Err(unresolved) => Constraint::on_1(s, unresolved),
-    ///     }
-    /// }));
-    /// let state = state?.unify(&val!(x), &val!(1));
-    ///
-    /// let results: Vec<i32> = state.query(x).collect();
-    /// assert_eq!(results, vec![1]);
-    /// # Some(())
-    /// # }
-    /// # test();
-    /// ```
-    pub fn constrain(self, func: Rc<dyn Fn(Self) -> Constraint<Self> + 'a>) -> Option<Self> {
-        match func(self) {
-            Constraint::Done(state) => state,
-            Constraint::Waiting(mut state, WatchList(vars)) => {
-                state.constraints.add(vars, func);
-                Some(state)
+    /// See the [`Constraint` trait](constraints::Constraint) for more information.
+    pub fn constrain(mut self, constraint: Rc<dyn Constraint<'a, D> + 'a>) -> Option<Self> {
+        match constraint.attempt(&self) {
+            Ok(resolve) => resolve(self),
+            Err(watch) => {
+                self.constraints.add(watch.0, constraint);
+                Some(self)
             }
         }
     }

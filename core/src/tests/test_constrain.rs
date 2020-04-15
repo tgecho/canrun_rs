@@ -1,30 +1,59 @@
-use super::super::state::{Constraint, State};
 use crate::domains::example::I32;
 use crate::domains::DomainType;
 use crate::goal::custom;
 use crate::goal::unify;
 use crate::goal::Goal;
+use crate::state::constraints::{Constraint, ResolveFn, VarWatch};
+use crate::state::State;
 use crate::util;
-use crate::value::{val, var, IntoVal};
+use crate::value::{
+    val, var, IntoVal, Val,
+    Val::{Resolved, Var},
+};
+use std::fmt;
 use std::fmt::Debug;
 use std::rc::Rc;
 
-pub(crate) fn assert<'a, T, V, D, F>(
-    val: V,
-    func: F,
-) -> Rc<dyn Fn(State<'a, D>) -> Constraint<State<'a, D>> + 'a>
+struct Assert<'a, T: Debug> {
+    val: Val<T>,
+    assert: Rc<dyn Fn(&T) -> bool + 'a>,
+}
+
+impl<'a, T: fmt::Debug> fmt::Debug for Assert<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Assert({:?})", self.val)
+    }
+}
+
+impl<'a, T, D> Constraint<'a, D> for Assert<'a, T>
+where
+    T: Debug + 'a,
+    D: DomainType<'a, T>,
+{
+    fn attempt(&self, state: &State<'a, D>) -> Result<ResolveFn<'a, D>, VarWatch> {
+        let resolved = state.resolve_val(&self.val).clone();
+        match resolved {
+            Resolved(val) => {
+                let assert = self.assert.clone();
+                Ok(Box::new(
+                    move |state: State<'a, D>| if assert(&*val) { Some(state) } else { None },
+                ))
+            }
+            Var(var) => Err(VarWatch::one(var)),
+        }
+    }
+}
+
+pub(crate) fn assert<'a, T, V, D, F>(val: V, func: F) -> Rc<dyn Constraint<'a, D> + 'a>
 where
     T: Debug + 'a,
     V: IntoVal<T> + Clone + 'a,
     D: DomainType<'a, T> + 'a,
     F: Fn(&T) -> bool + 'a,
 {
-    Rc::new(move |s| {
-        let val = val.clone().into_val();
-        match s.resolve_val(&val).resolved() {
-            Ok(x) => Constraint::Done(if func(x) { Some(s) } else { None }),
-            Err(x) => Constraint::on_1(s, x),
-        }
+    Rc::new(Assert {
+        val: val.into_val(),
+        assert: Rc::new(func),
     })
 }
 

@@ -1,12 +1,8 @@
-use super::Project;
 use crate::goal::{Goal, GoalEnum};
-use crate::state::Constraint;
+use crate::state::constraints::{Constraint, ResolveFn, TwoOfThree, VarWatch};
 use crate::state::State;
 use crate::unify::UnifyIn;
-use crate::value::{
-    IntoVal, Val,
-    Val::{Resolved, Var},
-};
+use crate::value::{IntoVal, Val};
 use crate::DomainType;
 use std::fmt;
 use std::fmt::Debug;
@@ -51,7 +47,7 @@ where
     ACtoB: Fn(&A, &C) -> B + 'a,
     BCtoA: Fn(&B, &C) -> A + 'a,
 {
-    Goal(GoalEnum::Project(Rc::new(Map2 {
+    Goal(GoalEnum::Constraint(Rc::new(Map2 {
         a: a.into_val(),
         b: b.into_val(),
         c: c.into_val(),
@@ -76,33 +72,38 @@ impl<'a, A: Debug, B: Debug, C: Debug> Debug for Map2<'a, A, B, C> {
     }
 }
 
-impl<'a, A, B, C, Dom> Project<'a, Dom> for Map2<'a, A, B, C>
+impl<'a, A, B, C, Dom> Constraint<'a, Dom> for Map2<'a, A, B, C>
 where
     A: UnifyIn<'a, Dom> + Debug + 'a,
     B: UnifyIn<'a, Dom> + Debug + 'a,
     C: UnifyIn<'a, Dom> + Debug + 'a,
     Dom: DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C> + 'a,
 {
-    fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {
-        let a = state.resolve_val(&self.a).clone();
-        let b = state.resolve_val(&self.b).clone();
-        let c = state.resolve_val(&self.c).clone();
-        match (a, b, c) {
-            (Resolved(a), Resolved(b), c) => {
-                let f = &self.ab_to_c;
-                Constraint::done(state.unify(&f(&*a, &*b).into_val(), &c))
+    fn attempt<'r>(&'r self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
+        use TwoOfThree::*;
+        let resolved = TwoOfThree::resolve(&self.a, &self.b, &self.c, state)?;
+        // let a = state.resolve_val(&self.a).clone();
+        // let b = state.resolve_val(&self.b).clone();
+        // let c = state.resolve_val(&self.c).clone();
+        match resolved {
+            AB(a, b, c) => {
+                let f = self.ab_to_c.clone();
+                Ok(Box::new(move |state| {
+                    state.unify(&f(&*a, &*b).into_val(), &c)
+                }))
             }
-            (Resolved(a), b, Resolved(c)) => {
-                let f = &self.ac_to_b;
-                Constraint::done(state.unify(&f(&*a, &*c).into_val(), &b))
+            BC(a, b, c) => {
+                let f = self.bc_to_a.clone();
+                Ok(Box::new(move |state| {
+                    state.unify(&f(&*b, &*c).into_val(), &a)
+                }))
             }
-            (a, Resolved(b), Resolved(c)) => {
-                let f = &self.bc_to_a;
-                Constraint::done(state.unify(&f(&*b, &*c).into_val(), &a))
+            AC(a, b, c) => {
+                let f = self.ac_to_b.clone();
+                Ok(Box::new(move |state| {
+                    state.unify(&f(&*a, &*c).into_val(), &b)
+                }))
             }
-            (Var(a), Var(b), _) => Constraint::on_2(state, a, b),
-            (Var(a), _, Var(c)) => Constraint::on_2(state, a, c),
-            (_, Var(b), Var(c)) => Constraint::on_2(state, b, c),
         }
     }
 }

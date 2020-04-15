@@ -1,12 +1,8 @@
-use super::Project;
-use crate::goal::{Goal, GoalEnum};
-use crate::state::Constraint;
+use crate::goal::Goal;
+use crate::state::constraints::{Constraint, OneOfTwo, ResolveFn, VarWatch};
 use crate::state::State;
 use crate::unify::UnifyIn;
-use crate::value::{
-    IntoVal, Val,
-    Val::{Resolved, Var},
-};
+use crate::value::{IntoVal, Val};
 use crate::DomainType;
 use std::fmt;
 use std::fmt::Debug;
@@ -45,12 +41,12 @@ where
     AtoB: Fn(&A) -> B + 'a,
     BtoA: Fn(&B) -> A + 'a,
 {
-    Goal(GoalEnum::Project(Rc::new(Map1 {
+    Goal::constraint(Map1 {
         a: a.into_val(),
         b: b.into_val(),
         a_to_b: Rc::new(a_to_b),
         b_to_a: Rc::new(b_to_a),
-    })))
+    })
 }
 
 pub struct Map1<'a, A: Debug, B: Debug> {
@@ -66,25 +62,23 @@ impl<'a, A: Debug, B: Debug> Debug for Map1<'a, A, B> {
     }
 }
 
-impl<'a, A, B, Dom> Project<'a, Dom> for Map1<'a, A, B>
+impl<'a, A, B, Dom> Constraint<'a, Dom> for Map1<'a, A, B>
 where
-    A: UnifyIn<'a, Dom> + Debug,
-    B: UnifyIn<'a, Dom> + Debug,
+    A: UnifyIn<'a, Dom> + Debug + 'a,
+    B: UnifyIn<'a, Dom> + Debug + 'a,
     Dom: DomainType<'a, A> + DomainType<'a, B> + 'a,
 {
-    fn attempt<'r>(&'r self, state: State<'a, Dom>) -> Constraint<State<'a, Dom>> {
-        let a = state.resolve_val(&self.a).clone();
-        let b = state.resolve_val(&self.b).clone();
-        match (a, b) {
-            (Resolved(a), b) => {
-                let f = &self.a_to_b;
-                Constraint::done(state.unify(&f(&*a).into_val(), &b))
+    fn attempt<'r>(&'r self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
+        let resolved = OneOfTwo::resolve(&self.a, &self.b, state)?;
+        match resolved {
+            OneOfTwo::A(a, b) => {
+                let f = self.a_to_b.clone();
+                Ok(Box::new(move |state| state.unify(&f(&*a).into_val(), &b)))
             }
-            (a, Resolved(b)) => {
-                let f = &self.b_to_a;
-                Constraint::done(state.unify(&f(&*b).into_val(), &a))
+            OneOfTwo::B(a, b) => {
+                let f = self.b_to_a.clone();
+                Ok(Box::new(move |state| state.unify(&f(&*b).into_val(), &a)))
             }
-            (Var(a), Var(b)) => Constraint::on_2(state, a, b),
         }
     }
 }

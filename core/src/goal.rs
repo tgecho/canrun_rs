@@ -10,7 +10,7 @@
 //! be anything that can't be expressed using goals.
 use crate::domains::Domain;
 use crate::query::Query;
-use crate::state::{Fork, State};
+use crate::state::{Constraint, Fork, State};
 use crate::state::{IterResolved, ResolvedStateIter};
 use crate::ReifyIn;
 use std::rc::Rc;
@@ -45,11 +45,12 @@ pub(crate) enum GoalEnum<'a, D: Domain<'a>> {
     Fail,
     UnifyIn(D::Value, D::Value),
     Fork(Rc<dyn Fork<'a, D> + 'a>),
+    Constraint(Rc<dyn Constraint<'a, D> + 'a>),
+
     Both(Box<GoalEnum<'a, D>>, Box<GoalEnum<'a, D>>),
     All(Vec<GoalEnum<'a, D>>),
     Lazy(lazy::Lazy<'a, D>),
     Custom(custom::Custom<'a, D>),
-    Project(Rc<dyn project::Project<'a, D> + 'a>),
 }
 
 /// A container of one of many possible types of [goals](crate::goal).
@@ -69,11 +70,11 @@ impl<'a, D: Domain<'a> + 'a> GoalEnum<'a, D> {
             GoalEnum::Fail => None,
             GoalEnum::UnifyIn(a, b) => unify::run(state, a, b),
             GoalEnum::Fork(fork) => state.fork(fork),
+            GoalEnum::Constraint(constraint) => state.constrain(constraint),
             GoalEnum::Both(a, b) => both::run(state, *a, *b),
             GoalEnum::All(goals) => all::run(state, goals),
             GoalEnum::Lazy(lazy) => lazy.run(state),
             GoalEnum::Custom(custom) => custom.run(state),
-            GoalEnum::Project(proj) => project::run(proj, state),
         }
     }
 }
@@ -114,6 +115,11 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     /// Create a goal containing a [`Fork` object](crate::state::Fork).
     pub fn fork<F: Fork<'a, D> + 'a>(fork: F) -> Self {
         Goal(GoalEnum::Fork(Rc::new(fork)))
+    }
+
+    /// Create a goal containing a [`Constraint` object](crate::state::Constraint).
+    pub fn constraint<F: Constraint<'a, D> + 'a>(constraint: F) -> Self {
+        Goal(GoalEnum::Constraint(Rc::new(constraint)))
     }
 
     /// Create a Goal that only succeeds if all sub-goals succeed.
@@ -159,13 +165,6 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
         Goal::fork(any::Any {
             goals: goals.into_iter().map(|g| g.0).collect(),
         })
-    }
-
-    /// Create a Goal that deals with resolved values.
-    ///
-    /// See the [`Project`](crate::goal::project::Project) trait for details.
-    pub fn project<P: project::Project<'a, D> + 'a>(proj: P) -> Self {
-        Goal(GoalEnum::Project(Rc::new(proj)))
     }
 
     /// Apply the Goal to an existing state.
