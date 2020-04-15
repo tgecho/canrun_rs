@@ -79,7 +79,7 @@ where
     C: UnifyIn<'a, Dom> + Debug + 'a,
     Dom: DomainType<'a, A> + DomainType<'a, B> + DomainType<'a, C> + 'a,
 {
-    fn attempt<'r>(&'r self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
+    fn attempt(&self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
         use TwoOfThree::*;
         let resolved = TwoOfThree::resolve(&self.a, &self.b, &self.c, state)?;
         // let a = state.resolve_val(&self.a).clone();

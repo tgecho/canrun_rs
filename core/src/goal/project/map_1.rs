@@ -68,7 +68,7 @@ where
     B: UnifyIn<'a, Dom> + Debug + 'a,
     Dom: DomainType<'a, A> + DomainType<'a, B> + 'a,
 {
-    fn attempt<'r>(&'r self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
+    fn attempt(&self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
         let resolved = OneOfTwo::resolve(&self.a, &self.b, state)?;
         match resolved {
             OneOfTwo::A(a, b) => {

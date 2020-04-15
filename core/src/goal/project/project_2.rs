@@ -55,7 +55,7 @@ where
     B: Debug,
     Dom: DomainType<'a, A> + DomainType<'a, B>,
 {
-    fn attempt<'r>(&'r self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
+    fn attempt(&self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
         let (a, b) = resolve_2(&self.a, &self.b, state)?;
         let goal = (self.f)(&*a, &*b);
         Ok(Box::new(move |state| goal.apply(state)))

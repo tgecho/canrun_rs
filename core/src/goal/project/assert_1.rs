@@ -42,7 +42,7 @@ where
     A: Debug + 'a,
     Dom: DomainType<'a, A>,
 {
-    fn attempt<'r>(&'r self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
+    fn attempt(&self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
         let a = resolve_1(&self.a, state)?;
         let assert = self.f.clone();
         Ok(Box::new(
