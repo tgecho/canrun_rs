@@ -121,7 +121,8 @@ pub trait DomainType<'a, T: Debug>: Domain<'a> {
 /// attempts to simplify most of the general cases by building out everything
 /// required to reason about values of various types.
 ///
-/// A few [example domains](crate::domains::example) are available for simple use cases.
+/// A few [example domains](crate::domains::example) are available for simple
+/// use cases.
 ///
 /// # Examples
 /// Begin each declaration with the domain keyword.
@@ -144,23 +145,24 @@ pub trait DomainType<'a, T: Debug>: Domain<'a> {
 /// # fn main() {}
 /// ```
 ///
-/// You can define multiple values, include containers. Note that a wrapping
-/// [`Val`](crate::value::Val) is required in the Vec type.
+/// You can define multiple values, include structures. Note that a wrapping
+/// [`Val`](crate::value::Val) is required in the tuple.
 /// ```
 /// use canrun::Val;
 /// canrun::domain! {
 ///     pub MyBigDomain {
 ///         i32,
 ///         String,
-///         Vec<Val<i32>>,
+///         (Val<i32>, Val<String>),
 ///     }
 /// }
 /// # fn main() {}
 /// ```
 ///
 /// Any types you add to a domain must implement the
-/// [`UnifyIn`](crate::unify::UnifyIn) trait. Canrun includes default implementations
-/// for almost all primitive types and `Vec<Val<T: UnifyIn>>`.
+/// [`UnifyIn`](crate::unify::UnifyIn) trait. Canrun includes default
+/// implementations for almost all primitive types and collection types are
+/// available in [`canrun_collections`].
 ///
 /// Once you have a domain, you can use it to parameterize other types, such as
 /// [`State`](crate::state::State) and [`Goal`](crate::goal::Goal):

@@ -1,5 +1,5 @@
 use canrun::{any, unify, var, Goal};
-use canrun_collections::{example::LMapI32, lmap};
+use canrun_collections::{example::Collections, lmap};
 use criterion::Criterion;
 
 macro_rules! goal_bench {
@@ -37,7 +37,7 @@ pub fn benches(c: &mut Criterion) {
         any![
             unify(m, lmap! {1 => x, 2 => w, y => x, 4 => x}),
             unify(m, lmap! {w => 2, x => 1, 3 => x, z => x}),
-        ] as Goal<LMapI32>
+        ] as Goal<Collections>
     }}
 
     goal_bench! {c "bad_lmaps" (m) {
@@ -45,6 +45,6 @@ pub fn benches(c: &mut Criterion) {
         any![
             unify(m, lmap! {w => 0, x => 1, y => 2, z => 3, a => 4, b => 5, c => 6, d => 7}),
             unify(m, lmap! {0 => w, 2 => x, 2 => y, 3 => z, 4 => a, 5 => b, 6 => c, 7 => d}),
-        ] as Goal<LMapI32>
+        ] as Goal<Collections>
     }}
 }

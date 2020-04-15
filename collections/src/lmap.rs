@@ -1,4 +1,4 @@
-//! A map-like data structure with [`LVar`](canrun::value::LVar) keys and values.
+//! A [`HashMap`](std::collections::HashMap)-like data structure with [`LVar`](canrun::value::LVar) keys and values.
 use canrun::state::{Fork, StateIter};
 use canrun::{DomainType, IntoVal, ReifyIn, ResolvedState, State, UnifyIn, Val};
 use std::collections::HashMap;
@@ -11,10 +11,10 @@ mod compare;
 
 pub use compare::{is_subset, is_superset};
 
-/// A map-like data structure with [`LVar`](canrun::value::LVar) keys and values.
+/// A [`HashMap`](std::collections::HashMap)-like data structure with [`LVar`](canrun::value::LVar) keys and values.
 #[derive(Debug, Clone)]
 pub struct LMap<K: Eq + Hash + Debug, V: Debug> {
-    values: HashMap<Val<K>, Val<V>>,
+    map: HashMap<Val<K>, Val<V>>,
 }
 
 impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
@@ -30,7 +30,7 @@ impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
     /// ```
     pub fn new() -> Self {
         LMap {
-            values: HashMap::new(),
+            map: HashMap::new(),
         }
     }
 
@@ -48,7 +48,7 @@ impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
         Ki: IntoVal<K>,
         Vi: IntoVal<V>,
     {
-        self.values.insert(key.into_val(), value.into_val());
+        self.map.insert(key.into_val(), value.into_val());
     }
 
     fn resolve_in<'a, D>(&self, state: State<'a, D>) -> Option<(State<'a, D>, Self)>
@@ -59,7 +59,7 @@ impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
     {
         let mut state = state;
         let mut resolved: HashMap<Val<K>, Val<V>> = HashMap::new();
-        for (key, value) in self.values.iter() {
+        for (key, value) in self.map.iter() {
             let resolved_key = state.resolve_val(&key).clone();
             let resolved_value = state.resolve_val(&value).clone();
             let existing = resolved.insert(resolved_key, resolved_value);
@@ -69,7 +69,7 @@ impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
                 state = state.unify(&value, &existing_value)?;
             }
         }
-        Some((state, LMap { values: resolved }))
+        Some((state, LMap { map: resolved }))
     }
 }
 
@@ -82,8 +82,8 @@ where
     fn unify_resolved(state: State<'a, D>, a: Rc<Self>, b: Rc<Self>) -> Option<State<'a, D>> {
         let (state, a) = a.resolve_in(state)?;
         let (state, b) = b.resolve_in(state)?;
-        let state = unify_entries(state, &a.values, &b.values)?;
-        let state = unify_entries(state, &b.values, &a.values)?;
+        let state = unify_entries(state, &a.map, &b.map)?;
+        let state = unify_entries(state, &b.map, &a.map)?;
         Some(state)
     }
 }
@@ -159,9 +159,9 @@ where
 {
     type Reified = HashMap<Kr, Vr>;
     fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
-        let LMap { values } = self;
-        let init = HashMap::with_capacity(values.len());
-        values.iter().try_fold(init, |mut map, (k, v)| {
+        let LMap { map } = self;
+        let init = HashMap::with_capacity(map.len());
+        map.iter().try_fold(init, |mut map, (k, v)| {
             let key = state.reify(k)?;
             let value = state.reify(v)?;
             map.insert(key, value);
@@ -170,7 +170,11 @@ where
     }
 }
 
-/// Create an [`LMap`](crate::lmap::LMap).
+/// Create an [`LMap`](crate::lmap::LMap) with automatic key/value [`IntoVal`
+/// wrapping](canrun::value::IntoVal).
+///
+/// The primary benefit is that it allows freely mixing resolved values and
+/// [`LVar`s](canrun::value::LVar).
 ///
 /// # Example:
 /// ```
@@ -178,7 +182,7 @@ where
 /// use canrun_collections::lmap::{lmap, LMap};
 ///
 /// let x = var();
-/// let map: LMap<i32, i32> = lmap!(x => 1, 2 => 3);
+/// let map: LMap<i32, i32> = lmap!{x => 1, 2 => 3};
 /// ```
 #[macro_export]
 macro_rules! lmap {
@@ -196,7 +200,7 @@ pub use lmap;
 
 #[cfg(test)]
 mod tests {
-    use crate::example::LMapI32;
+    use crate::example::Collections;
     use crate::lmap;
     use canrun::{unify, util, var, Goal, IterResolved};
 
@@ -212,20 +216,20 @@ mod tests {
 
     #[test]
     fn succeeds_with_identical() {
-        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {1 => 2});
+        let goal: Goal<Collections> = unify(lmap! {1 => 2}, lmap! {1 => 2});
         assert_eq!(goal.iter_resolved().count(), 1);
     }
 
     #[test]
     fn fails_with_different() {
-        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {1 => 2});
+        let goal: Goal<Collections> = unify(lmap! {1 => 2}, lmap! {1 => 2});
         assert_eq!(goal.iter_resolved().count(), 1);
     }
 
     #[test]
     fn succeeds_with_variable_value() {
         let x = var();
-        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {1 => x});
+        let goal: Goal<Collections> = unify(lmap! {1 => 2}, lmap! {1 => x});
         let results: Vec<_> = goal.query(x).collect();
         assert_eq!(results, vec![2]);
     }
@@ -233,7 +237,7 @@ mod tests {
     #[test]
     fn succeeds_with_variable_key() {
         let x = var();
-        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {x => 2});
+        let goal: Goal<Collections> = unify(lmap! {1 => 2}, lmap! {x => 2});
         let results: Vec<_> = goal.query(x).collect();
         assert_eq!(results, vec![1]);
     }
@@ -242,7 +246,7 @@ mod tests {
     fn succeeds_with_variable_key_and_value() {
         let x = var();
         let y = var();
-        let goal: Goal<LMapI32> = unify(lmap! {1 => 2}, lmap! {x => y});
+        let goal: Goal<Collections> = unify(lmap! {1 => 2}, lmap! {x => y});
         let results: Vec<_> = goal.query((x, y)).collect();
         assert_eq!(results, vec![(1, 2)]);
     }
@@ -251,7 +255,7 @@ mod tests {
     fn succeeds_with_crisscrossed_variable_key_and_value() {
         let x = var();
         let y = var();
-        let goal: Goal<LMapI32> = unify(lmap! {1 => y}, lmap! {x => 2});
+        let goal: Goal<Collections> = unify(lmap! {1 => y}, lmap! {x => 2});
         let results: Vec<_> = goal.query((x, y)).collect();
         assert_eq!(results, vec![(1, 2)]);
     }
@@ -264,7 +268,7 @@ mod tests {
         let y = var();
         let z = var();
 
-        let goals: Vec<Goal<LMapI32>> = vec![
+        let goals: Vec<Goal<Collections>> = vec![
             unify(m, lmap! {1 => x, 2 => w, y => x, 4 => x}),
             unify(m, lmap! {w => 2, x => 1, 3 => x, z => x}),
         ];
@@ -283,7 +287,7 @@ mod tests {
         let m = var();
         let x = var();
 
-        let goals: Vec<Goal<LMapI32>> =
+        let goals: Vec<Goal<Collections>> =
             vec![unify(m, lmap!(x => 1, 1 => 1)), unify(m, lmap!(1 => 1))];
         util::assert_permutations_resolve_to(goals, (m, x), vec![(hash_map!(1 => 1), 1)]);
     }
@@ -293,7 +297,7 @@ mod tests {
         let m = var();
         let x = var();
 
-        let goals: Vec<Goal<LMapI32>> =
+        let goals: Vec<Goal<Collections>> =
             vec![unify(m, lmap!(x => 1, 1 => 2)), unify(m, lmap!(1 => 2))];
         util::assert_permutations_resolve_to(goals, (m, x), vec![]);
     }

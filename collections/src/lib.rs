@@ -6,7 +6,9 @@ extern crate canrun;
 
 pub mod example;
 pub mod lmap;
-mod macros;
-mod member;
+pub mod lvec;
 
-pub use member::member;
+#[doc(hidden)]
+pub use lmap::LMap;
+#[doc(hidden)]
+pub use lvec::LVec;

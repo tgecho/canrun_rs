@@ -12,10 +12,10 @@ use std::hash::Hash;
 /// ```
 /// use canrun::{var, Goal};
 /// use canrun_collections::lmap::{lmap, is_subset};
-/// use canrun_collections::example::LMapI32;
+/// use canrun_collections::example::Collections;
 ///
 /// let x = var();
-/// let goal: Goal<LMapI32> = is_subset(lmap! {x => 2}, lmap! {1 => 2, 3 => 4});
+/// let goal: Goal<Collections> = is_subset(lmap! {x => 2}, lmap! {1 => 2, 3 => 4});
 /// let results: Vec<_> = goal.query(x).collect();
 /// assert_eq!(results, vec![1]);
 /// ```
@@ -28,8 +28,8 @@ where
     D: DomainType<'a, LMap<K, V>> + DomainType<'a, K> + DomainType<'a, V> + 'a,
 {
     project_2(a, b, |a, b| {
-        let a = a.values.clone();
-        let b = b.values.clone();
+        let a = a.map.clone();
+        let b = b.map.clone();
         custom(move |state| unify_entries(state, &a, &b))
     })
 }
@@ -43,10 +43,10 @@ where
 /// ```
 /// use canrun::{var, Goal};
 /// use canrun_collections::lmap::{lmap, is_superset};
-/// use canrun_collections::example::LMapI32;
+/// use canrun_collections::example::Collections;
 ///
 /// let x = var();
-/// let goal: Goal<LMapI32> = is_superset(lmap! {x => 2, 3 => 4}, lmap! {1 => 2});
+/// let goal: Goal<Collections> = is_superset(lmap! {x => 2, 3 => 4}, lmap! {1 => 2});
 /// let results: Vec<_> = goal.query(x).collect();
 /// assert_eq!(results, vec![1]);
 /// ```
@@ -64,7 +64,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::{is_subset, is_superset};
-    use crate::example::LMapI32;
+    use crate::example::Collections;
     use crate::lmap;
     use canrun::{var, Goal, IterResolved};
 
@@ -78,7 +78,7 @@ mod tests {
             (lmap! {x => 2}, lmap! {x => 2, 3 => 4}),
         ];
         for (a, b) in cases {
-            let goal: Goal<LMapI32> = is_subset(&a, &b);
+            let goal: Goal<Collections> = is_subset(&a, &b);
             if goal.iter_resolved().count() != 1 {
                 panic!("is_subset failed on {:?} {:?}", a, b);
             }
@@ -94,7 +94,7 @@ mod tests {
             (lmap! {x => 2}, lmap! {1 => 2, x => 4}),
         ];
         for (a, b) in cases {
-            let goal: Goal<LMapI32> = is_subset(&a, &b);
+            let goal: Goal<Collections> = is_subset(&a, &b);
             if goal.iter_resolved().count() != 0 {
                 panic!("is_subset erroneously succeeded on {:?} {:?}", a, b);
             }
@@ -110,7 +110,7 @@ mod tests {
             (lmap! {x => 2, 3 => 4}, lmap! {x => 2}),
         ];
         for (a, b) in cases {
-            let goal: Goal<LMapI32> = is_superset(&a, &b);
+            let goal: Goal<Collections> = is_superset(&a, &b);
             if goal.iter_resolved().count() != 1 {
                 panic!("is_superset failed on {:?} {:?}", a, b);
             }
@@ -126,7 +126,7 @@ mod tests {
             (lmap! {1 => 2, x => 4}, lmap! {x => 2}),
         ];
         for (a, b) in cases {
-            let goal: Goal<LMapI32> = is_superset(&a, &b);
+            let goal: Goal<Collections> = is_superset(&a, &b);
             if goal.iter_resolved().count() != 0 {
                 panic!("is_superset erroneously succeeded on {:?} {:?}", a, b);
             }

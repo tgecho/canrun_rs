@@ -18,7 +18,7 @@ pub trait ReifyIn<'a, D>: Sized {
     /// an [Rc](std::rc::Rc) internally).
     /// ```
     /// use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
-    /// use canrun::domains::example::{I32, VecI32};
+    /// use canrun::domains::example::{I32, TupleI32};
     /// State::new()
     ///     .iter_resolved()
     ///     .for_each(|state: ResolvedState<I32>| {
@@ -29,18 +29,18 @@ pub trait ReifyIn<'a, D>: Sized {
     /// Structures containing additional `Val`s should be recursively reified.
     /// ```
     /// # use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
-    /// # use canrun::domains::example::{I32, VecI32};
+    /// # use canrun::domains::example::{I32, TupleI32};
     /// State::new()
     ///     .iter_resolved()
-    ///     .for_each(|state: ResolvedState<VecI32>| {
-    ///         let x = val!(vec![val!(1), val!(2)]);
-    ///         assert_eq!(x.reify_in(&state), Some(vec![1, 2]));
+    ///     .for_each(|state: ResolvedState<TupleI32>| {
+    ///         let x = (val!(1), val!(2));
+    ///         assert_eq!(x.reify_in(&state), Some((1, 2)));
     ///     });
     /// ```
     /// Returns `None` if the [`Val`] is unresolved.
     /// ```
     /// # use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
-    /// # use canrun::domains::example::{I32, VecI32};
+    /// # use canrun::domains::example::{I32, TupleI32};
     /// State::new()
     ///     .iter_resolved()
     ///     .for_each(|state: ResolvedState<I32>| {
@@ -52,12 +52,12 @@ pub trait ReifyIn<'a, D>: Sized {
     /// `Val`s.
     /// ```
     /// # use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
-    /// # use canrun::domains::example::{I32, VecI32};
+    /// # use canrun::domains::example::{I32, TupleI32};
     /// State::new()
     ///     .iter_resolved()
-    ///     .for_each(|state: ResolvedState<VecI32>| {
+    ///     .for_each(|state: ResolvedState<TupleI32>| {
     ///         let x: Val<i32> = val!(var());
-    ///         let y = val!(vec![x, val!(2)]);
+    ///         let y = (x, val!(2));
     ///         assert_eq!(y.reify_in(&state), None);
     ///     });
     /// ```
@@ -101,7 +101,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate as canrun;
-    use canrun::domains::example::{VecI32, I32};
+    use canrun::domains::example::I32;
     use canrun::{val, var, IterResolved, ReifyIn, ResolvedState, State, Val};
 
     #[test]
@@ -121,16 +121,6 @@ mod tests {
             .iter_resolved()
             .for_each(|state: ResolvedState<I32>| {
                 assert_eq!(x.reify_in(&state), Some(1));
-            });
-    }
-
-    #[test]
-    fn reify_vec() {
-        let x = val!(vec![val!(1), val!(2)]);
-        State::new()
-            .iter_resolved()
-            .for_each(|state: ResolvedState<VecI32>| {
-                assert_eq!(x.reify_in(&state), Some(vec![1, 2]));
             });
     }
 }
