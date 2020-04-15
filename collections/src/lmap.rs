@@ -51,7 +51,7 @@ impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
         self.map.insert(key.into_val(), value.into_val());
     }
 
-    fn resolve_in<'a, D>(&self, state: State<'a, D>) -> Option<(State<'a, D>, Self)>
+    fn resolve_in<'a, D>(&self, state: State<'a, D>) -> Option<(State<'a, D>, Rc<Self>)>
     where
         V: UnifyIn<'a, D>,
         K: UnifyIn<'a, D>,
@@ -69,7 +69,7 @@ impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
                 state = state.unify(&value, &existing_value)?;
             }
         }
-        Some((state, LMap { map: resolved }))
+        Some((state, Rc::new(LMap { map: resolved })))
     }
 }
 
@@ -82,42 +82,37 @@ where
     fn unify_resolved(state: State<'a, D>, a: Rc<Self>, b: Rc<Self>) -> Option<State<'a, D>> {
         let (state, a) = a.resolve_in(state)?;
         let (state, b) = b.resolve_in(state)?;
-        let state = unify_entries(state, &a.map, &b.map)?;
-        let state = unify_entries(state, &b.map, &a.map)?;
+        let state = unify_entries(state, a.clone(), b.clone())?;
+        let state = unify_entries(state, b, a)?;
         Some(state)
     }
 }
 
 fn unify_entries<'a, K, V, D>(
     mut state: State<'a, D>,
-    a_entries: &HashMap<Val<K>, Val<V>>,
-    b_entries: &HashMap<Val<K>, Val<V>>,
+    a: Rc<LMap<K, V>>,
+    b: Rc<LMap<K, V>>,
 ) -> Option<State<'a, D>>
 where
     K: UnifyIn<'a, D> + Eq + Hash + fmt::Debug + 'a,
     V: UnifyIn<'a, D> + fmt::Debug + 'a,
     D: DomainType<'a, K> + DomainType<'a, V>,
 {
-    for (a_key, a_value) in a_entries.iter() {
+    for (a_key, a_value) in a.map.iter() {
         // In the best case, all of the keys in `a` exist in both maps
-        if let Some(b_value) = b_entries.get(a_key) {
+        if let Some(b_value) = b.map.get(a_key) {
             // So we can unify directly and continue or bail
             state = state.unify(a_value, b_value)?;
         } else {
             // Otherwise, we need to consider every possible match, which means
             // forking. The bad news is that this could blow up to a lot of
-            // alternates if the map is large The good news is that even if we
+            // alternates if the map is large. The good news is that even if we
             // queue up a fork, any other matching keys that fail to unify will
             // abort the whole state.
-            //
-            // TODO: Either figure out a way to not do so much ugly cloning
-            // (especially b_values) or make sure the cost is not bad and/or
-            // mitigated with something like im::HashMap. Also look in LMapFork.
-            // Measure!
             state = state.fork(Rc::new(LMapFork {
                 a_key: a_key.clone(),
                 a_value: a_value.clone(),
-                b_values: b_entries.clone(),
+                b_map: b.clone(),
             }))?;
         }
     }
@@ -128,7 +123,7 @@ where
 struct LMapFork<K: Eq + Hash + Debug, V: Debug> {
     a_key: Val<K>,
     a_value: Val<V>,
-    b_values: HashMap<Val<K>, Val<V>>,
+    b_map: Rc<LMap<K, V>>,
 }
 
 impl<'a, K: Eq + Hash + Debug, V: Debug, D> Fork<'a, D> for LMapFork<K, V>
@@ -140,8 +135,8 @@ where
     fn fork(&self, state: State<'a, D>) -> StateIter<'a, D> {
         let a_key = self.a_key.clone();
         let a_value = self.a_value.clone();
-        let b_values = self.b_values.clone();
-        Box::new(b_values.into_iter().filter_map(move |(b_key, b_value)| {
+        let b_map = self.b_map.map.clone();
+        Box::new(b_map.into_iter().filter_map(move |(b_key, b_value)| {
             state
                 .clone()
                 .unify(&a_key, &b_key)?

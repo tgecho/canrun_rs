@@ -14,7 +14,7 @@ where
 {
     a: Val<A>,
     b: Val<B>,
-    f: Rc<dyn Fn(&A, &B) -> Goal<'a, D> + 'a>,
+    f: Rc<dyn Fn(Rc<A>, Rc<B>) -> Goal<'a, D> + 'a>,
 }
 
 /// Create a [projection goal](super) that allows creating a new goal based on
@@ -40,7 +40,7 @@ where
     B: Debug + 'a,
     BV: IntoVal<B>,
     D: DomainType<'a, A> + DomainType<'a, B>,
-    F: Fn(&A, &B) -> Goal<'a, D> + 'a,
+    F: Fn(Rc<A>, Rc<B>) -> Goal<'a, D> + 'a,
 {
     Goal::constraint(Project2 {
         a: a.into_val(),
@@ -57,7 +57,7 @@ where
 {
     fn attempt(&self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
         let (a, b) = resolve_2(&self.a, &self.b, state)?;
-        let goal = (self.f)(&*a, &*b);
+        let goal = (self.f)(a, b);
         Ok(Box::new(move |state| goal.apply(state)))
     }
 }

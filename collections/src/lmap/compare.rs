@@ -28,9 +28,7 @@ where
     D: DomainType<'a, LMap<K, V>> + DomainType<'a, K> + DomainType<'a, V> + 'a,
 {
     project_2(a, b, |a, b| {
-        let a = a.map.clone();
-        let b = b.map.clone();
-        custom(move |state| unify_entries(state, &a, &b))
+        custom(move |state| unify_entries(state, a.clone(), b.clone()))
     })
 }
 
