@@ -1,4 +1,4 @@
-use canrun::{all, any, domain, either, unify, val, var, Goal, Val};
+use canrun::{all, any, domain, either, ltup, unify, var, Goal, Val};
 use canrun_collections::{lvec, lvec::member, LVec};
 
 type LHouse = (
@@ -24,10 +24,6 @@ domain! {
     }
 }
 
-fn v() -> Val<&'static str> {
-    Val::Var(var())
-}
-
 fn on_right<'a>(left: &LHouse, right: &LHouse, houses: &LVec<LHouse>) -> Goal<'a, Zebra> {
     any![
         unify(lvec![left, right, var(), var(), var()], houses),
@@ -43,46 +39,46 @@ fn next_to(a: &LHouse, b: &LHouse, houses: &LVec<LHouse>) -> Goal<'static, Zebra
 
 pub fn zebra() -> Vec<Vec<House>> {
     let houses: LVec<LHouse> = lvec![
-        (val!("norwegian"), v(), v(), v(), v()),
+        ltup!("norwegian", var(), var(), var(), var()),
         var(),
-        (v(), v(), val!("milk"), v(), v()),
+        ltup!(var(), var(), "milk", var(), var()),
         var(),
         var(),
     ];
     let goal: Goal<Zebra> = all![
-        member((val!("englishman"), v(), v(), v(), val!("red")), &houses),
+        member(ltup!("englishman", var(), var(), var(), "red"), &houses),
         on_right(
-            &(v(), v(), v(), v(), val!("ivory")),
-            &(v(), v(), v(), v(), val!("green")),
+            &ltup!(var(), var(), var(), var(), "ivory"),
+            &ltup!(var(), var(), var(), var(), "green"),
             &houses
         ),
         next_to(
-            &(val!("norwegian"), v(), v(), v(), v()),
-            &(v(), v(), v(), v(), val!("blue")),
+            &ltup!("norwegian", var(), var(), var(), var()),
+            &ltup!(var(), var(), var(), var(), "blue"),
             &houses
         ),
-        member((v(), val!("kools"), v(), v(), val!("yellow")), &houses),
-        member((val!("spaniard"), v(), v(), val!("dog"), v()), &houses),
-        member((v(), v(), val!("coffee"), v(), val!("green")), &houses),
-        member((val!("ukrainian"), v(), val!("tea"), v(), v()), &houses),
-        member((v(), val!("luckystrikes"), val!("oj"), v(), v()), &houses),
+        member(ltup!(var(), "kools", var(), var(), "yellow"), &houses),
+        member(ltup!("spaniard", var(), var(), "dog", var()), &houses),
+        member(ltup!(var(), var(), "coffee", var(), "green"), &houses),
+        member(ltup!("ukrainian", var(), "tea", var(), var()), &houses),
+        member(ltup!(var(), "luckystrikes", "oj", var(), var()), &houses),
         member(
-            (val!("japanese"), val!("parliaments"), v(), v(), v()),
+            ltup!("japanese", "parliaments", var(), var(), var()),
             &houses
         ),
-        member((v(), val!("oldgolds"), v(), val!("snails"), v()), &houses),
+        member(ltup!(var(), "oldgolds", var(), "snails", var()), &houses),
         next_to(
-            &(v(), v(), v(), val!("horse"), v()),
-            &(v(), val!("kools"), v(), v(), v()),
+            &ltup!(var(), var(), var(), "horse", var()),
+            &ltup!(var(), "kools", var(), var(), var()),
             &houses
         ),
         next_to(
-            &(v(), v(), v(), val!("fox"), v()),
-            &(v(), val!("chesterfields"), v(), v(), v()),
+            &ltup!(var(), var(), var(), "fox", var()),
+            &ltup!(var(), "chesterfields", var(), var(), var()),
             &houses
         ),
-        member((v(), v(), val!("water"), v(), v()), &houses),
-        member((v(), v(), v(), val!("zebra"), v()), &houses),
+        member(ltup!(var(), var(), "water", var(), var()), &houses),
+        member(ltup!(var(), var(), var(), "zebra", var()), &houses),
     ];
     goal.query(houses).collect()
 }

@@ -46,13 +46,35 @@ impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr);
 impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr);
 impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr, Ev => Er);
 
+/// Create a tuple of [logical values](value::Val) with automatic [`IntoVal`
+/// wrapping](value::IntoVal).
+///
+/// The primary benefit is that it allows freely mixing resolved values and
+/// [`LVar`s](value::LVar).
+///
+/// # Example:
+/// ```
+/// use canrun::{var, ltup, Val};
+/// let x = var();
+/// let tuple: (Val<i32>, Val<i32>, Val<&'static str>) = ltup!(x, 1, "two");
+/// ```
+#[macro_export]
+macro_rules! ltup {
+    ($($item:expr),* $(,)?) => {
+        ($($crate::value::IntoVal::into_val($item)),*)
+    };
+}
+
+#[doc(inline)]
+pub use ltup;
+
 #[cfg(test)]
 mod tests {
     use crate as canrun;
     use crate::goal::unify;
     use crate::goal::Goal;
     use crate::util;
-    use crate::value::{val, var, Val};
+    use crate::value::{var, Val};
     use canrun_codegen::domain;
 
     domain! {
@@ -71,16 +93,14 @@ mod tests {
     #[test]
     fn tuple2_succeeds() {
         let x = var();
-        let goals: Vec<Goal<Tuples2>> =
-            vec![unify(x, (val!(1), val!(2))), unify(x, (val!(1), val!(2)))];
+        let goals: Vec<Goal<Tuples2>> = vec![unify(x, ltup!(1, 2)), unify(x, ltup!(1, 2))];
         util::assert_permutations_resolve_to(goals, x, vec![(1, 2)]);
     }
 
     #[test]
     fn tuple2_fails() {
         let x = var();
-        let goals: Vec<Goal<Tuples2>> =
-            vec![unify(x, (val!(1), val!(3))), unify(x, (val!(1), val!(2)))];
+        let goals: Vec<Goal<Tuples2>> = vec![unify(x, ltup!(1, 3)), unify(x, ltup!(1, 2))];
         util::assert_permutations_resolve_to(goals, x, vec![]);
     }
 
@@ -88,28 +108,21 @@ mod tests {
     fn tuple2_nested_var() {
         let x = var();
         let y = var();
-        let goals: Vec<Goal<Tuples2>> =
-            vec![unify(x, (val!(1), val!(y))), unify(x, (val!(1), val!(2)))];
+        let goals: Vec<Goal<Tuples2>> = vec![unify(x, ltup!(1, y)), unify(x, ltup!(1, 2))];
         util::assert_permutations_resolve_to(goals, y, vec![2]);
     }
 
     #[test]
     fn tuple3_succeeds() {
         let x = var();
-        let goals: Vec<Goal<Tuples3>> = vec![
-            unify(x, (val!(1), val!(2), val!(3))),
-            unify(x, (val!(1), val!(2), val!(3))),
-        ];
+        let goals: Vec<Goal<Tuples3>> = vec![unify(x, ltup!(1, 2, 3)), unify(x, ltup!(1, 2, 3))];
         util::assert_permutations_resolve_to(goals, x, vec![(1, 2, 3)]);
     }
 
     #[test]
     fn tuple3_fails() {
         let x = var();
-        let goals: Vec<Goal<Tuples3>> = vec![
-            unify(x, (val!(1), val!(2), val!(3))),
-            unify(x, (val!(1), val!(2), val!(4))),
-        ];
+        let goals: Vec<Goal<Tuples3>> = vec![unify(x, ltup!(1, 2, 3)), unify(x, ltup!(1, 2, 4))];
         util::assert_permutations_resolve_to(goals, x, vec![]);
     }
 
@@ -117,10 +130,7 @@ mod tests {
     fn tuple3_nested_var() {
         let x = var();
         let y = var();
-        let goals: Vec<Goal<Tuples3>> = vec![
-            unify(x, (val!(1), val!(y), val!(3))),
-            unify(x, (val!(1), val!(2), val!(3))),
-        ];
+        let goals: Vec<Goal<Tuples3>> = vec![unify(x, ltup!(1, y, 3)), unify(x, ltup!(1, 2, 3))];
         util::assert_permutations_resolve_to(goals, y, vec![2]);
     }
 }

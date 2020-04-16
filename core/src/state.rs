@@ -249,7 +249,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     ///
     /// While this is not quite as finicky as the
     /// [`Constraints`](State::constrain()), you still probably want to use the
-    /// [`any`](crate::goal::any) or [`either`](crate::goal::either()) goals.
+    /// [`any`](crate::goal::any!) or [`either`](crate::goal::either()) goals.
     ///
     /// [Unification](State::unify()) is performed eagerly as soon as it is
     /// called. [Constraints](State::constrain()) are run as variables are

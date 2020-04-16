@@ -46,8 +46,8 @@ where
 ///
 /// This function takes a `Vec<Goal<_>>`, a [Query](crate::Query) and a `Vec`
 /// containing the expected values. It will try every permutation of the goals
-/// (wrapped in an [`all` goal](crate::goal::all)) and panic if any of the results
-/// vary.
+/// (wrapped in an [`all` goal](crate::goal::all!)) and panic if any of the
+/// results vary.
 ///
 /// # Example
 /// ```

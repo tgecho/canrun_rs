@@ -46,6 +46,8 @@ pub use unify::UnifyIn;
 #[doc(inline)]
 pub use value::{var, IntoVal, LVar, ReifyIn, Val};
 
+pub use impls::tuples::*;
+
 #[doc(inline)]
 pub use domains::domain;
 
