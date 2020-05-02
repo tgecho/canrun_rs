@@ -1,4 +1,5 @@
-//! Constrain the set of types that you can reason about in a particular context.
+//! Constrain the set of types that you can reason about in a particular
+//! context.
 
 pub mod example;
 
@@ -9,7 +10,8 @@ use std::fmt::Debug;
 
 /// Manage values for a set of specific types.
 ///
-/// Works with the [`DomainType<T>`](DomainType) trait to allow access to actual values.
+/// Works with the [`DomainType<T>`](DomainType) trait to allow access to actual
+/// values.
 ///
 /// Domains are typically generated with the [`domain!`](./macro.domain.html)
 /// macro. There isn't currently much use case for interacting with a domain
@@ -32,7 +34,8 @@ use std::fmt::Debug;
 /// # }
 /// ```
 pub trait Domain<'a>: Clone + Debug {
-    /// An individual value that may contain any of the valid types in this domain.
+    /// An individual value that may contain any of the valid types in this
+    /// domain.
     ///
     /// Typically for internal use.
     type Value: Debug + Clone + 'a;
@@ -56,7 +59,8 @@ pub trait Domain<'a>: Clone + Debug {
     ) -> Option<State<'a, Self>>;
 }
 
-/// A type specific container used by a [`Domain`](crate::domains::Domain) to hold values.
+/// A type specific container used by a [`Domain`](crate::domains::Domain) to
+/// hold values.
 ///
 /// Created by the `domain!` macro and intended for internal use.
 #[derive(Debug)]
@@ -74,15 +78,15 @@ impl<'a, T: Debug> Clone for DomainValues<T> {
     }
 }
 
-/// Allows a [`State`](crate::state) to retrieve values of a specific type from a
-/// [domain](crate::domains).
+/// Allows a [`State`](crate::state) to retrieve values of a specific type from
+/// a [domain](crate::domains).
 ///
 /// This trait is automatically implemented by the `domain!` macro.
 ///
 /// As of now there shouldn't be much of a need to use this trait's
 /// functionality in user facing code. The trait itself may need to be used as a
-/// constraint, though [`UnifyIn`](crate::UnifyIn) is often the better, higher level
-/// choice.
+/// constraint, though [`UnifyIn`](crate::UnifyIn) is often the better, higher
+/// level choice.
 pub trait DomainType<'a, T: Debug>: Domain<'a> {
     #[doc(hidden)]
     fn resolve<'r>(&'r self, val: &'r Val<T>) -> &'r Val<T>

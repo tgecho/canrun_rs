@@ -1,6 +1,7 @@
 #![warn(missing_docs)]
 
-//! [Canrun](canrun) related [goal](canrun) functions and other miscellany related to [ops](std::ops).
+//! [Canrun](canrun) related [goal](canrun) functions and other miscellany
+//! related to [ops](std::ops).
 
 extern crate canrun;
 

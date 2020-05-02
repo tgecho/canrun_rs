@@ -25,8 +25,8 @@ where
 /// Create a [goal](crate::goal::Goal) that succeeds if either sub-goal succeed.
 ///
 /// This is essentially an "OR" operation, and will eventually lead to zero, one
-/// or two [resolved states](crate::state::ResolvedState), depending on the success
-/// or failure of the sub-goals.
+/// or two [resolved states](crate::state::ResolvedState), depending on the
+/// success or failure of the sub-goals.
 ///
 /// # Examples
 ///

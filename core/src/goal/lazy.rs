@@ -18,7 +18,8 @@ impl<'a, D: Domain<'a>> Lazy<'a, D> {
     }
 }
 
-/// Create a [goal](crate::goal::Goal) that is generated via callback just as it is about to be evaluated.
+/// Create a [goal](crate::goal::Goal) that is generated via callback just as it
+/// is about to be evaluated.
 ///
 /// The primary uses for this function involve introducing new internal vars.
 /// The passed in callback function should return a valid goal to be evaluated.

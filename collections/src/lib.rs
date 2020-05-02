@@ -2,7 +2,8 @@
 
 //! [Canrun](canrun) collections and related [goal](canrun) functions.
 //!
-//! # NOTE: These are not very battle tested and may have some pathological performance characteristics.
+//! # NOTE: These are not very battle tested and may have some pathological
+//! performance characteristics.
 //!
 //! Unifying large or complex collections may involve forking the state for
 //! every possible combination of values. Also, the inherent complexity of

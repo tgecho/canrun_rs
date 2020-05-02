@@ -12,7 +12,8 @@
 //!
 //! An open [State] is the initial struct that you will start with (explicitly
 //! or implicitly through a [goal](crate::goal)). Iterating through the
-//! potentially results will yield zero or more [`ResolvedStates`](ResolvedState).
+//! potentially results will yield zero or more
+//! [`ResolvedStates`](ResolvedState).
 
 pub mod constraints;
 mod impls;
@@ -47,8 +48,8 @@ type ConstraintFns<'s, D> = MKMVMap<LVarId, Rc<dyn Constraint<'s, D> + 's>>;
 ///
 /// In general, it is most ergonomic to manipulate a state inside a function
 /// that returns an `Option<State<D>>` to allow the use of the question mark
-/// operator (Note that the [`.apply()`](State::apply()) function makes it easy to
-/// do this).
+/// operator (Note that the [`.apply()`](State::apply()) function makes it easy
+/// to do this).
 ///
 /// ```
 /// use canrun::{State, val, var};
@@ -97,9 +98,9 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
 
     /// Apply an arbitrary function to a state.
     ///
-    /// This is primarily a helper to make it easier to get into a function where
-    /// you can use the question mark operator while applying multiple updates
-    /// to a state.
+    /// This is primarily a helper to make it easier to get into a function
+    /// where you can use the question mark operator while applying multiple
+    /// updates to a state.
     ///
     /// # Example:
     /// ```
@@ -228,7 +229,8 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
     /// values are available. `.constrain()` provides a low level way to run
     /// custom imperative code whenever certain bindings are updated.
     ///
-    /// See the [`Constraint` trait](constraints::Constraint) for more information.
+    /// See the [`Constraint` trait](constraints::Constraint) for more
+    /// information.
     pub fn constrain(mut self, constraint: Rc<dyn Constraint<'a, D> + 'a>) -> Option<Self> {
         match constraint.attempt(&self) {
             Ok(resolve) => resolve(self),

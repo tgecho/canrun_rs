@@ -20,9 +20,9 @@ use crate::ReifyIn;
 /// A blanket impl covers anything that implements [`IterResolved`], so many
 /// types including [`Goal`](crate::Goal) and [`State`](crate::State) are
 /// queryable.
-///
 pub trait Query<'a, D: Domain<'a> + 'a> {
-    /// Get [reified](crate::value::ReifyIn) results from an iterator of [`ResolvedStates`](crate::ResolvedState).
+    /// Get [reified](crate::value::ReifyIn) results from an iterator of
+    /// [`ResolvedStates`](crate::ResolvedState).
     ///
     /// # Examples:
     ///
@@ -50,8 +50,8 @@ pub trait Query<'a, D: Domain<'a> + 'a> {
     ///
     /// ### `Option<State<D>>`
     /// Note that most of the lower level [`State`](crate::State) update methods
-    /// return an `Option<State<D>>`. Since [`IterResolved`] is implemented for this
-    /// type, Query is as well!
+    /// return an `Option<State<D>>`. Since [`IterResolved`] is implemented for
+    /// this type, Query is as well!
     /// ```
     /// # use canrun::{State, IterResolved, Query, val, var};
     /// # use canrun::domains::example::I32;

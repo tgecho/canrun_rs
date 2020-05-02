@@ -11,8 +11,8 @@ use std::rc::Rc;
 /// Create a [projection goal](super) that allows deriving one resolved value
 /// from the other two.
 ///
-/// Functions must be provided to derive from any combination of two values. Whichever two are
-/// resolved first will be used to derive the other.
+/// Functions must be provided to derive from any combination of two values.
+/// Whichever two are resolved first will be used to derive the other.
 ///
 /// ```
 /// use canrun::{Goal, all, unify, var, map_2};

@@ -20,10 +20,10 @@ impl<'a, D: Domain<'a>> Custom<'a, D> {
 /// Create a [goal](crate::goal::Goal) that gives access to the underlying
 /// [`State`](crate::state::State) struct.
 ///
-/// Similar to [`lazy`](crate::goal::lazy()), the passed in callback is given access to
-/// the state so it can call the lower level [State] manipulation methods. This
-/// should approach should be used sparingly. Ideally most logic should be
-/// composable out of lower level primitive goals.
+/// Similar to [`lazy`](crate::goal::lazy()), the passed in callback is given
+/// access to the state so it can call the lower level [State] manipulation
+/// methods. This should approach should be used sparingly. Ideally most logic
+/// should be composable out of lower level primitive goals.
 ///
 /// Because the [State] methods return an `Option<[State]>` the
 /// [question mark operator `?`](https://doc.rust-lang.org/edition-guide/rust-2018/error-handling-and-panics/the-question-mark-operator-for-easier-error-handling.html)

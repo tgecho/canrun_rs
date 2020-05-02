@@ -64,8 +64,8 @@ use std::rc::Rc;
 /// # fn main() {}
 /// ```
 /// Because the trait is parameterized with a [domain](crate::domains), you
-/// should be able to implement UnifyIn for third-party types without running into
-/// the orphan trait rule, so long as you don't conflict with an existing
+/// should be able to implement UnifyIn for third-party types without running
+/// into the orphan trait rule, so long as you don't conflict with an existing
 /// implementation.
 /// ```
 /// # // Just a random foreign type to make this an accurate doctest.

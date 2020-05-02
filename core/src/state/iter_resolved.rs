@@ -4,7 +4,8 @@ use crate::domains::Domain;
 
 /// An Iterator of [`ResolvedStates`](crate::state::ResolvedState).
 ///
-/// Typically obtained through the [`.iter_resolved()`](IterResolved::iter_resolved()) trait.
+/// Typically obtained through the
+/// [`.iter_resolved()`](IterResolved::iter_resolved()) trait.
 pub type ResolvedStateIter<'s, D> = Box<dyn Iterator<Item = ResolvedState<D>> + 's>;
 
 /// Iterate over [`ResolvedStates`](crate::state::ResolvedState).
