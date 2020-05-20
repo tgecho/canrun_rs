@@ -5,7 +5,7 @@ authors = ["Erik Simmler <tgecho@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-im-rc = "14.3.0"
+im-rc = "15.0.0"
 rand = "0.7.3"
 itertools = "0.9.0"
 log = "0.4.8"
@@ -13,7 +13,7 @@ canrun_codegen = {path = "../codegen"}
 
 [dev-dependencies]
 env_logger = "0.7.1"
-criterion = "0.3.1"
+criterion = "0.3.2"
 
 [[bench]]
 name = "main"
