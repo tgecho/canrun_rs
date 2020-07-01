@@ -61,7 +61,7 @@ impl<V: Debug> LVec<V> {
 /// ```
 #[macro_export]
 macro_rules! lvec {
-    ($($item:expr),*) => {
+    ($($item:expr),* $(,)?) => {
         {
             let mut lv = $crate::lvec::LVec::new();
             $(lv.push(canrun::value::IntoVal::into_val($item));)*
