@@ -43,6 +43,7 @@ macro_rules! impl_for_tuple {
 
 impl_for_tuple!(Av => Ar, Bv => Br);
 impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr);
+impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr);
 impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr, Ev => Er);
 
 #[cfg(test)]
