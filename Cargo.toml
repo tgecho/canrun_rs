@@ -4,6 +4,7 @@ members = [
     "collections",
     "core",
     "basic",
+    "examples",
     "readme_check",
 ]
 default-members = [
