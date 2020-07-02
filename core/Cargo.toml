@@ -19,7 +19,7 @@ canrun_codegen = { version = "0.1.0", path = "../codegen"}
 
 [dev-dependencies]
 env_logger = "0.7.1"
-criterion = "0.3.2"
+criterion = "0.3.3"
 
 [[bench]]
 name = "main"
