@@ -25,7 +25,7 @@ macro_rules! impl_for_tuple {
                 let ($($r),*) = &*r;
                 Some(
                     state
-                        $(.unify(&$t.clone(), &$r.clone())?)*
+                        $(.unify(&$t, &$r)?)*
                 )
             }
         }
