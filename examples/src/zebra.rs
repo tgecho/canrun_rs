@@ -37,7 +37,7 @@ fn next_to(a: &LHouse, b: &LHouse, houses: &LVec<LHouse>) -> Goal<'static, Zebra
     either(on_right(a, b, houses), on_right(b, a, houses))
 }
 
-pub fn zebra() -> Vec<Vec<House>> {
+pub fn zebra() -> Option<Vec<House>> {
     let houses: LVec<LHouse> = lvec![
         ltup!("norwegian", var(), var(), var(), var()),
         var(),
@@ -80,19 +80,19 @@ pub fn zebra() -> Vec<Vec<House>> {
         member(ltup!(var(), var(), "water", var(), var()), &houses),
         member(ltup!(var(), var(), var(), "zebra", var()), &houses),
     ];
-    goal.query(houses).collect()
+    goal.query(houses).nth(0)
 }
 
 #[test]
 fn test_zebra() {
     assert_eq!(
         zebra(),
-        vec![vec![
+        Some(vec![
             ("norwegian", "kools", "water", "fox", "yellow"),
             ("ukrainian", "chesterfields", "tea", "horse", "blue"),
             ("englishman", "oldgolds", "milk", "snails", "red"),
             ("spaniard", "luckystrikes", "oj", "dog", "ivory"),
             ("japanese", "parliaments", "coffee", "zebra", "green"),
-        ]]
+        ])
     )
 }
