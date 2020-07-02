@@ -18,7 +18,8 @@ use std::rc::Rc;
 ///      bar.into_val()
 /// }
 /// ```
-/// That means it can take any of these types and will take care of converting them into a `Val<T>` for you:
+/// That means it can take any of these types and will take care of converting
+/// them into a `Val<T>` for you:
 /// ```
 /// # use canrun::{Val, var, IntoVal};
 /// # use std::fmt::Debug;

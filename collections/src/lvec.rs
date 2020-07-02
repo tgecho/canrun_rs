@@ -1,8 +1,10 @@
 //! A [`Vec`]-like data structure with [`LVar`](canrun::value::LVar) values.
 
 mod member;
+mod subset;
 
 pub use member::member;
+pub use subset::subset;
 
 use canrun::{DomainType, IntoVal, ReifyIn, ResolvedState, State, UnifyIn, Val};
 use std::fmt::Debug;
@@ -27,6 +29,19 @@ impl<V: Debug> LVec<V> {
     /// ```
     pub fn new() -> Self {
         LVec { vec: Vec::new() }
+    }
+
+    /// Get the number of elements in the [LVec].
+    ///
+    /// # Example:
+    /// ```
+    /// use canrun_collections::lvec::{LVec, lvec};
+    ///
+    /// let map: LVec<i32> = lvec![1, 2];
+    /// assert_eq!(map.len(), 2);
+    /// ```
+    pub fn len(&self) -> usize {
+        self.vec.len()
     }
 
     /// Add a value to an existing [`LVec`].
@@ -98,6 +113,19 @@ where
     type Reified = Vec<T::Reified>;
     fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
         self.vec.iter().map(|v: &Val<T>| state.reify(v)).collect()
+    }
+}
+
+impl<'a, T, I, IV> From<I> for LVec<T>
+where
+    T: Debug,
+    IV: IntoVal<T>,
+    I: IntoIterator<Item = IV>,
+{
+    fn from(i: I) -> Self {
+        LVec {
+            vec: i.into_iter().map(|t| t.into_val()).collect(),
+        }
     }
 }
 

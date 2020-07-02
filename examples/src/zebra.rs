@@ -1,5 +1,9 @@
-use canrun::{all, any, domain, either, ltup, unify, var, Goal, Val};
-use canrun_collections::{lvec, lvec::member, LVec};
+use canrun::{all, domain, either, ltup, var, Goal, Val};
+use canrun_collections::{
+    lvec,
+    lvec::{member, subset},
+    LVec,
+};
 
 type LHouse = (
     Val<&'static str>,
@@ -25,12 +29,7 @@ domain! {
 }
 
 fn on_right<'a>(left: &LHouse, right: &LHouse, houses: &LVec<LHouse>) -> Goal<'a, Zebra> {
-    any![
-        unify(lvec![left, right, var(), var(), var()], houses),
-        unify(lvec![var(), left, right, var(), var()], houses),
-        unify(lvec![var(), var(), left, right, var()], houses),
-        unify(lvec![var(), var(), var(), left, right], houses),
-    ]
+    subset(lvec![left, right], houses)
 }
 
 fn next_to(a: &LHouse, b: &LHouse, houses: &LVec<LHouse>) -> Goal<'static, Zebra> {
