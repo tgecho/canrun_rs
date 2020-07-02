@@ -7,9 +7,3 @@ members = [
     "examples",
     "readme_check",
 ]
-default-members = [
-    "codegen",
-    "collections",
-    "core",
-    "basic",
-]
