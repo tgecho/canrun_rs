@@ -1,5 +1,5 @@
 use canrun::{all, domain, either, ltup, var, Goal, Val};
-use canrun_collections::{
+use canrun::{
     lvec,
     lvec::{member, subset},
     LVec,

@@ -1,9 +1,7 @@
 [workspace]
 members = [
     "codegen",
-    "collections",
-    "core",
-    "basic",
+    "canrun",
     "examples",
     "readme_check",
 ]

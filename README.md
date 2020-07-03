@@ -13,7 +13,7 @@ worst it may just be a poor misinterpretation with fatal flaws.
 
 ```rust
 use canrun::{Goal, both, unify, var};
-use canrun::domains::example::I32;
+use canrun::example::I32;
 
 let x = var();
 let y = var();
