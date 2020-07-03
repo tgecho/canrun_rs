@@ -19,8 +19,8 @@ fn get_id() -> LVarId {
 /// used to [query](crate::Query) for values in a
 /// [`ResolvedState`](crate::state::ResolvedState).
 ///
-/// The identity of each `LVar` is tracked using an internal id. While this id is
-/// visible through the `Debug` implementation, it should only be used for
+/// The identity of each `LVar` is tracked using an internal id. While this id
+/// is visible through the `Debug` implementation, it should only be used for
 /// debugging purposes as no guarantees are made about the type or generation of
 /// the id value.
 #[derive(Default)]
@@ -54,7 +54,8 @@ impl<T> Eq for LVar<T> {}
 impl<T> LVar<T> {
     /// Create a new [logical var](LVar).
     ///
-    /// The [`var()`](crate::value::var) function is typically used as a shorthand.
+    /// The [`var()`](crate::value::var) function is typically used as a
+    /// shorthand.
     ///
     /// # Example:
     /// ```
@@ -75,9 +76,9 @@ impl<T> LVar<T> {
     /// `LVars` are primarily represented by an internal id. A textual label can
     /// assist in debugging.
     ///
-    /// No guarantees are made about the actual debug string. Two `LVars` created
-    /// separately are not considered to be the same, even if they have the same
-    /// label.
+    /// No guarantees are made about the actual debug string. Two `LVars`
+    /// created separately are not considered to be the same, even if they
+    /// have the same label.
     ///
     /// # Examples:
     /// ```

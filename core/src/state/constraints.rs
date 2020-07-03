@@ -78,7 +78,8 @@ pub trait Constraint<'a, D>: Debug
 where
     D: Domain<'a>,
 {
-    /// Resolve required variables in a state and resubscribe or request to update the state.
+    /// Resolve required variables in a state and resubscribe or request to
+    /// update the state.
     fn attempt(&self, state: &State<'a, D>) -> Result<ResolveFn<'a, D>, VarWatch>;
 }
 
@@ -102,7 +103,8 @@ impl VarWatch {
     }
 }
 
-/// Resolve one [`Val`] or return an [`Err(VarWatch)`](VarWatch) in a [`Constraint`].
+/// Resolve one [`Val`] or return an [`Err(VarWatch)`](VarWatch) in a
+/// [`Constraint`].
 pub fn resolve_1<'a, A, D>(val: &Val<A>, state: &State<'a, D>) -> Result<Rc<A>, VarWatch>
 where
     A: Debug,
@@ -115,7 +117,8 @@ where
     }
 }
 
-/// Resolve two [`Val`]s or return an [`Err(VarWatch)`](VarWatch) in a [`Constraint`].
+/// Resolve two [`Val`]s or return an [`Err(VarWatch)`](VarWatch) in a
+/// [`Constraint`].
 pub fn resolve_2<'a, A, B, D>(
     a: &Val<A>,
     b: &Val<B>,
@@ -164,8 +167,8 @@ impl<A: Debug, B: Debug> OneOfTwo<A, B> {
     }
 }
 
-/// Resolve two out of three [`Val`]s or return an [`Err(VarWatch)`](VarWatch) in
-/// a [`Constraint`].
+/// Resolve two out of three [`Val`]s or return an [`Err(VarWatch)`](VarWatch)
+/// in a [`Constraint`].
 pub enum TwoOfThree<A: Debug, B: Debug, C: Debug> {
     /// Returned when the first and second [`Val`]s are successfully resolved.
     AB(Rc<A>, Rc<B>, Val<C>),

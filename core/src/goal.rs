@@ -1,13 +1,13 @@
 //! Make declarative assertions about the relationships between values.
 //!
-//! [`Goals`](crate::Goal) provide a high level interface for defining logic programs.
-//! They are composable, with many higher level goals being made
+//! [`Goals`](crate::Goal) provide a high level interface for defining logic
+//! programs. They are composable, with many higher level goals being made
 //! up of lower level primitives. Since the typical way of using goals are
 //! through simple functions, it is easy to build and reuse custom, first class
 //! goal constructors.
 //!
-//! While [`State`] exposes a lower level API, in practice there really shouldn't
-//! be anything that can't be expressed using goals.
+//! While [`State`] exposes a lower level API, in practice there really
+//! shouldn't be anything that can't be expressed using goals.
 use crate::domains::Domain;
 use crate::query::Query;
 use crate::state::{Constraint, Fork, State};
@@ -58,8 +58,8 @@ pub(crate) enum GoalEnum<'a, D: Domain<'a>> {
 /// Values of this type are typically constructed with one of the many
 /// [constructor functions](crate::goal#functions) and
 /// [macros](crate::goal#macros). These high level methods provide automatic
-/// [value](crate::value) wrapping through [`IntoVal`](crate::value::IntoVal) and
-/// other niceties.
+/// [value](crate::value) wrapping through [`IntoVal`](crate::value::IntoVal)
+/// and other niceties.
 #[derive(Clone, Debug)]
 pub struct Goal<'a, D: Domain<'a>>(GoalEnum<'a, D>);
 
@@ -117,7 +117,8 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
         Goal(GoalEnum::Fork(Rc::new(fork)))
     }
 
-    /// Create a goal containing a [`Constraint` object](crate::state::Constraint).
+    /// Create a goal containing a [`Constraint`
+    /// object](crate::state::Constraint).
     pub fn constraint<F: Constraint<'a, D> + 'a>(constraint: F) -> Self {
         Goal(GoalEnum::Constraint(Rc::new(constraint)))
     }
@@ -148,8 +149,9 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
     /// sub-goal.
     ///
     /// This constructor takes anything that implements
-    /// [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type. See the
-    /// [`any!`](./macro.any.html) macro for a slightly higher level interface.
+    /// [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type.
+    /// See the [`any!`](./macro.any.html) macro for a slightly higher level
+    /// interface.
     ///
     /// # Example
     /// ```

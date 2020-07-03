@@ -9,7 +9,8 @@ use canrun::{DomainType, UnifyIn};
 use std::fmt::Debug;
 use std::iter::repeat;
 
-/// Create a [`Goal`](canrun::goal) that attempts to unify a `Val<T>` with any of the items in a `LVec<T>`.
+/// Create a [`Goal`](canrun::goal) that attempts to unify a `Val<T>` with any
+/// of the items in a `LVec<T>`.
 ///
 /// This goal will fork the state for each match found.
 ///

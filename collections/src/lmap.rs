@@ -1,4 +1,5 @@
-//! A [`HashMap`](std::collections::HashMap)-like data structure with [`LVar`](canrun::value::LVar) keys and values.
+//! A [`HashMap`](std::collections::HashMap)-like data structure with
+//! [`LVar`](canrun::value::LVar) keys and values.
 use canrun::state::{Fork, StateIter};
 use canrun::{DomainType, IntoVal, ReifyIn, ResolvedState, State, UnifyIn, Val};
 use std::collections::HashMap;
@@ -11,7 +12,8 @@ mod compare;
 
 pub use compare::{is_subset, is_superset};
 
-/// A [`HashMap`](std::collections::HashMap)-like data structure with [`LVar`](canrun::value::LVar) keys and values.
+/// A [`HashMap`](std::collections::HashMap)-like data structure with
+/// [`LVar`](canrun::value::LVar) keys and values.
 #[derive(Debug, Clone)]
 pub struct LMap<K: Eq + Hash + Debug, V: Debug> {
     map: HashMap<Val<K>, Val<V>>,
