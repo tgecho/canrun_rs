@@ -1,4 +1,4 @@
-//! A [`Vec`]-like data structure with [`LVar`](canrun::LVar) values.
+//! A [`Vec`]-like data structure with [`LVar`](crate::LVar) values.
 
 mod member;
 mod subset;
@@ -10,7 +10,7 @@ use crate::{DomainType, IntoVal, ReifyIn, ResolvedState, State, UnifyIn, Val};
 use std::fmt::Debug;
 use std::rc::Rc;
 
-/// A [`Vec`]-like data structure with [`LVar`](canrun::LVar) values.
+/// A [`Vec`]-like data structure with [`LVar`](crate::value::LVar) values.
 #[derive(Debug, Clone)]
 pub struct LVec<T: Debug> {
     vec: Vec<Val<T>>,
@@ -70,7 +70,7 @@ impl<V: Debug> LVec<V> {
 /// # Example:
 /// ```
 /// use canrun::var;
-/// use canrun::{lvec, LVec};
+/// use canrun::collections::lvec::{lvec, LVec};
 /// let x = var();
 /// let map: LVec<i32> = lvec![x, 1, 2];
 /// ```

@@ -1,5 +1,5 @@
 //! A [`HashMap`](std::collections::HashMap)-like data structure with
-//! [`LVar`](canrun::value::LVar) keys and values.
+//! [`LVar`](crate::value::LVar) keys and values.
 use crate::state::{Fork, StateIter};
 use crate::{DomainType, IntoVal, ReifyIn, ResolvedState, State, UnifyIn, Val};
 use std::collections::HashMap;
@@ -10,10 +10,10 @@ use std::rc::Rc;
 
 mod compare;
 
-pub use compare::{is_subset, is_superset};
+pub use compare::{subset, superset};
 
 /// A [`HashMap`](std::collections::HashMap)-like data structure with
-/// [`LVar`](canrun::value::LVar) keys and values.
+/// [`LVar`](crate::value::LVar) keys and values.
 #[derive(Debug, Clone)]
 pub struct LMap<K: Eq + Hash + Debug, V: Debug> {
     map: HashMap<Val<K>, Val<V>>,
@@ -168,10 +168,10 @@ where
 }
 
 /// Create an [`LMap`](crate::lmap::LMap) with automatic key/value [`IntoVal`
-/// wrapping](canrun::value::IntoVal).
+/// wrapping](crate::value::IntoVal).
 ///
 /// The primary benefit is that it allows freely mixing resolved values and
-/// [`LVar`s](canrun::value::LVar).
+/// [`LVar`s](crate::value::lvar::LVar).
 ///
 /// # Example:
 /// ```

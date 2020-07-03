@@ -1,4 +1,4 @@
-use crate::goal::{unify, Goal};
+use crate::goals::{unify, Goal};
 use crate::lvec::LVec;
 use crate::state::{
     constraints::{resolve_2, Constraint, ResolveFn, VarWatch},
@@ -9,14 +9,13 @@ use crate::{DomainType, UnifyIn};
 use std::fmt::Debug;
 use std::iter::repeat;
 
-/// Create a [`Goal`](canrun::Goal) that attempts to unify a `Val<T>` with
+/// Create a [`Goal`] that attempts to unify a `Val<T>` with
 /// any of the items in a `LVec<T>`.
 ///
 /// This goal will fork the state for each match found.
 /// # Examples:
 /// ```
-/// use canrun::{Goal, val, var, all, unify};
-/// use canrun::{lvec, example::Collections};
+/// use canrun::{Goal, val, var, all, unify, lvec, example::Collections};
 ///
 /// let needle = var();
 /// let haystack = var();
@@ -80,7 +79,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::example::Collections;
-    use crate::goal::{either, unify, Goal};
+    use crate::goals::{either, unify, Goal};
     use crate::lvec;
     use crate::util;
     use crate::value::var;

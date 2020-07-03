@@ -1,8 +1,7 @@
 use canrun::{all, domain, either, ltup, var, Goal, Val};
 use canrun::{
     lvec,
-    lvec::{member, subset},
-    LVec,
+    lvec::{member, subset, LVec},
 };
 
 type LHouse = (
