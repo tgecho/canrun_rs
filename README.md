@@ -2,7 +2,8 @@ Canrun is a [logic programming](https://en.wikipedia.org/wiki/Logic_programming)
 library inspired by the [\*Kanren](http://minikanren.org/) family of language
 DSLs.
 
-Intro blog post: [https://esimmler.com/announcing-canrun/](https://esimmler.com/announcing-canrun/)
+- Intro blog post: [https://esimmler.com/announcing-canrun/](https://esimmler.com/announcing-canrun/)
+- How it works (part 1): [https://esimmler.com/building-canrun-part-1/](https://esimmler.com/building-canrun-part-1/)
 
 ## Status: Exploratory and Highly Experimental
 
