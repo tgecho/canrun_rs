@@ -1,9 +1,13 @@
 //! A [`Vec`]-like data structure with [`LVar`](crate::LVar) values.
 
+mod get;
 mod member;
+mod slice;
 mod subset;
 
+pub use get::get;
 pub use member::member;
+pub use slice::slice;
 pub use subset::subset;
 
 use crate::{DomainType, IntoVal, ReifyIn, ResolvedState, State, UnifyIn, Val};

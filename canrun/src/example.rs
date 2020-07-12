@@ -22,8 +22,10 @@ canrun_codegen::canrun_internal_domain! {
 }
 canrun_codegen::canrun_internal_domain! {
     pub Collections {
+        usize,
         i32,
         LMap<i32, i32>,
-        LVec<i32>
+        LVec<i32>,
+        std::ops::Range<usize>,
     }
 }
