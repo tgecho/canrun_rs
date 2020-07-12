@@ -45,6 +45,7 @@ macro_rules! impl_reify_clone {
 
 impl_unify_eq!(i8, i16, i32, i64, u8, u16, u32, u64, isize, usize, f32, f64);
 impl_unify_eq!(String, &'static str, bool, char);
+impl_unify_eq!(std::ops::Range<usize>);
 
 impl_reify_copy!(i8, i16, i32, i64, u8, u16, u32, u64, isize, usize, f32, f64);
 impl_reify_clone!(String);
