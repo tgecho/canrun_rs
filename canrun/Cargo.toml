@@ -14,7 +14,7 @@ edition = "2018"
 [dependencies]
 im-rc = "15.0.0"
 rand = "0.8.0"
-itertools = "0.9.0"
+itertools = "0.10.0"
 canrun_codegen = { version = "0.1.0", path = "../codegen"}
 
 [dev-dependencies]
