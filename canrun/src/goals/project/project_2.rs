@@ -17,22 +17,23 @@ where
     f: Rc<dyn Fn(Rc<A>, Rc<B>) -> Goal<'a, D> + 'a>,
 }
 
-/// Create a [projection goal](super) that allows creating a new goal based on
-/// the resolved values.
-///
-/// ```
-/// use canrun::{Goal, all, unify, var, project_2};
-/// use canrun::example::I32;
-///
-/// let (x, y) = (var(), var());
-/// let goal: Goal<I32> = all![
-///     unify(1, x),
-///     unify(2, y),
-///     project_2(x, y, |x, y| if x < y { Goal::succeed() } else { Goal::fail() }),
-/// ];
-/// let result: Vec<_> = goal.query((x, y)).collect();
-/// assert_eq!(result, vec![(1, 2)])
-/// ```
+/** Create a [projection goal](super) that allows creating a new goal based on
+the resolved values.
+
+```
+use canrun::{Goal, all, unify, var, project_2};
+use canrun::example::I32;
+
+let (x, y) = (var(), var());
+let goal: Goal<I32> = all![
+    unify(1, x),
+    unify(2, y),
+    project_2(x, y, |x, y| if x < y { Goal::succeed() } else { Goal::fail() }),
+];
+let result: Vec<_> = goal.query((x, y)).collect();
+assert_eq!(result, vec![(1, 2)])
+```
+*/
 pub fn project_2<'a, A, AV, B, BV, D, F>(a: AV, b: BV, func: F) -> Goal<'a, D>
 where
     A: Debug + 'a,

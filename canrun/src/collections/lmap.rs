@@ -20,31 +20,33 @@ pub struct LMap<K: Eq + Hash + Debug, V: Debug> {
 }
 
 impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
-    /// Create a new [`LMap`] value.
-    ///
-    /// You may also be interested in the [`lmap!`] macro.
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::lmap::LMap;
-    ///
-    /// let map: LMap<i32, i32> = LMap::new();
-    /// ```
+    /** Create a new [`LMap`] value.
+
+    You may also be interested in the [`lmap!`] macro.
+
+    # Example:
+    ```
+    use canrun::lmap::LMap;
+
+    let map: LMap<i32, i32> = LMap::new();
+    ```
+    */
     pub fn new() -> Self {
         LMap {
             map: HashMap::new(),
         }
     }
 
-    /// Add a key/value pair to an existing [`LMap`].
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::lmap::LMap;
-    ///
-    /// let mut map: LMap<i32, i32> = LMap::new();
-    /// map.insert(1, 2);
-    /// ```
+    /** Add a key/value pair to an existing [`LMap`].
+
+    # Example:
+    ```
+    use canrun::lmap::LMap;
+
+    let mut map: LMap<i32, i32> = LMap::new();
+    map.insert(1, 2);
+    ```
+    */
     pub fn insert<Ki, Vi>(&mut self, key: Ki, value: Vi)
     where
         Ki: IntoVal<K>,

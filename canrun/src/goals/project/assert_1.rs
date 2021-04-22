@@ -12,18 +12,19 @@ pub struct Assert1<'a, A: Debug> {
     f: Rc<dyn Fn(&A) -> bool + 'a>,
 }
 
-/// Create a [projection goal](super) that succeeds if the resolved value passes
-/// an assertion test.
-///
-/// ```
-/// use canrun::{Goal, both, unify, var, assert_1};
-/// use canrun::example::I32;
-///
-/// let x = var();
-/// let goal: Goal<I32> = both(unify(1, x), assert_1(x, |x| *x < 2));
-/// let result: Vec<_> = goal.query(x).collect();
-/// assert_eq!(result, vec![1])
-/// ```
+/** Create a [projection goal](super) that succeeds if the resolved value passes
+an assertion test.
+
+```
+use canrun::{Goal, both, unify, var, assert_1};
+use canrun::example::I32;
+
+let x = var();
+let goal: Goal<I32> = both(unify(1, x), assert_1(x, |x| *x < 2));
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![1])
+```
+*/
 pub fn assert_1<'a, A, AV, D, F>(a: AV, func: F) -> Goal<'a, D>
 where
     A: Debug + 'a,

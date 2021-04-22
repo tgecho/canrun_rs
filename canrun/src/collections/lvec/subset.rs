@@ -9,24 +9,25 @@ use crate::{DomainType, UnifyIn};
 use std::fmt::Debug;
 use std::iter::repeat;
 
-/// Create a [`Goal`] that attempts to unify a `Val<T>` with
-/// any of the items in a `LVec<T>`.
-///
-/// This goal will fork the state for each match found.
-/// # Examples:
-/// ```
-/// use canrun::{Goal, val, var, all, unify, lvec, example::Collections};
-///
-/// let needle = var();
-/// let haystack = var();
-/// let goal: Goal<Collections> = all![
-///     unify(needle, lvec![1]),
-///     unify(haystack, lvec![1, 2, 3]),
-///     lvec::subset(needle, haystack),
-/// ];
-/// let results: Vec<_> = goal.query(needle).collect();
-/// assert_eq!(results, vec![vec![1]]);
-/// ```
+/** Create a [`Goal`] that attempts to unify a `Val<T>` with
+any of the items in a `LVec<T>`.
+
+This goal will fork the state for each match found.
+# Examples:
+```
+use canrun::{Goal, val, var, all, unify, lvec, example::Collections};
+
+let needle = var();
+let haystack = var();
+let goal: Goal<Collections> = all![
+    unify(needle, lvec![1]),
+    unify(haystack, lvec![1, 2, 3]),
+    lvec::subset(needle, haystack),
+];
+let results: Vec<_> = goal.query(needle).collect();
+assert_eq!(results, vec![vec![1]]);
+```
+*/
 pub fn subset<'a, I, SV, CV, D>(subset: SV, collection: CV) -> Goal<'a, D>
 where
     I: UnifyIn<'a, D> + 'a,
