@@ -2,6 +2,10 @@
 #![feature(extended_key_value_attributes)]
 #![doc = include_str!("../../README.md")]
 
+#[cfg(doc)]
+#[doc(hidden)]
+pub mod docs;
+
 pub mod collections;
 pub mod domains;
 pub mod example;
