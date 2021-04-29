@@ -23,10 +23,8 @@ macro_rules! impl_for_tuple {
                 // it's available. If we did this as a proc-macro
                 // we could actually make up our own names.
                 let ($($r),*) = &*r;
-                Some(
-                    state
-                        $(.unify(&$t, &$r)?)*
-                )
+                let unified = Some(state$(.unify(&$t, &$r)?)*);
+                unified
             }
         }
 
@@ -35,7 +33,8 @@ macro_rules! impl_for_tuple {
             fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
                 #![allow(non_snake_case)]
                 let ($($t),*) = self;
-                Some(($($t.reify_in(state)?),*))
+                let unified = Some(($($t.reify_in(state)?),*));
+                unified
             }
         }
     };

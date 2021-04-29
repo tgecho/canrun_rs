@@ -66,7 +66,7 @@ hold values.
 
 Created by the `domain!` macro and intended for internal use.
 */
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct DomainValues<T: Debug>(pub(crate) HashMap<LVar<T>, Val<T>>);
 
 impl<T: Debug> DomainValues<T> {
@@ -120,7 +120,7 @@ pub trait DomainType<'a, T: Debug>: Domain<'a> {
     #[doc(hidden)]
     fn values_as_mut(&mut self) -> &mut DomainValues<T>;
     #[doc(hidden)]
-    fn into_domain_val(val: Val<T>) -> Self::Value;
+    fn wrap_domain_val(val: Val<T>) -> Self::Value;
 }
 
 /** Generate [Domain] structs and other associated types and impls.

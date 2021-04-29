@@ -14,7 +14,7 @@ pub use compare::{subset, superset};
 
 /// A [`HashMap`](std::collections::HashMap)-like data structure with
 /// [`LVar`](crate::value::LVar) keys and values.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct LMap<K: Eq + Hash + Debug, V: Debug> {
     map: HashMap<Val<K>, Val<V>>,
 }

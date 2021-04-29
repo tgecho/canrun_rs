@@ -14,6 +14,7 @@ where
 {
     a: Val<A>,
     b: Val<B>,
+    #[allow(clippy::type_complexity)]
     f: Rc<dyn Fn(Rc<A>, Rc<B>) -> Goal<'a, D> + 'a>,
 }
 

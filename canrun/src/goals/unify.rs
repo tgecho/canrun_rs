@@ -50,8 +50,8 @@ where
     D: DomainType<'a, T>,
 {
     Goal(GoalEnum::UnifyIn(
-        D::into_domain_val(a.into_val()),
-        D::into_domain_val(b.into_val()),
+        D::wrap_domain_val(a.into_val()),
+        D::wrap_domain_val(b.into_val()),
     ))
 }
 

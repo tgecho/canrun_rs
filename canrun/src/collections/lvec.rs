@@ -11,7 +11,7 @@ use std::fmt::Debug;
 use std::rc::Rc;
 
 /// A [`Vec`]-like data structure with [`LVar`](crate::value::LVar) values.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct LVec<T: Debug> {
     vec: Vec<Val<T>>,
 }
@@ -46,6 +46,20 @@ impl<V: Debug> LVec<V> {
         self.vec.len()
     }
 
+    /** Returns true if the [LVec] contains no elements.
+
+    # Example:
+    ```
+    use canrun::lvec::{LVec, lvec};
+
+    let map: LVec<i32> = lvec![1, 2];
+    assert_eq!(map.is_empty(), false);
+    ```
+    */
+    pub fn is_empty(&self) -> bool {
+        self.vec.is_empty()
+    }
+
     /** Add a value to an existing [`LVec`].
 
     # Example:
@@ -64,7 +78,7 @@ impl<V: Debug> LVec<V> {
     }
 }
 
-/** Create an [`LVec<T>`](crate::lvec::LVec) with automatic value [`IntoVal`
+/** Create an [`LVec<T>`](lvec::LVec) with automatic value [`IntoVal`
 wrapping](crate::IntoVal).
 
 The primary benefit is that it allows freely mixing resolved values and

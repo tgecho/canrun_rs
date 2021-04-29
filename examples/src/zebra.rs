@@ -78,7 +78,7 @@ pub fn zebra() -> Option<Vec<House>> {
         member(ltup!(var(), var(), "water", var(), var()), &houses),
         member(ltup!(var(), var(), var(), "zebra", var()), &houses),
     ];
-    goal.query(houses).nth(0)
+    goal.query(houses).next()
 }
 
 #[test]
