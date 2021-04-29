@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 mod compare;
 
-pub use compare::{subset, superset};
+pub use compare::{get, subset, superset};
 
 /// A [`HashMap`](std::collections::HashMap)-like data structure with
 /// [`LVar`](crate::value::LVar) keys and values.
