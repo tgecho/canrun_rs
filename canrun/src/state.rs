@@ -169,7 +169,7 @@ impl<'a, D: Domain<'a> + 'a> State<'a, D> {
         self.domain.resolve(val)
     }
 
-    /** Attempt to [unify](module@crate::unify) two values with each other.
+    /** Attempt to [unify](crate::unify::UnifyIn) two values with each other.
 
     If the unification fails, [`None`](std::option::Option::None) will be
     returned. [`Val::Var`]s will be checked against relevant

@@ -173,7 +173,7 @@ where
 /// wrapping](crate::value::IntoVal).
 ///
 /// The primary benefit is that it allows freely mixing resolved values and
-/// [`LVar`s](crate::value::lvar::LVar).
+/// [`LVar`s](crate::value::LVar).
 ///
 /// # Example:
 /// ```

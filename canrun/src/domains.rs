@@ -169,8 +169,8 @@ canrun::domain! {
 
 Any types you add to a domain must implement the
 [`UnifyIn`](crate::unify::UnifyIn) trait. Canrun includes default
-implementations for almost all primitive types and collection types are
-available in [`canrun_collections`].
+implementations for most simple built in types (use cases welcome for
+more!) and [collection types are available](crate::collections).
 
 Once you have a domain, you can use it to parameterize other types, such as
 [`State`](crate::state::State) and [`Goal`](crate::goals::Goal):

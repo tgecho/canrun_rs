@@ -46,11 +46,11 @@ impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr);
 impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr);
 impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr, Ev => Er);
 
-/** Create a tuple of [logical values](value::Val) with automatic [`IntoVal`
-wrapping](value::IntoVal).
+/** Create a tuple of [logical values](crate::value::Val) with automatic [`IntoVal`
+wrapping](crate::value::IntoVal).
 
 The primary benefit is that it allows freely mixing resolved values and
-[`LVar`s](value::LVar).
+[`LVar`s](crate::value::LVar).
 
 # Example:
 ```
