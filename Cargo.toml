@@ -3,5 +3,7 @@ members = [
     "codegen",
     "canrun",
     "examples",
-    "readme_check",
 ]
+
+[profile.dev]
+split-debuginfo = "unpacked"

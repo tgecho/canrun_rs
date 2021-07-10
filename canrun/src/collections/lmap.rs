@@ -14,37 +14,39 @@ pub use compare::{subset, superset};
 
 /// A [`HashMap`](std::collections::HashMap)-like data structure with
 /// [`LVar`](crate::value::LVar) keys and values.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct LMap<K: Eq + Hash + Debug, V: Debug> {
     map: HashMap<Val<K>, Val<V>>,
 }
 
 impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
-    /// Create a new [`LMap`] value.
-    ///
-    /// You may also be interested in the [`lmap!`] macro.
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::lmap::LMap;
-    ///
-    /// let map: LMap<i32, i32> = LMap::new();
-    /// ```
+    /** Create a new [`LMap`] value.
+
+    You may also be interested in the [`lmap!`] macro.
+
+    # Example:
+    ```
+    use canrun::lmap::LMap;
+
+    let map: LMap<i32, i32> = LMap::new();
+    ```
+    */
     pub fn new() -> Self {
         LMap {
             map: HashMap::new(),
         }
     }
 
-    /// Add a key/value pair to an existing [`LMap`].
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::lmap::LMap;
-    ///
-    /// let mut map: LMap<i32, i32> = LMap::new();
-    /// map.insert(1, 2);
-    /// ```
+    /** Add a key/value pair to an existing [`LMap`].
+
+    # Example:
+    ```
+    use canrun::lmap::LMap;
+
+    let mut map: LMap<i32, i32> = LMap::new();
+    map.insert(1, 2);
+    ```
+    */
     pub fn insert<Ki, Vi>(&mut self, key: Ki, value: Vi)
     where
         Ki: IntoVal<K>,
@@ -171,7 +173,7 @@ where
 /// wrapping](crate::value::IntoVal).
 ///
 /// The primary benefit is that it allows freely mixing resolved values and
-/// [`LVar`s](crate::value::lvar::LVar).
+/// [`LVar`s](crate::value::LVar).
 ///
 /// # Example:
 /// ```

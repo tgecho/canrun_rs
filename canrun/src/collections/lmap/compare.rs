@@ -3,22 +3,23 @@ use crate::{custom, project_2, DomainType, Goal, IntoVal, UnifyIn};
 use std::fmt::Debug;
 use std::hash::Hash;
 
-/// Assert that [`LMap`] `a` is a subset of [`LMap`] `b`.
-///
-/// This means that all of the keys in `a` unify with keys in `b` AND the
-/// corresponding values also unify. This is the opposite of [`superset`].
-///
-/// # Example:
-/// ```
-/// use canrun::{var, Goal};
-/// use canrun::lmap::{lmap, subset};
-/// use canrun::example::Collections;
-///
-/// let x = var();
-/// let goal: Goal<Collections> = subset(lmap! {x => 2}, lmap! {1 => 2, 3 => 4});
-/// let results: Vec<_> = goal.query(x).collect();
-/// assert_eq!(results, vec![1]);
-/// ```
+/** Assert that [`LMap`] `a` is a subset of [`LMap`] `b`.
+
+This means that all of the keys in `a` unify with keys in `b` AND the
+corresponding values also unify. This is the opposite of [`superset`].
+
+# Example:
+```
+use canrun::{var, Goal};
+use canrun::lmap::{lmap, subset};
+use canrun::example::Collections;
+
+let x = var();
+let goal: Goal<Collections> = subset(lmap! {x => 2}, lmap! {1 => 2, 3 => 4});
+let results: Vec<_> = goal.query(x).collect();
+assert_eq!(results, vec![1]);
+```
+*/
 pub fn subset<'a, K, V, A, B, D>(a: A, b: B) -> Goal<'a, D>
 where
     K: Debug + Eq + Hash + UnifyIn<'a, D> + 'a,

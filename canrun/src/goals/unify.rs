@@ -13,7 +13,7 @@ where
 }
 
 /// Create a [goal](crate::goals::Goal) that attempts to
-/// [unify](module@crate::unify) two values with each other.
+/// [unify](crate::unify::UnifyIn) two values with each other.
 ///
 /// If one of the values is an unbound [`LVar`](crate::value::LVar), it will be
 /// bound to the other value. If both values are able to be resolved, they will
@@ -50,8 +50,8 @@ where
     D: DomainType<'a, T>,
 {
     Goal(GoalEnum::UnifyIn(
-        D::into_domain_val(a.into_val()),
-        D::into_domain_val(b.into_val()),
+        D::wrap_domain_val(a.into_val()),
+        D::wrap_domain_val(b.into_val()),
     ))
 }
 

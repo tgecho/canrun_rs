@@ -4,19 +4,20 @@ use crate::value::IntoVal;
 use crate::{DomainType, UnifyIn};
 use std::ops::{Div, Mul};
 
-/// Divide one value with another.
-///
-/// # Example:
-/// ```
-/// use canrun::{unify, util, var, Goal};
-/// use canrun::example::I32;
-/// use canrun::ops::div;
-///
-/// let x = var();
-/// let goal: Goal<I32> = div(3, 2, x);
-/// let results: Vec<_> = goal.query(x).collect();
-/// assert_eq!(results, vec![1]);
-/// ```
+/** Divide one value with another.
+
+# Example:
+```
+use canrun::{unify, util, var, Goal};
+use canrun::example::I32;
+use canrun::ops::div;
+
+let x = var();
+let goal: Goal<I32> = div(3, 2, x);
+let results: Vec<_> = goal.query(x).collect();
+assert_eq!(results, vec![1]);
+```
+*/
 pub fn div<'a, T, A, B, C, D>(a: A, b: B, c: C) -> Goal<'a, D>
 where
     T: Mul<Output = T> + Div<Output = T> + UnifyIn<'a, D> + Copy + 'a,

@@ -1,13 +1,15 @@
-//! Make declarative assertions about the relationships between values.
-//!
-//! [`Goals`](crate::goals) provide a high level interface for defining logic
-//! programs. They are composable, with many higher level goals being made
-//! up of lower level primitives. Since the typical way of using goals are
-//! through simple functions, it is easy to build and reuse custom, first class
-//! goal constructors.
-//!
-//! While [`State`] exposes a lower level API, in practice there really
-//! shouldn't be anything that can't be expressed using goals.
+/*!
+Make declarative assertions about the relationships between values.
+
+[`Goals`](crate::goals) provide a high level interface for defining logic
+programs. They are composable, with many higher level goals being made
+up of lower level primitives. Since the typical way of using goals are
+through simple functions, it is easy to build and reuse custom, first class
+goal constructors.
+
+While [`State`] exposes a lower level API, in practice there really
+shouldn't be anything that can't be expressed using goals.
+*/
 use crate::domains::Domain;
 use crate::state::{Constraint, Fork, State};
 use crate::state::{IterResolved, ResolvedStateIter};
@@ -60,13 +62,14 @@ pub(crate) enum GoalEnum<'a, D: Domain<'a>> {
     Custom(custom::Custom<'a, D>),
 }
 
-/// A container of one of many possible types of [goals](crate::goals).
-///
-/// Values of this type are typically constructed with one of the many
-/// [constructor functions](crate::goals#functions) and
-/// [macros](crate::goals#macros). These high level methods provide automatic
-/// [value](crate::value) wrapping through [`IntoVal`](crate::value::IntoVal)
-/// and other niceties.
+/** A container of one of many possible types of [goals](crate::goals).
+
+Values of this type are typically constructed with one of the many
+[constructor functions](crate::goals#functions) and
+[macros](crate::goals#macros). These high level methods provide automatic
+[value](crate::value) wrapping through [`IntoVal`](crate::value::IntoVal)
+and other niceties.
+*/
 #[derive(Clone, Debug)]
 pub struct Goal<'a, D: Domain<'a>>(GoalEnum<'a, D>);
 
@@ -87,34 +90,36 @@ impl<'a, D: Domain<'a> + 'a> GoalEnum<'a, D> {
 }
 
 impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
-    /// Create a Goal that always succeeds.
-    ///
-    /// # Example
-    /// ```
-    /// use canrun::{Goal, all, unify, var};
-    /// use canrun::example::I32;
-    ///
-    /// let x = var();
-    /// let goal: Goal<I32> = all![unify(x, 1), Goal::succeed()];
-    /// let result: Vec<_> = goal.query(x).collect();
-    /// assert_eq!(result, vec![1])
-    /// ```
+    /** Create a Goal that always succeeds.
+
+    # Example
+    ```
+    use canrun::{Goal, all, unify, var};
+    use canrun::example::I32;
+
+    let x = var();
+    let goal: Goal<I32> = all![unify(x, 1), Goal::succeed()];
+    let result: Vec<_> = goal.query(x).collect();
+    assert_eq!(result, vec![1])
+    ```
+    */
     pub fn succeed() -> Self {
         Goal(GoalEnum::Succeed)
     }
 
-    /// Create a Goal that always fails.
-    ///
-    /// # Example
-    /// ```
-    /// use canrun::{Goal, all, unify, var};
-    /// use canrun::example::I32;
-    ///
-    /// let x = var();
-    /// let goal: Goal<I32> = all![unify(x, 1), Goal::fail()];
-    /// let result: Vec<_> = goal.query(x).collect();
-    /// assert_eq!(result, vec![])
-    /// ```
+    /** Create a Goal that always fails.
+
+    # Example
+    ```
+    use canrun::{Goal, all, unify, var};
+    use canrun::example::I32;
+
+    let x = var();
+    let goal: Goal<I32> = all![unify(x, 1), Goal::fail()];
+    let result: Vec<_> = goal.query(x).collect();
+    assert_eq!(result, vec![])
+    ```
+    */
     pub fn fail() -> Self {
         Goal(GoalEnum::Fail)
     }
@@ -130,89 +135,93 @@ impl<'a, D: Domain<'a> + 'a> Goal<'a, D> {
         Goal(GoalEnum::Constraint(Rc::new(constraint)))
     }
 
-    /// Create a Goal that only succeeds if all sub-goals succeed.
-    ///
-    /// This constructor takes anything that implements
-    /// [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type.
-    /// See the [`all!`](./macro.all.html) macro for a slightly higher level
-    /// interface.
-    ///
-    /// # Example
-    /// ```
-    /// use canrun::{Goal, all, unify, var};
-    /// use canrun::example::I32;
-    ///
-    /// let x = var();
-    /// let y = var();
-    /// let goal: Goal<I32> = Goal::all(vec![unify(y, x), unify(1, x), unify(y, 1)]);
-    /// let result: Vec<_> = goal.query((x, y)).collect();
-    /// assert_eq!(result, vec![(1, 1)])
-    /// ```
+    /** Create a Goal that only succeeds if all sub-goals succeed.
+
+    This constructor takes anything that implements
+    [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type.
+    See the [`all!`](./macro.all.html) macro for a slightly higher level
+    interface.
+
+    # Example
+    ```
+    use canrun::{Goal, all, unify, var};
+    use canrun::example::I32;
+
+    let x = var();
+    let y = var();
+    let goal: Goal<I32> = Goal::all(vec![unify(y, x), unify(1, x), unify(y, 1)]);
+    let result: Vec<_> = goal.query((x, y)).collect();
+    assert_eq!(result, vec![(1, 1)])
+    ```
+    */
     pub fn all<I: IntoIterator<Item = Goal<'a, D>>>(goals: I) -> Self {
         Goal(GoalEnum::All(goals.into_iter().map(|g| g.0).collect()))
     }
 
-    /// Create a Goal that yields a state for every successful
-    /// sub-goal.
-    ///
-    /// This constructor takes anything that implements
-    /// [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type.
-    /// See the [`any!`](./macro.any.html) macro for a slightly higher level
-    /// interface.
-    ///
-    /// # Example
-    /// ```
-    /// use canrun::{Goal, any, unify, var};
-    /// use canrun::example::I32;
-    ///
-    /// let x = var();
-    /// let goal: Goal<I32> = Goal::any(vec![unify(x, 1), unify(x, 2), unify(x, 3)]);
-    /// let result: Vec<_> = goal.query(x).collect();
-    /// assert_eq!(result, vec![1, 2, 3])
-    /// ```
+    /** Create a Goal that yields a state for every successful
+    sub-goal.
+
+    This constructor takes anything that implements
+    [`IntoIterator`](std::iter::IntoIterator) for a compatible goal type.
+    See the [`any!`](./macro.any.html) macro for a slightly higher level
+    interface.
+
+    # Example
+    ```
+    use canrun::{Goal, any, unify, var};
+    use canrun::example::I32;
+
+    let x = var();
+    let goal: Goal<I32> = Goal::any(vec![unify(x, 1), unify(x, 2), unify(x, 3)]);
+    let result: Vec<_> = goal.query(x).collect();
+    assert_eq!(result, vec![1, 2, 3])
+    ```
+    */
     pub fn any<I: IntoIterator<Item = Goal<'a, D>>>(goals: I) -> Self {
         Goal::fork(any::Any {
             goals: goals.into_iter().map(|g| g.0).collect(),
         })
     }
 
-    /// Apply the Goal to an existing state.
-    ///
-    /// This will update the state, but not iterate through the possible
-    /// resolved states. For this you still need to use the
-    /// [`.iter_resolved()`](IterResolved::iter_resolved()) interface or
-    /// [`.query()`](Goal::query()).
-    ///
-    /// # Example
-    /// ```
-    /// use canrun::{Goal, State, unify, var};
-    /// use canrun::example::I32;
-    ///
-    /// let x = var();
-    /// let state = State::new();
-    /// let goal: Goal<I32> = unify(x, 1);
-    /// let state: Option<State<I32>> = goal.apply(state);
-    /// ```
+    /** Apply the Goal to an existing state.
+
+    This will update the state, but not iterate through the possible
+    resolved states. For this you still need to use the
+    [`.iter_resolved()`](IterResolved::iter_resolved()) interface or
+    [`.query()`](Goal::query()).
+
+    # Example
+    ```
+    use canrun::{Goal, State, unify, var};
+    use canrun::example::I32;
+
+    let x = var();
+    let state = State::new();
+    let goal: Goal<I32> = unify(x, 1);
+    let state: Option<State<I32>> = goal.apply(state);
+    ```
+    */
     pub fn apply(self, state: State<'a, D>) -> Option<State<'a, D>> {
         self.0.apply(state)
     }
 
-    /// Use the [query](crate::Query) interface to get an iterator of result
-    /// values.
-    ///
-    /// This is a shorthand for creating a new state, applying the goal and
-    /// calling [`.query()`](crate::Query) on the resulting state.
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::{Goal, unify, var};
-    /// use canrun::example::I32;
-    ///
-    /// let x = var();
-    /// let goal: Goal<I32> = unify(x, 1);
-    /// let result: Vec<_> = goal.query(x).collect();
-    /// assert_eq!(result, vec![1])
-    /// ```
+    /** Use the [query](crate::Query) interface to get an iterator of result
+    values.
+
+    This is a shorthand for creating a new state, applying the goal and
+    calling [`.query()`](crate::Query) on the resulting state.
+
+    # Example:
+    ```
+    use canrun::{Goal, unify, var};
+    use canrun::example::I32;
+
+    let x = var();
+    let goal: Goal<I32> = unify(x, 1);
+    let result: Vec<_> = goal.query(x).collect();
+    assert_eq!(result, vec![1])
+    ```
+    */
     pub fn query<Q>(self, query: Q) -> Box<dyn Iterator<Item = Q::Reified> + 'a>
     where
         Q: ReifyIn<'a, D> + 'a,

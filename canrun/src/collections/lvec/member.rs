@@ -9,37 +9,38 @@ use crate::{DomainType, UnifyIn};
 use std::fmt::Debug;
 use std::iter::repeat;
 
-/// Create a [`Goal`] that attempts to unify a `Val<T>` with
-/// any of the items in a `LVec<T>`.
-///
-/// This goal will fork the state for each match found.
-///
-/// # Examples:
-/// ```
-/// use canrun::{Goal, val, var, all, unify, lvec, example::Collections};
-///
-/// let x = var();
-/// let xs = var();
-/// let goal: Goal<Collections> = all![
-///     unify(x, 1),
-///     unify(xs, lvec![1, 2, 3]),
-///     lvec::member(x, xs),
-/// ];
-/// let results: Vec<_> = goal.query(x).collect();
-/// assert_eq!(results, vec![1]);
-/// ```
-///
-/// ```
-/// # use canrun::{Goal, val, var, all, unify};
-/// use canrun::{lvec, example::Collections};
-/// #
-/// let x = var();
-/// let goal: Goal<Collections> = all![
-///     lvec::member(x, lvec![1, 2, 3]),
-/// ];
-/// let results: Vec<_> = goal.query(x).collect();
-/// assert_eq!(results, vec![1, 2, 3]);
-/// ```
+/** Create a [`Goal`] that attempts to unify a `Val<T>` with
+any of the items in a `LVec<T>`.
+
+This goal will fork the state for each match found.
+
+# Examples:
+```
+use canrun::{Goal, val, var, all, unify, lvec, example::Collections};
+
+let x = var();
+let xs = var();
+let goal: Goal<Collections> = all![
+    unify(x, 1),
+    unify(xs, lvec![1, 2, 3]),
+    lvec::member(x, xs),
+];
+let results: Vec<_> = goal.query(x).collect();
+assert_eq!(results, vec![1]);
+```
+
+```
+# use canrun::{Goal, val, var, all, unify};
+use canrun::{lvec, example::Collections};
+#
+let x = var();
+let goal: Goal<Collections> = all![
+    lvec::member(x, lvec![1, 2, 3]),
+];
+let results: Vec<_> = goal.query(x).collect();
+assert_eq!(results, vec![1, 2, 3]);
+```
+*/
 pub fn member<'a, I, IV, CV, D>(item: IV, collection: CV) -> Goal<'a, D>
 where
     I: UnifyIn<'a, D> + 'a,

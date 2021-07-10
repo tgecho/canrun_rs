@@ -15,12 +15,17 @@ worst it may just be a poor misinterpretation with fatal flaws.
 ## Quick Start
 
 ```rust
-use canrun::{Goal, both, unify, var};
-use canrun::example::I32;
+use canrun::{domain, var, Goal, both, unify};
+
+domain! {
+    pub I32 { i32 }
+}
 
 let x = var();
 let y = var();
 let goal: Goal<I32> = both(unify(x, y), unify(1, x));
+
 let result: Vec<_> = goal.query(y).collect();
+
 assert_eq!(result, vec![1])
 ```

@@ -4,25 +4,26 @@ use crate::value::IntoVal;
 use crate::DomainType;
 use std::fmt::Debug;
 
-/// Ensure that one value is greater than or equal to another.
-///
-/// # Example:
-/// ```
-/// use canrun::{unify, util, var, all, Goal};
-/// use canrun::example::I32;
-/// use canrun::cmp::gte;
-///
-/// let (x, y, z) = (var(), var(), var());
-/// let goal: Goal<I32> = all![
-///     unify(x, 2),
-///     unify(y, 1),
-///     unify(z, 1),
-///     gte(x, y),
-///     gte(y, z),
-/// ];
-/// let results: Vec<_> = goal.query((x, y, z)).collect();
-/// assert_eq!(results, vec![(2, 1, 1)]);
-/// ```
+/** Ensure that one value is greater than or equal to another.
+
+# Example:
+```
+use canrun::{unify, util, var, all, Goal};
+use canrun::example::I32;
+use canrun::cmp::gte;
+
+let (x, y, z) = (var(), var(), var());
+let goal: Goal<I32> = all![
+    unify(x, 2),
+    unify(y, 1),
+    unify(z, 1),
+    gte(x, y),
+    gte(y, z),
+];
+let results: Vec<_> = goal.query((x, y, z)).collect();
+assert_eq!(results, vec![(2, 1, 1)]);
+```
+*/
 pub fn gte<'a, A, AV, B, BV, D>(a: AV, b: BV) -> Goal<'a, D>
 where
     A: PartialOrd<B> + Debug + 'a,

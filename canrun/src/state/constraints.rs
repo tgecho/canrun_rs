@@ -12,68 +12,69 @@ use std::rc::Rc;
 /// [`Constraint::attempt`] to update the [`State`].
 pub type ResolveFn<'a, D> = Box<dyn FnOnce(State<'a, D>) -> Option<State<'a, D>> + 'a>;
 
-/// Update a [`State`] whenever one or more [`LVar`]s are resolved.
-///
-/// The [`Constraint::attempt`] function will be run when it is initially added.
-/// Returning a `Err([`VarWatch`])` signals that the constraint is not
-/// satisfied. It will be re-run when one of the specified variables is bound to
-/// another value.
-///
-/// You probably want the higher level [goal projection](crate::goals::project)
-/// functions.
-///
-/// # NOTE:
-/// The [`attempt`](Constraint::attempt) function must take care to [fully
-/// resolve](State::resolve_val) any variables before requesting that they be
-/// watched. The [`resolve_1`], [`resolve_2`], [`OneOfTwo`] and [`TwoOfThree`]
-/// helpers can simplify handling this (plus returning a [`VarWatch`]).
-///
-/// # Example:
-/// ```
-/// use canrun::{State, Query, Val, val, var, DomainType};
-/// use canrun::state::constraints::{Constraint, resolve_1, ResolveFn, VarWatch};
-/// use canrun::example::I32;
-/// use std::rc::Rc;
-/// use std::fmt;
-///
-/// struct Assert<'a, T: fmt::Debug> {
-///     val: Val<T>,
-///     assert: Rc<dyn Fn(&T) -> bool + 'a>,
-/// }
-///
-/// impl<'a, T: fmt::Debug> fmt::Debug for Assert<'a, T> {
-///     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-///         write!(f, "Assert({:?})", self.val)
-///     }
-/// }
-///
-/// impl<'a, T, D> Constraint<'a, D> for Assert<'a, T>
-/// where
-///     T: fmt::Debug + 'a,
-///     D: DomainType<'a, T>,
-/// {
-///     fn attempt(&self, state: &State<'a, D>) -> Result<ResolveFn<'a, D>, VarWatch> {
-///         let resolved = resolve_1(&self.val, state)?;
-///         let assert = self.assert.clone();
-///         Ok(Box::new(
-///             move |state: State<'a, D>| if assert(&*resolved) { Some(state) } else { None },
-///         ))
-///     }
-/// }
-///
-/// # fn test() -> Option<()> {
-/// let x = var();
-///
-/// let state: State<I32> = State::new();
-/// let state = state.constrain(Rc::new(Assert {val: val!(x), assert: Rc::new(|x| x > &1)}));
-/// let state = state?.unify(&val!(x), &val!(2));
-///
-/// let results: Vec<i32> = state.query(x).collect();
-/// assert_eq!(results, vec![2]);
-/// # Some(())
-/// # }
-/// # test();
-/// ```
+/** Update a [`State`] whenever one or more [`LVar`]s are resolved.
+
+The [`Constraint::attempt`] function will be run when it is initially added.
+Returning a `Err([`VarWatch`])` signals that the constraint is not
+satisfied. It will be re-run when one of the specified variables is bound to
+another value.
+
+You probably want the higher level [goal projection](crate::goals::project)
+functions.
+
+# NOTE:
+The [`attempt`](Constraint::attempt) function must take care to [fully
+resolve](State::resolve_val) any variables before requesting that they be
+watched. The [`resolve_1`], [`resolve_2`], [`OneOfTwo`] and [`TwoOfThree`]
+helpers can simplify handling this (plus returning a [`VarWatch`]).
+
+# Example:
+```
+use canrun::{State, Query, Val, val, var, DomainType};
+use canrun::state::constraints::{Constraint, resolve_1, ResolveFn, VarWatch};
+use canrun::example::I32;
+use std::rc::Rc;
+use std::fmt;
+
+struct Assert<'a, T: fmt::Debug> {
+    val: Val<T>,
+    assert: Rc<dyn Fn(&T) -> bool + 'a>,
+}
+
+impl<'a, T: fmt::Debug> fmt::Debug for Assert<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Assert({:?})", self.val)
+    }
+}
+
+impl<'a, T, D> Constraint<'a, D> for Assert<'a, T>
+where
+    T: fmt::Debug + 'a,
+    D: DomainType<'a, T>,
+{
+    fn attempt(&self, state: &State<'a, D>) -> Result<ResolveFn<'a, D>, VarWatch> {
+        let resolved = resolve_1(&self.val, state)?;
+        let assert = self.assert.clone();
+        Ok(Box::new(
+            move |state: State<'a, D>| if assert(&*resolved) { Some(state) } else { None },
+        ))
+    }
+}
+
+# fn test() -> Option<()> {
+let x = var();
+
+let state: State<I32> = State::new();
+let state = state.constrain(Rc::new(Assert {val: val!(x), assert: Rc::new(|x| x > &1)}));
+let state = state?.unify(&val!(x), &val!(2));
+
+let results: Vec<i32> = state.query(x).collect();
+assert_eq!(results, vec![2]);
+# Some(())
+# }
+# test();
+```
+*/
 pub trait Constraint<'a, D>: Debug
 where
     D: Domain<'a>,
@@ -83,11 +84,12 @@ where
     fn attempt(&self, state: &State<'a, D>) -> Result<ResolveFn<'a, D>, VarWatch>;
 }
 
-/// A set of variables to watch on behalf of a [constraint
-/// object](crate::state::State::constrain()).
-///
-/// Consider generating this with the [`resolve_1`], [`resolve_2`], [`OneOfTwo`]
-/// or [`TwoOfThree`] helpers.
+/** A set of variables to watch on behalf of a [constraint
+object](crate::state::State::constrain()).
+
+Consider generating this with the [`resolve_1`], [`resolve_2`], [`OneOfTwo`]
+or [`TwoOfThree`] helpers.
+*/
 #[derive(Debug)]
 pub struct VarWatch(pub(crate) Vec<LVarId>);
 

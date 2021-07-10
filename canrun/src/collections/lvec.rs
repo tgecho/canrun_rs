@@ -11,48 +11,65 @@ use std::fmt::Debug;
 use std::rc::Rc;
 
 /// A [`Vec`]-like data structure with [`LVar`](crate::value::LVar) values.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct LVec<T: Debug> {
     vec: Vec<Val<T>>,
 }
 
 impl<V: Debug> LVec<V> {
-    /// Create a new [`LVec`] value.
-    ///
-    /// You may also be interested in the [`lvec!`] macro.
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::lvec::LVec;
-    ///
-    /// let map: LVec<i32> = LVec::new();
-    /// ```
+    /** Create a new [`LVec`] value.
+
+    You may also be interested in the [`lvec!`] macro.
+
+    # Example:
+    ```
+    use canrun::lvec::LVec;
+
+    let map: LVec<i32> = LVec::new();
+    ```
+    */
     pub fn new() -> Self {
         LVec { vec: Vec::new() }
     }
 
-    /// Get the number of elements in the [LVec].
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::lvec::{LVec, lvec};
-    ///
-    /// let map: LVec<i32> = lvec![1, 2];
-    /// assert_eq!(map.len(), 2);
-    /// ```
+    /** Get the number of elements in the [LVec].
+
+    # Example:
+    ```
+    use canrun::lvec::{LVec, lvec};
+
+    let map: LVec<i32> = lvec![1, 2];
+    assert_eq!(map.len(), 2);
+    ```
+    */
     pub fn len(&self) -> usize {
         self.vec.len()
     }
 
-    /// Add a value to an existing [`LVec`].
-    ///
-    /// # Example:
-    /// ```
-    /// use canrun::lvec::LVec;
-    ///
-    /// let mut map: LVec<i32> = LVec::new();
-    /// map.push(1);
-    /// ```
+    /** Returns true if the [LVec] contains no elements.
+
+    # Example:
+    ```
+    use canrun::lvec::{LVec, lvec};
+
+    let map: LVec<i32> = lvec![1, 2];
+    assert_eq!(map.is_empty(), false);
+    ```
+    */
+    pub fn is_empty(&self) -> bool {
+        self.vec.is_empty()
+    }
+
+    /** Add a value to an existing [`LVec`].
+
+    # Example:
+    ```
+    use canrun::lvec::LVec;
+
+    let mut map: LVec<i32> = LVec::new();
+    map.push(1);
+    ```
+    */
     pub fn push<Vi>(&mut self, value: Vi)
     where
         Vi: IntoVal<V>,
@@ -61,19 +78,20 @@ impl<V: Debug> LVec<V> {
     }
 }
 
-/// Create an [`LVec<T>`](lvec::LVec) with automatic value [`IntoVal`
-/// wrapping](crate::IntoVal).
-///
-/// The primary benefit is that it allows freely mixing resolved values and
-/// [`LVar`s](crate::LVar).
-///
-/// # Example:
-/// ```
-/// use canrun::var;
-/// use canrun::collections::lvec::{lvec, LVec};
-/// let x = var();
-/// let map: LVec<i32> = lvec![x, 1, 2];
-/// ```
+/** Create an [`LVec<T>`](crate::collections::lvec::LVec) with automatic value [`IntoVal`
+wrapping](crate::IntoVal).
+
+The primary benefit is that it allows freely mixing resolved values and
+[`LVar`s](crate::LVar).
+
+# Example:
+```
+use canrun::var;
+use canrun::collections::lvec::{lvec, LVec};
+let x = var();
+let map: LVec<i32> = lvec![x, 1, 2];
+```
+*/
 #[macro_export]
 macro_rules! lvec {
     ($($item:expr),* $(,)?) => {

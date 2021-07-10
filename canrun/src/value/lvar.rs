@@ -10,19 +10,20 @@ fn get_id() -> LVarId {
     COUNTER.fetch_add(1, Ordering::Relaxed)
 }
 
-/// A logical variable that represents a potential value of type `T`.
-///
-/// They are typically created with the [`var()`](crate::value::var) function.
-///
-/// `LVars` are are passed into [goals](crate::goals) to relate
-/// [values](crate::value) and other variables to each other. They can also be
-/// used to [query](crate::Query) for values in a
-/// [`ResolvedState`](crate::state::ResolvedState).
-///
-/// The identity of each `LVar` is tracked using an internal id. While this id
-/// is visible through the `Debug` implementation, it should only be used for
-/// debugging purposes as no guarantees are made about the type or generation of
-/// the id value.
+/** A logical variable that represents a potential value of type `T`.
+
+They are typically created with the [`var()`](crate::value::var) function.
+
+`LVars` are are passed into [goals](crate::goals) to relate
+[values](crate::value) and other variables to each other. They can also be
+used to [query](crate::Query) for values in a
+[`ResolvedState`](crate::state::ResolvedState).
+
+The identity of each `LVar` is tracked using an internal id. While this id
+is visible through the `Debug` implementation, it should only be used for
+debugging purposes as no guarantees are made about the type or generation of
+the id value.
+*/
 #[derive(Default)]
 pub struct LVar<T: ?Sized> {
     pub(in super::super) id: LVarId,

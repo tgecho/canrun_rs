@@ -99,7 +99,7 @@ impl quote::ToTokens for DomainDef {
                     ) -> &mut #canrun_mod::domains::DomainValues<#domain_types> {
                         &mut self.#fields
                     }
-                    fn into_domain_val(val: #canrun_mod::value::Val<#domain_types>) -> #value_name {
+                    fn wrap_domain_val(val: #canrun_mod::value::Val<#domain_types>) -> #value_name {
                         #value_name::#variants(val)
                     }
                 }

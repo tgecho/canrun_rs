@@ -8,25 +8,26 @@ use std::fmt;
 use std::fmt::Debug;
 use std::rc::Rc;
 
-/// Create a [projection goal](super) that allows deriving one resolved value
-/// from the other two.
-///
-/// Functions must be provided to derive from any combination of two values.
-/// Whichever two are resolved first will be used to derive the other.
-///
-/// ```
-/// use canrun::{Goal, all, unify, var, map_2};
-/// use canrun::example::I32;
-///
-/// let (x, y, z) = (var(), var(), var());
-/// let goal: Goal<I32> = all![
-///     unify(1, x),
-///     unify(2, y),
-///     map_2(x, y, z, |x, y| x + y, |x, z| z - x, |y, z| z - y),
-/// ];
-/// let result: Vec<_> = goal.query(z).collect();
-/// assert_eq!(result, vec![3])
-/// ```
+/** Create a [projection goal](super) that allows deriving one resolved value
+from the other two.
+
+Functions must be provided to derive from any combination of two values.
+Whichever two are resolved first will be used to derive the other.
+
+```
+use canrun::{Goal, all, unify, var, map_2};
+use canrun::example::I32;
+
+let (x, y, z) = (var(), var(), var());
+let goal: Goal<I32> = all![
+    unify(1, x),
+    unify(2, y),
+    map_2(x, y, z, |x, y| x + y, |x, z| z - x, |y, z| z - y),
+];
+let result: Vec<_> = goal.query(z).collect();
+assert_eq!(result, vec![3])
+```
+*/
 pub fn map_2<'a, A, AV, B, BV, C, CV, D, ABtoC, ACtoB, BCtoA>(
     a: AV,
     b: BV,

@@ -4,24 +4,25 @@ use crate::value::IntoVal;
 use crate::{both, either, unify, val};
 use crate::{DomainType, UnifyIn};
 
-/// Get the greater of two values according to [`std::cmp::max`].
-///
-/// # Example:
-/// ```
-/// use canrun::{unify, util, var, all, Goal};
-/// use canrun::example::I32;
-/// use canrun::cmp::max;
-///
-/// let (x, y, z) = (var(), var(), var());
-/// let goal: Goal<I32> = all![
-///     unify(x, 1),
-///     unify(y, 2),
-///     unify(z, 2),
-///     max(x, y, z),
-/// ];
-/// let results: Vec<_> = goal.query((x, y, z)).collect();
-/// assert_eq!(results, vec![(1, 2, 2)]);
-/// ```
+/** Get the greater of two values according to [`std::cmp::max`].
+
+# Example:
+```
+use canrun::{unify, util, var, all, Goal};
+use canrun::example::I32;
+use canrun::cmp::max;
+
+let (x, y, z) = (var(), var(), var());
+let goal: Goal<I32> = all![
+    unify(x, 1),
+    unify(y, 2),
+    unify(z, 2),
+    max(x, y, z),
+];
+let results: Vec<_> = goal.query((x, y, z)).collect();
+assert_eq!(results, vec![(1, 2, 2)]);
+```
+*/
 pub fn max<'a, T, A, B, C, D>(a: A, b: B, c: C) -> Goal<'a, D>
 where
     T: PartialOrd + UnifyIn<'a, D> + 'a,
