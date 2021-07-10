@@ -1,9 +1,9 @@
 #![warn(missing_docs)]
-#![feature(extended_key_value_attributes)]
 #![doc = include_str!("../../README.md")]
+//! What's next? Go read a breakdown of this example in the deeper [Quick Start
+//! explanation](crate::docs::quickstart).
 
 #[cfg(doc)]
-#[doc(hidden)]
 pub mod docs;
 
 pub mod collections;

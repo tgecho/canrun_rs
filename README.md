@@ -15,7 +15,7 @@ worst it may just be a poor misinterpretation with fatal flaws.
 ## Quick Start
 
 ```rust
-use canrun::{domain, Goal, both, unify, var};
+use canrun::{domain, var, Goal, both, unify};
 
 domain! {
     pub I32 { i32 }

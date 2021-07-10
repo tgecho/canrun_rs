@@ -78,7 +78,7 @@ impl<V: Debug> LVec<V> {
     }
 }
 
-/** Create an [`LVec<T>`](lvec::LVec) with automatic value [`IntoVal`
+/** Create an [`LVec<T>`](crate::collections::lvec::LVec) with automatic value [`IntoVal`
 wrapping](crate::IntoVal).
 
 The primary benefit is that it allows freely mixing resolved values and
