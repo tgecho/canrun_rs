@@ -12,6 +12,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Update stable
+        run: rustup update
       - name: Run fmt
         run: cargo fmt --all -- --check
       - name: Build
