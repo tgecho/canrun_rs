@@ -1,3 +1,4 @@
+[![Crate](https://img.shields.io/crates/v/canrun.svg)](https://crates.io/crates/canrun)
 [![Documentation](https://docs.rs/canrun/badge.svg)](https://docs.rs/canrun/latest/canrun/)
 [![CI Status](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml/badge.svg)](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml)
 
