@@ -34,14 +34,34 @@ jobs:
   nightly:
     runs-on: ubuntu-latest
 
+    env:
+      CARGO_INCREMENTAL: "0"
+      RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
+      RUSTDOCFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
+
     steps:
       - uses: actions/checkout@v2
       - name: Install nightly toolchain
-        run: rustup toolchain install nightly
+        run: |
+          rustup toolchain install nightly
+          rustup default nightly
+          cargo install grcov
       - name: Build
-        run: cargo +nightly build --verbose
+        run: cargo build --verbose
       - name: Run tests
-        run: cargo +nightly test --verbose
+        run: cargo test --verbose
+      - name: Collect coverage
+        run: |
+          grcov ./target/debug/ -s . \
+            -t cobertura \
+            --llvm --branch --ignore-not-existing \
+            -o ./coverage.xml
+      - name: Send to codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
 
   clippy:
     runs-on: ubuntu-latest
