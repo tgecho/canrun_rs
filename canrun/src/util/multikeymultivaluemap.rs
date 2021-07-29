@@ -58,7 +58,7 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
     }
 
     pub(crate) fn extract(&mut self, key: &K) -> Option<Vec<V>> {
-        let (ids, keys) = self.keys.extract(&key)?;
+        let (ids, keys) = self.keys.extract(key)?;
         self.keys = keys;
         let mut values = Vec::new();
         for id in ids {

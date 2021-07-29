@@ -64,13 +64,13 @@ impl<K: Eq + Hash + Debug, V: Debug> LMap<K, V> {
         let mut state = state;
         let mut resolved: HashMap<Val<K>, Val<V>> = HashMap::new();
         for (key, value) in self.map.iter() {
-            let resolved_key = state.resolve_val(&key).clone();
-            let resolved_value = state.resolve_val(&value).clone();
+            let resolved_key = state.resolve_val(key).clone();
+            let resolved_value = state.resolve_val(value).clone();
             let existing = resolved.insert(resolved_key, resolved_value);
             if let Some(existing_value) = existing {
                 // A variable key could end up being the same as an already
                 // resolved one. They're allowed to merge IF the values unify.
-                state = state.unify(&value, &existing_value)?;
+                state = state.unify(value, &existing_value)?;
             }
         }
         Some((state, Rc::new(LMap { map: resolved })))
