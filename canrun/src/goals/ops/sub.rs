@@ -4,19 +4,20 @@ use crate::value::IntoVal;
 use crate::{DomainType, UnifyIn};
 use std::ops::{Add, Sub};
 
-/// Subtract one value from another.
-///
-/// # Example:
-/// ```
-/// use canrun::{unify, util, var, Goal};
-/// use canrun::example::I32;
-/// use canrun::ops::sub;
-///
-/// let x = var();
-/// let goal: Goal<I32> = sub(3, 2, x);
-/// let results: Vec<_> = goal.query(x).collect();
-/// assert_eq!(results, vec![1]);
-/// ```
+/** Subtract one value from another.
+
+# Example:
+```
+use canrun::{unify, util, var, Goal};
+use canrun::example::I32;
+use canrun::ops::sub;
+
+let x = var();
+let goal: Goal<I32> = sub(3, 2, x);
+let results: Vec<_> = goal.query(x).collect();
+assert_eq!(results, vec![1]);
+```
+*/
 pub fn sub<'a, T, A, B, C, D>(a: A, b: B, c: C) -> Goal<'a, D>
 where
     T: Add<Output = T> + Sub<Output = T> + UnifyIn<'a, D> + Copy + 'a,

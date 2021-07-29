@@ -4,23 +4,24 @@ use crate::value::IntoVal;
 use crate::DomainType;
 use std::fmt::Debug;
 
-/// Ensure that one value is less than another.
-///
-/// # Example:
-/// ```
-/// use canrun::{unify, util, var, all, Goal};
-/// use canrun::example::I32;
-/// use canrun::cmp::lt;
-///
-/// let (x, y) = (var(), var());
-/// let goal: Goal<I32> = all![
-///     unify(x, 1),
-///     unify(y, 2),
-///     lt(x, y)
-/// ];
-/// let results: Vec<_> = goal.query((x, y)).collect();
-/// assert_eq!(results, vec![(1, 2)]);
-/// ```
+/** Ensure that one value is less than another.
+
+# Example:
+```
+use canrun::{unify, util, var, all, Goal};
+use canrun::example::I32;
+use canrun::cmp::lt;
+
+let (x, y) = (var(), var());
+let goal: Goal<I32> = all![
+    unify(x, 1),
+    unify(y, 2),
+    lt(x, y)
+];
+let results: Vec<_> = goal.query((x, y)).collect();
+assert_eq!(results, vec![(1, 2)]);
+```
+*/
 pub fn lt<'a, A, AV, B, BV, D>(a: AV, b: BV) -> Goal<'a, D>
 where
     A: PartialOrd<B> + Debug + 'a,

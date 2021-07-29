@@ -1,66 +1,68 @@
 use crate::{Domain, DomainType, IntoVal, LVar, ResolvedState, Val};
 use std::fmt::Debug;
 
-/// Extract a fully resolved `T` from a [`Val<T>`](crate::value::Val).
-///
-/// Used by [query](crate::Query) to ensure that result values are fully and
-/// recursively resolved.
+/** Extract a fully resolved `T` from a [`Val<T>`](crate::value::Val).
+
+Used by [query](crate::Query) to ensure that result values are fully and
+recursively resolved.
+*/
 pub trait ReifyIn<'a, D>: Sized {
     /// The "concrete" type that `Self` reifies to.
     type Reified;
 
-    /// Extract a reified `Self` from a compatible
-    /// [`ResolvedState`](crate::state::ResolvedState). This trait is usually
-    /// used indirectly through the [`Query`](crate::Query) trait.
-    ///
-    /// # Examples:
-    /// Simple values are typically copied or cloned (since the `Val` stores in
-    /// an [Rc](std::rc::Rc) internally).
-    /// ```
-    /// use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
-    /// use canrun::example::{I32, TupleI32};
-    /// State::new()
-    ///     .iter_resolved()
-    ///     .for_each(|state: ResolvedState<I32>| {
-    ///         let x = val!(1);
-    ///         assert_eq!(x.reify_in(&state), Some(1));
-    ///     });
-    /// ```
-    /// Structures containing additional `Val`s should be recursively reified.
-    /// ```
-    /// # use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
-    /// # use canrun::example::{I32, TupleI32};
-    /// State::new()
-    ///     .iter_resolved()
-    ///     .for_each(|state: ResolvedState<TupleI32>| {
-    ///         let x = (val!(1), val!(2));
-    ///         assert_eq!(x.reify_in(&state), Some((1, 2)));
-    ///     });
-    /// ```
-    /// Returns `None` if the [`Val`] is unresolved.
-    /// ```
-    /// # use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
-    /// # use canrun::example::{I32, TupleI32};
-    /// State::new()
-    ///     .iter_resolved()
-    ///     .for_each(|state: ResolvedState<I32>| {
-    ///         let x: Val<i32> = val!(var());
-    ///         assert_eq!(x.reify_in(&state), None);
-    ///     });
-    /// ```
-    /// Also returns `None` if `Self` is a structure containing any unresolved
-    /// `Val`s.
-    /// ```
-    /// # use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
-    /// # use canrun::example::{I32, TupleI32};
-    /// State::new()
-    ///     .iter_resolved()
-    ///     .for_each(|state: ResolvedState<TupleI32>| {
-    ///         let x: Val<i32> = val!(var());
-    ///         let y = (x, val!(2));
-    ///         assert_eq!(y.reify_in(&state), None);
-    ///     });
-    /// ```
+    /** Extract a reified `Self` from a compatible
+    [`ResolvedState`](crate::state::ResolvedState). This trait is usually
+    used indirectly through the [`Query`](crate::Query) trait.
+
+    # Examples:
+    Simple values are typically copied or cloned (since the `Val` stores in
+    an [Rc](std::rc::Rc) internally).
+    ```
+    use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
+    use canrun::example::{I32, TupleI32};
+    State::new()
+        .iter_resolved()
+        .for_each(|state: ResolvedState<I32>| {
+            let x = val!(1);
+            assert_eq!(x.reify_in(&state), Some(1));
+        });
+    ```
+    Structures containing additional `Val`s should be recursively reified.
+    ```
+    # use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
+    # use canrun::example::{I32, TupleI32};
+    State::new()
+        .iter_resolved()
+        .for_each(|state: ResolvedState<TupleI32>| {
+            let x = (val!(1), val!(2));
+            assert_eq!(x.reify_in(&state), Some((1, 2)));
+        });
+    ```
+    Returns `None` if the [`Val`] is unresolved.
+    ```
+    # use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
+    # use canrun::example::{I32, TupleI32};
+    State::new()
+        .iter_resolved()
+        .for_each(|state: ResolvedState<I32>| {
+            let x: Val<i32> = val!(var());
+            assert_eq!(x.reify_in(&state), None);
+        });
+    ```
+    Also returns `None` if `Self` is a structure containing any unresolved
+    `Val`s.
+    ```
+    # use canrun::{Val, val, var, ReifyIn, IterResolved, State, ResolvedState};
+    # use canrun::example::{I32, TupleI32};
+    State::new()
+        .iter_resolved()
+        .for_each(|state: ResolvedState<TupleI32>| {
+            let x: Val<i32> = val!(var());
+            let y = (x, val!(2));
+            assert_eq!(y.reify_in(&state), None);
+        });
+    ```
+    */
     fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified>;
 }
 

@@ -4,25 +4,26 @@ use crate::value::IntoVal;
 use crate::DomainType;
 use std::fmt::Debug;
 
-/// Ensure that one value is less than or equal to another.
-///
-/// # Example:
-/// ```
-/// use canrun::{unify, util, var, all, Goal};
-/// use canrun::example::I32;
-/// use canrun::cmp::lte;
-///
-/// let (x, y, z) = (var(), var(), var());
-/// let goal: Goal<I32> = all![
-///     unify(x, 1),
-///     unify(y, 2),
-///     unify(z, 2),
-///     lte(x, y),
-///     lte(y, z),
-/// ];
-/// let results: Vec<_> = goal.query((x, y, z)).collect();
-/// assert_eq!(results, vec![(1, 2, 2)]);
-/// ```
+/** Ensure that one value is less than or equal to another.
+
+# Example:
+```
+use canrun::{unify, util, var, all, Goal};
+use canrun::example::I32;
+use canrun::cmp::lte;
+
+let (x, y, z) = (var(), var(), var());
+let goal: Goal<I32> = all![
+    unify(x, 1),
+    unify(y, 2),
+    unify(z, 2),
+    lte(x, y),
+    lte(y, z),
+];
+let results: Vec<_> = goal.query((x, y, z)).collect();
+assert_eq!(results, vec![(1, 2, 2)]);
+```
+*/
 pub fn lte<'a, A, AV, B, BV, D>(a: AV, b: BV) -> Goal<'a, D>
 where
     A: PartialOrd<B> + Debug + 'a,

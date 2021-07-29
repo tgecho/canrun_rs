@@ -12,12 +12,26 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Update stable
+        run: rustup update
       - name: Run fmt
         run: cargo fmt --all -- --check
       - name: Build
-        run: cargo build --verbose --workspace --exclude canrun_readme_check
+        run: cargo build --verbose
       - name: Run tests
-        run: cargo test --verbose --workspace --exclude canrun_readme_check
+        run: cargo test --verbose
+
+  minimum:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install minimum supported version
+        run: rustup override set 1.54.0
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test --verbose
 
   nightly:
     runs-on: ubuntu-latest

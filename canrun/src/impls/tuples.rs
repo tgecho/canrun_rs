@@ -23,10 +23,8 @@ macro_rules! impl_for_tuple {
                 // it's available. If we did this as a proc-macro
                 // we could actually make up our own names.
                 let ($($r),*) = &*r;
-                Some(
-                    state
-                        $(.unify(&$t, &$r)?)*
-                )
+                let unified = Some(state$(.unify(&$t, &$r)?)*);
+                unified
             }
         }
 
@@ -35,7 +33,8 @@ macro_rules! impl_for_tuple {
             fn reify_in(&self, state: &ResolvedState<D>) -> Option<Self::Reified> {
                 #![allow(non_snake_case)]
                 let ($($t),*) = self;
-                Some(($($t.reify_in(state)?),*))
+                let unified = Some(($($t.reify_in(state)?),*));
+                unified
             }
         }
     };
@@ -46,18 +45,19 @@ impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr);
 impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr);
 impl_for_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr, Ev => Er);
 
-/// Create a tuple of [logical values](value::Val) with automatic [`IntoVal`
-/// wrapping](value::IntoVal).
-///
-/// The primary benefit is that it allows freely mixing resolved values and
-/// [`LVar`s](value::LVar).
-///
-/// # Example:
-/// ```
-/// use canrun::{var, ltup, Val};
-/// let x = var();
-/// let tuple: (Val<i32>, Val<i32>, Val<&'static str>) = ltup!(x, 1, "two");
-/// ```
+/** Create a tuple of [logical values](crate::value::Val) with automatic [`IntoVal`
+wrapping](crate::value::IntoVal).
+
+The primary benefit is that it allows freely mixing resolved values and
+[`LVar`s](crate::value::LVar).
+
+# Example:
+```
+use canrun::{var, ltup, Val};
+let x = var();
+let tuple: (Val<i32>, Val<i32>, Val<&'static str>) = ltup!(x, 1, "two");
+```
+*/
 #[macro_export]
 macro_rules! ltup {
     ($($item:expr),* $(,)?) => {

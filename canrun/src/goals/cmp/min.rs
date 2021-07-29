@@ -4,24 +4,25 @@ use crate::value::IntoVal;
 use crate::{both, either, unify, val};
 use crate::{DomainType, UnifyIn};
 
-/// Get the lesser of two values according to [`std::cmp::min`].
-///
-/// # Example:
-/// ```
-/// use canrun::{unify, util, var, all, Goal};
-/// use canrun::example::I32;
-/// use canrun::cmp::min;
-///
-/// let (x, y, z) = (var(), var(), var());
-/// let goal: Goal<I32> = all![
-///     unify(x, 1),
-///     unify(y, 2),
-///     unify(z, 1),
-///     min(x, y, z),
-/// ];
-/// let results: Vec<_> = goal.query((x, y, z)).collect();
-/// assert_eq!(results, vec![(1, 2, 1)]);
-/// ```
+/** Get the lesser of two values according to [`std::cmp::min`].
+
+# Example:
+```
+use canrun::{unify, util, var, all, Goal};
+use canrun::example::I32;
+use canrun::cmp::min;
+
+let (x, y, z) = (var(), var(), var());
+let goal: Goal<I32> = all![
+    unify(x, 1),
+    unify(y, 2),
+    unify(z, 1),
+    min(x, y, z),
+];
+let results: Vec<_> = goal.query((x, y, z)).collect();
+assert_eq!(results, vec![(1, 2, 1)]);
+```
+*/
 pub fn min<'a, T, A, B, C, D>(a: A, b: B, c: C) -> Goal<'a, D>
 where
     T: PartialOrd + UnifyIn<'a, D> + 'a,

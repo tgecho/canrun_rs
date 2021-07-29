@@ -4,19 +4,20 @@ use crate::value::IntoVal;
 use crate::{DomainType, UnifyIn};
 use std::ops::{Add, Sub};
 
-/// Add two values together.
-///
-/// # Example:
-/// ```
-/// use canrun::{unify, util, var, Goal};
-/// use canrun::example::I32;
-/// use canrun::ops::add;
-///
-/// let x = var();
-/// let goal: Goal<I32> = add(1, 2, x);
-/// let results: Vec<_> = goal.query(x).collect();
-/// assert_eq!(results, vec![3]);
-/// ```
+/** Add two values together.
+
+# Example:
+```
+use canrun::{unify, util, var, Goal};
+use canrun::example::I32;
+use canrun::ops::add;
+
+let x = var();
+let goal: Goal<I32> = add(1, 2, x);
+let results: Vec<_> = goal.query(x).collect();
+assert_eq!(results, vec![3]);
+```
+*/
 pub fn add<'a, T, A, B, C, D>(a: A, b: B, c: C) -> Goal<'a, D>
 where
     T: Add<Output = T> + Sub<Output = T> + UnifyIn<'a, D> + Copy + 'a,
