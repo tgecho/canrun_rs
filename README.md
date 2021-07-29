@@ -1,3 +1,6 @@
+[![Documentation](https://docs.rs/canrun/badge.svg)](https://docs.rs/canrun/latest/canrun/)
+[![CI Status](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml/badge.svg)](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml)
+
 Canrun is a [logic programming](https://en.wikipedia.org/wiki/Logic_programming)
 library inspired by the [\*Kanren](http://minikanren.org/) family of language
 DSLs.
