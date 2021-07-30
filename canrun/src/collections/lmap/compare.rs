@@ -78,9 +78,13 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = subset(&a, &b);
-            if goal.iter_resolved().count() != 1 {
-                panic!("subset failed on {:?} {:?}", a, b);
-            }
+            assert_eq!(
+                goal.iter_resolved().count(),
+                1,
+                "subset failed on {:?} {:?}",
+                a,
+                b
+            );
         }
     }
 
@@ -94,9 +98,13 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = subset(&a, &b);
-            if goal.iter_resolved().count() != 0 {
-                panic!("subset erroneously succeeded on {:?} {:?}", a, b);
-            }
+            assert_eq!(
+                goal.iter_resolved().count(),
+                0,
+                "subset erroneously succeeded on {:?} {:?}",
+                a,
+                b
+            );
         }
     }
 
@@ -110,9 +118,13 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = superset(&a, &b);
-            if goal.iter_resolved().count() != 1 {
-                panic!("superset failed on {:?} {:?}", a, b);
-            }
+            assert_eq!(
+                goal.iter_resolved().count(),
+                1,
+                "superset failed on {:?} {:?}",
+                a,
+                b
+            );
         }
     }
 
@@ -126,9 +138,13 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = superset(&a, &b);
-            if goal.iter_resolved().count() != 0 {
-                panic!("superset erroneously succeeded on {:?} {:?}", a, b);
-            }
+            assert_eq!(
+                goal.iter_resolved().count(),
+                0,
+                "superset erroneously succeeded on {:?} {:?}",
+                a,
+                b
+            );
         }
     }
 }
