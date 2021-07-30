@@ -35,9 +35,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      CARGO_TARGET_DIR: "./target/coverage"
       CARGO_INCREMENTAL: "0"
-      RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
-      RUSTDOCFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
+      RUSTFLAGS: "-Zinstrument-coverage -Clink-dead-code"
+      RUSTDOCFLAGS: "-Zinstrument-coverage -Clink-dead-code"
+      LLVM_PROFILE_FILE: "%p-%m.profraw"
 
     steps:
       - uses: actions/checkout@v2
@@ -45,6 +47,7 @@ jobs:
         run: |
           rustup toolchain install nightly
           rustup default nightly
+          rustup component add llvm-tools-preview
           cargo install grcov
       - name: Build
         run: cargo build --verbose
@@ -52,8 +55,9 @@ jobs:
         run: cargo test --verbose
       - name: Collect coverage
         run: |
-          grcov ./target/debug/ -s . \
+          grcov . -s . \
             -t cobertura \
+            --binary-path "$CARGO_TARGET_DIR/debug" \
             --llvm --branch --ignore-not-existing \
             -o ./coverage.xml
       - name: Send to codecov
