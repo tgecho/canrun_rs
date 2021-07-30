@@ -1,7 +1,7 @@
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/tgecho/canrun_rs/CI)](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml)
+[![Coverage](https://img.shields.io/codecov/c/gh/tgecho/canrun_rs?token=7HSAMYDWEB)](https://codecov.io/gh/tgecho/canrun_rs)
 [![Crate](https://img.shields.io/crates/v/canrun.svg)](https://crates.io/crates/canrun)
 [![Documentation](https://docs.rs/canrun/badge.svg)](https://docs.rs/canrun/latest/canrun/)
-[![CI Status](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml/badge.svg)](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml)
-[![Coverage](https://img.shields.io/codecov/c/gh/tgecho/canrun_rs?token=7HSAMYDWEB)](https://codecov.io/gh/tgecho/canrun_rs)
 
 Canrun is a [logic programming](https://en.wikipedia.org/wiki/Logic_programming)
 library inspired by the [\*Kanren](http://minikanren.org/) family of language
