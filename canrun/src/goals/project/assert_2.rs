@@ -66,3 +66,16 @@ impl<'a, A: Debug, B: Debug> Debug for Assert2<'a, A, B> {
         write!(f, "Assert2 {:?} {:?}", self.a, self.b)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::assert_2;
+    use crate::example::I32;
+    use crate::goals::Goal;
+
+    #[test]
+    fn debug_impl() {
+        let goal: Goal<I32> = assert_2(1, 2, |x, y| x < y);
+        assert_ne!(format!("{:?}", goal), "");
+    }
+}

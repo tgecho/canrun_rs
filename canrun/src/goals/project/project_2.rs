@@ -74,3 +74,20 @@ where
         write!(f, "Project2 {:?} {:?}", self.a, self.b)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::project_2;
+    use crate::example::I32;
+    use crate::goals::Goal;
+
+    #[test]
+    fn debug_impl() {
+        let goal: Goal<I32> = project_2(
+            1,
+            2,
+            |_, _| Goal::succeed(), // coverage-ignore
+        );
+        assert_ne!(format!("{:?}", goal), "");
+    }
+}

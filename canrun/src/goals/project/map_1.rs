@@ -101,4 +101,10 @@ mod tests {
             vec![unify(1, x), unify(2, y), map_1(x, y, |x| x + 1, |y| y - 1)];
         util::assert_permutations_resolve_to(goals, (x, y), vec![(1, 2)]);
     }
+
+    #[test]
+    fn debug_impl() {
+        let goal: Goal<I32> = map_1(1, 2, |x| x + 1, |y| y - 1);
+        assert_ne!(format!("{:?}", goal), "");
+    }
 }

@@ -338,4 +338,10 @@ mod test {
         let results: Vec<i32> = state.query(x).collect();
         assert_eq!(results, vec![1, 2]);
     }
+
+    #[test]
+    fn debug_impl() {
+        let x = var();
+        assert_ne!(format!("{:?}", Is1or2 { x: val!(x) }), "")
+    }
 }

@@ -54,7 +54,7 @@ where
 
 impl<'a, D: Domain<'a>> fmt::Debug for Custom<'a, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Custom ??")
+        write!(f, "<fn>")
     }
 }
 
@@ -72,5 +72,11 @@ mod tests {
         let goal: Goal<I32> = custom(|s| s.unify(&x.into_val(), &1.into_val()));
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![1]);
+    }
+
+    #[test]
+    fn debug_impl() {
+        let goal: Goal<I32> = custom(|_| None);
+        assert_eq!(format!("{:?}", goal), "Goal(Custom(<fn>))");
     }
 }

@@ -11,6 +11,10 @@ cargo +nightly clean
 cargo +nightly build
 cargo +nightly test
 
-grcov ./target/debug/ -s . -t html --llvm --branch --ignore-not-existing -o ./target/debug/coverage/
+grcov ./target/debug/ -s . -t html \
+    --llvm --branch \
+    --ignore-not-existing \
+    -o ./target/debug/coverage/ \
+    --excl-line '// *coverage-ignore'
 
 open target/debug/coverage/index.html

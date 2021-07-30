@@ -148,4 +148,10 @@ mod tests {
 
         util::assert_permutations_resolve_to(goals, x, vec![]);
     }
+
+    #[test]
+    fn debug_impl() {
+        let goal: Goal<Collections> = lvec::subset(lvec![1], lvec![1, 2]);
+        assert_ne!(format!("{:?}", goal), "")
+    }
 }

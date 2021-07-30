@@ -106,4 +106,10 @@ mod tests {
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![] as Vec<i32>);
     }
+
+    #[test]
+    fn debug_impl() {
+        let goal: Goal<I32> = any![];
+        assert_ne!(format!("{:?}", goal), "");
+    }
 }

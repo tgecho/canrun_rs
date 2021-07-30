@@ -187,3 +187,15 @@ let goal: Goal<MyDomain> = unify(x, 1);
 ```
 */
 pub use canrun_codegen::domain;
+
+#[cfg(test)]
+mod test {
+    use super::DomainValues;
+    use crate::example::I32;
+
+    #[test]
+    fn debug_impl() {
+        let domain: DomainValues<I32> = DomainValues::new();
+        assert_ne!(format!("{:?}", domain), "")
+    }
+}

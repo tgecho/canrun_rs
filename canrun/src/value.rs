@@ -153,3 +153,16 @@ impl<'a, T: fmt::Debug> fmt::Debug for Val<T> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{val, var, Val};
+
+    #[test]
+    fn debug_impl() {
+        let lvar: Val<i32> = val!(var());
+        let value: Val<i32> = val!(1);
+        assert!(format!("{:?}", lvar).starts_with("Var(LVar(")); // the LVar id is non-deterministic
+        assert_eq!(format!("{:?}", value), "Resolved(1)");
+    }
+}

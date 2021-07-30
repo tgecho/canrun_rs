@@ -300,4 +300,13 @@ mod tests {
             vec![unify(m, lmap!(x => 1, 1 => 2)), unify(m, lmap!(1 => 2))];
         util::assert_permutations_resolve_to(goals, (m, x), vec![]);
     }
+
+    #[test]
+    fn debug_impl() {
+        let m = var();
+        let x = var();
+
+        let goal: Goal<Collections> = unify(m, lmap!(x => 1, 1 => 2));
+        assert_ne!(format!("{:?}", goal), "")
+    }
 }
