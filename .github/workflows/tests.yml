@@ -57,7 +57,7 @@ jobs:
           toolchain: nightly
           override: true
           components: llvm-tools-preview
-      - name: Install cargo-audit binary crate
+      - name: Install grcov
         uses: actions-rs/install@v0.1
         with:
           crate: grcov
