@@ -7,10 +7,17 @@ export CARGO_INCREMENTAL=0
 export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
 export RUSTDOCFLAGS="-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
 
+# Use a different target dir so the clean cycle doesn't interfere with rust-analyzer and regular test running
+export CARGO_TARGET_DIR=./target/cov
+
 cargo +nightly clean
 cargo +nightly build
 cargo +nightly test
 
-grcov ./target/debug/ -s . -t html --llvm --branch --ignore-not-existing -o ./target/debug/coverage/
+grcov ./target/debug/ -s . -t html \
+    --llvm --branch \
+    --ignore-not-existing \
+    -o ./target/debug/coverage/ \
+    --excl-line '// *coverage-ignore'
 
 open target/debug/coverage/index.html

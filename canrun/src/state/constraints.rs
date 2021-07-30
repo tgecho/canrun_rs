@@ -204,3 +204,16 @@ impl<A: Debug, B: Debug, C: Debug> TwoOfThree<A, B, C> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::VarWatch;
+    use crate::{var, LVar};
+
+    #[test]
+    fn debug_impl() {
+        let a: LVar<i32> = var();
+        let watch = VarWatch::one(a);
+        assert_ne!(format!("{:?}", watch), "");
+    }
+}

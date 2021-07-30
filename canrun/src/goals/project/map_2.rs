@@ -131,4 +131,10 @@ mod tests {
         ];
         util::assert_permutations_resolve_to(goals, (x, y, z), vec![(1, 2, 3)]);
     }
+
+    #[test]
+    fn debug_impl() {
+        let goal: Goal<I32> = map_2(1, 2, 3, |x, y| x + y, |x, z| z - x, |y, z| z - y);
+        assert_ne!(format!("{:?}", goal), "");
+    }
 }
