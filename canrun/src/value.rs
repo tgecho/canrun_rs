@@ -159,6 +159,13 @@ mod tests {
     use super::{val, var, Val};
 
     #[test]
+    fn partial_eq() {
+        let lvar: Val<i32> = val!(var());
+        let value: Val<i32> = val!(1);
+        assert_ne!(lvar, value);
+    }
+
+    #[test]
     fn debug_impl() {
         let lvar: Val<i32> = val!(var());
         let value: Val<i32> = val!(1);

@@ -2,22 +2,27 @@
 
 set -e
 
+# Use a different target dir so the clean cycle doesn't interfere with rust-analyzer and regular test runs
+export CARGO_TARGET_DIR=./target/coverage
+
 # From https://github.com/mozilla/grcov
 export CARGO_INCREMENTAL=0
-export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
-export RUSTDOCFLAGS="-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
-
-# Use a different target dir so the clean cycle doesn't interfere with rust-analyzer and regular test running
-export CARGO_TARGET_DIR=./target/cov
+export RUSTFLAGS="-Zinstrument-coverage -Clink-dead-code"
+export RUSTDOCFLAGS="-Zinstrument-coverage -Clink-dead-code"
+export LLVM_PROFILE_FILE="%p-%m.profraw"
 
 cargo +nightly clean
 cargo +nightly build
 cargo +nightly test
 
-grcov ./target/debug/ -s . -t html \
+grcov . -s . -t html \
+    --binary-path "$CARGO_TARGET_DIR/debug" \
     --llvm --branch \
     --ignore-not-existing \
-    -o ./target/debug/coverage/ \
+    -o "$CARGO_TARGET_DIR/output" \
     --excl-line '// *coverage-ignore'
 
-open target/debug/coverage/index.html
+rm ./*.profraw
+rm ./**/*.profraw
+
+open "$CARGO_TARGET_DIR/output/index.html"
