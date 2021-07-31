@@ -73,7 +73,8 @@ jobs:
             -t cobertura \
             --binary-path "$CARGO_TARGET_DIR/debug" \
             --llvm --branch --ignore-not-existing \
-            -o ./coverage.xml
+            -o ./coverage.xml \
+            --excl-line '// *coverage-ignore'
       - name: Send to codecov
         uses: codecov/codecov-action@v2
         with:
