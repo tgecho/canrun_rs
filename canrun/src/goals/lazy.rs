@@ -68,4 +68,10 @@ mod tests {
         let results = util::goal_resolves_to(goal, x);
         assert_eq!(results, vec![1]);
     }
+
+    #[test]
+    fn debug_impl() {
+        let goal: Goal<I32> = lazy(|| Goal::succeed());
+        assert_ne!(format!("{:?}", goal), "")
+    }
 }
