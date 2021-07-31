@@ -11,8 +11,8 @@ export RUSTFLAGS="-Zinstrument-coverage -Clink-dead-code"
 export RUSTDOCFLAGS="-Zinstrument-coverage -Clink-dead-code"
 export LLVM_PROFILE_FILE="%p-%m.profraw"
 
-cargo +nightly clean
-cargo +nightly build
+rm -f ./*.profraw
+rm -f ./**/*.profraw
 cargo +nightly test
 
 grcov . -s . -t html \
@@ -22,7 +22,7 @@ grcov . -s . -t html \
     -o "$CARGO_TARGET_DIR/output" \
     --excl-line '// *coverage-ignore'
 
-rm ./*.profraw
-rm ./**/*.profraw
+rm -f ./*.profraw
+rm -f ./**/*.profraw
 
 open "$CARGO_TARGET_DIR/output/index.html"
