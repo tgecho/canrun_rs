@@ -166,6 +166,18 @@ mod tests {
     }
 
     #[test]
+    fn is_var() {
+        let lvar: Val<i32> = val!(var());
+        assert!(lvar.is_var());
+    }
+
+    #[test]
+    fn is_resolved() {
+        let value: Val<i32> = val!(1);
+        assert!(value.is_resolved());
+    }
+
+    #[test]
     fn debug_impl() {
         let lvar: Val<i32> = val!(var());
         let value: Val<i32> = val!(1);
