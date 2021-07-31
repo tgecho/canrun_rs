@@ -49,3 +49,22 @@ impl_unify_eq!(String, &'static str, bool, char);
 impl_reify_copy!(i8, i16, i32, i64, u8, u16, u32, u64, isize, usize, f32, f64);
 impl_reify_clone!(String);
 impl_reify_copy!(&'static str, bool, char);
+
+#[cfg(test)]
+mod tests {
+    use crate::query::Query;
+    use crate::{val, var, State};
+
+    canrun_codegen::canrun_internal_domain! {
+        pub Strings { String }
+    }
+
+    #[test]
+    fn partial_eq() {
+        let a = var();
+        let value = val!("foo".to_string());
+        let state: Option<State<Strings>> = State::new().unify(&val!(a), &value);
+        let result: Vec<_> = state.query(a).collect();
+        assert_eq!(result, vec!["foo".to_string()]);
+    }
+}
