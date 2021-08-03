@@ -43,10 +43,6 @@ jobs:
 
     env:
       CARGO_TARGET_DIR: "./target/coverage"
-      CARGO_INCREMENTAL: "0"
-      RUSTFLAGS: "-Zinstrument-coverage -Clink-dead-code"
-      RUSTDOCFLAGS: "-Zinstrument-coverage -Clink-dead-code"
-      LLVM_PROFILE_FILE: "%p-%m.profraw"
 
     steps:
       - uses: actions/checkout@v2
@@ -57,16 +53,20 @@ jobs:
           toolchain: nightly
           override: true
           components: llvm-tools-preview
+
       - name: Install grcov
-        uses: actions-rs/install@v0.1
-        with:
-          crate: grcov
-          version: latest
-          use-tool-cache: true
-      - name: Build
-        run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --verbose
+        run: cargo install grcov
+
+      - name: Build and test
+        env:
+          CARGO_INCREMENTAL: "0"
+          RUSTFLAGS: "-Zinstrument-coverage -Clink-dead-code"
+          RUSTDOCFLAGS: "-Zinstrument-coverage -Clink-dead-code"
+          LLVM_PROFILE_FILE: "%p-%m.profraw"
+        run: |
+          cargo build --verbose
+          cargo test --verbose
+
       - name: Collect coverage
         run: |
           grcov . -s . \
@@ -75,6 +75,7 @@ jobs:
             --llvm --branch --ignore-not-existing \
             -o ./coverage.xml \
             --excl-line '// *coverage-ignore'
+
       - name: Send to codecov
         uses: codecov/codecov-action@v2
         with:
