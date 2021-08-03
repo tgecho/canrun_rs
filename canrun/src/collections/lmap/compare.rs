@@ -1,4 +1,4 @@
-use super::{unify_entries, LMap};
+use super::{lmap, unify_entries, LMap};
 use crate::{custom, project_2, DomainType, Goal, IntoVal, UnifyIn};
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -60,12 +60,48 @@ where
     subset(b, a)
 }
 
+/// Assert that the a given key and value combination can be found in an
+/// [`LMap`]
+///
+/// This is essentially a single key case of [`subset`].
+///
+/// # Example:
+/// ```
+/// use canrun::{var, Goal};
+/// use canrun::lmap::{lmap, get};
+/// use canrun::example::Collections;
+///
+/// let x = var();
+/// let goal: Goal<Collections> = get(1, x, lmap! {1 => 2});
+/// let results: Vec<_> = goal.query(x).collect();
+/// assert_eq!(results, vec![2]);
+/// ```
+pub fn get<'a, K, KV, V, VV, B, D>(key: KV, value: VV, b: B) -> Goal<'a, D>
+where
+    K: Debug + Eq + Hash + UnifyIn<'a, D> + 'a,
+    KV: IntoVal<K>,
+    V: Debug + UnifyIn<'a, D> + 'a,
+    VV: IntoVal<V>,
+    B: IntoVal<LMap<K, V>>,
+    D: DomainType<'a, LMap<K, V>> + DomainType<'a, K> + DomainType<'a, V> + 'a,
+{
+    subset(lmap! {key => value}, b)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{subset, superset};
+    use super::{get, subset, superset};
     use crate::example::Collections;
     use crate::lmap;
     use crate::{var, Goal, IterResolved};
+
+    #[test]
+    fn get_succeeds() {
+        let x = var();
+        let goal: Goal<Collections> = get(1, x, lmap! {1 => 2});
+        let results: Vec<_> = goal.query(x).collect();
+        assert_eq!(results, vec![2]);
+    }
 
     #[test]
     fn subset_should_succeed_on() {
@@ -78,13 +114,7 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = subset(&a, &b);
-            assert_eq!(
-                goal.iter_resolved().count(),
-                1,
-                "subset failed on {:?} {:?}",
-                a,
-                b
-            );
+            assert_eq!(goal.iter_resolved().count(), 1, "case: {:?} {:?}", a, b);
         }
     }
 
@@ -98,13 +128,7 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = subset(&a, &b);
-            assert_eq!(
-                goal.iter_resolved().count(),
-                0,
-                "subset erroneously succeeded on {:?} {:?}",
-                a,
-                b
-            );
+            assert_eq!(goal.iter_resolved().count(), 0, "case: {:?} {:?}", a, b);
         }
     }
 
@@ -118,13 +142,7 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = superset(&a, &b);
-            assert_eq!(
-                goal.iter_resolved().count(),
-                1,
-                "superset failed on {:?} {:?}",
-                a,
-                b
-            );
+            assert_eq!(goal.iter_resolved().count(), 1, "case: {:?} {:?}", a, b);
         }
     }
 
@@ -138,13 +156,7 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = superset(&a, &b);
-            assert_eq!(
-                goal.iter_resolved().count(),
-                0,
-                "superset erroneously succeeded on {:?} {:?}",
-                a,
-                b
-            );
+            assert_eq!(goal.iter_resolved().count(), 0, "case: {:?} {:?}", a, b);
         }
     }
 }

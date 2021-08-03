@@ -122,4 +122,26 @@ mod tests {
         assert_eq!(values, Some(vec!["12"]));
         assert!(map.values.is_empty());
     }
+
+    #[test]
+    fn value_eq() {
+        let mut a1: MKMVMap<usize, usize> = MKMVMap::new();
+        a1.add(vec![1], 1);
+
+        let mut a2: MKMVMap<usize, usize> = MKMVMap::new();
+        a2.add(vec![1], 1);
+
+        let b: MKMVMap<usize, usize> = MKMVMap::new();
+
+        assert_eq!(a1, a2);
+        assert_ne!(a1, b);
+    }
+
+    #[test]
+    fn debug_impl() {
+        let mut a1: MKMVMap<usize, usize> = MKMVMap::new();
+        a1.add(vec![1], 1);
+
+        assert_ne!(format!("{:?}", a1), "");
+    }
 }
