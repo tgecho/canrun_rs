@@ -90,10 +90,18 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{subset, superset};
+    use super::{get, subset, superset};
     use crate::example::Collections;
     use crate::lmap;
     use crate::{var, Goal, IterResolved};
+
+    #[test]
+    fn get_succeeds() {
+        let x = var();
+        let goal: Goal<Collections> = get(1, x, lmap! {1 => 2});
+        let results: Vec<_> = goal.query(x).collect();
+        assert_eq!(results, vec![2]);
+    }
 
     #[test]
     fn subset_should_succeed_on() {

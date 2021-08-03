@@ -108,4 +108,10 @@ mod tests {
         // Is simply failing the goal what we want here?
         util::assert_permutations_resolve_to(goals, x, vec![]);
     }
+
+    #[test]
+    fn debug_impl() {
+        let slice: Goal<Collections> = lvec::slice(lvec![2, 3], 1..4, lvec![1, 2, 3]);
+        assert_ne!(format!("{:?}", slice), "");
+    }
 }

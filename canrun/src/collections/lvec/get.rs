@@ -99,4 +99,18 @@ mod tests {
         let goals: Vec<Goal<Collections>> = vec![unify(x, 3), lvec::get(3, 2, lvec![1, 2, x])];
         util::assert_permutations_resolve_to(goals, x, vec![3]);
     }
+
+    #[test]
+    fn get_fails() {
+        let x = var::<i32>();
+        let goals: Vec<Goal<Collections>> = vec![lvec::get(x, 3, lvec![1, 2])];
+        util::assert_permutations_resolve_to(goals, x, vec![]);
+    }
+
+    #[test]
+    fn debug_impl() {
+        let x = var::<i32>();
+        let goal: Goal<Collections> = lvec::get(x, 0, lvec![1, 2, 3]);
+        assert_ne!(format!("{:?}", goal), "");
+    }
 }
