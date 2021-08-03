@@ -1,5 +1,5 @@
 #![warn(missing_docs)]
-#![doc = include_str!("../../README.md")]
+#![doc = include_str!("../README.md")]
 //! What's next? Go read a breakdown of this example in the deeper [Quick Start
 //! explanation](crate::docs::quickstart).
 
