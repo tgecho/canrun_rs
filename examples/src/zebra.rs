@@ -1,3 +1,5 @@
+#![allow(clippy::extra_unused_lifetimes)]
+
 use canrun::{all, domain, either, ltup, var, Goal, Val};
 use canrun::{
     lvec,

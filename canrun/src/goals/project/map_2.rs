@@ -58,13 +58,15 @@ where
     })))
 }
 
+type Fn2<'a, A, B, C> = Rc<dyn Fn(&A, &B) -> C + 'a>;
+
 pub struct Map2<'a, A: Debug, B: Debug, C: Debug> {
     a: Val<A>,
     b: Val<B>,
     c: Val<C>,
-    ab_to_c: Rc<dyn Fn(&A, &B) -> C + 'a>,
-    ac_to_b: Rc<dyn Fn(&A, &C) -> B + 'a>,
-    bc_to_a: Rc<dyn Fn(&B, &C) -> A + 'a>,
+    ab_to_c: Fn2<'a, A, B, C>,
+    ac_to_b: Fn2<'a, A, C, B>,
+    bc_to_a: Fn2<'a, B, C, A>,
 }
 
 impl<'a, A: Debug, B: Debug, C: Debug> Debug for Map2<'a, A, B, C> {

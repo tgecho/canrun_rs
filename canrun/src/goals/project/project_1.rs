@@ -6,9 +6,11 @@ use std::fmt;
 use std::fmt::Debug;
 use std::rc::Rc;
 
+type RcFn1<'a, A, B> = Rc<dyn Fn(&A) -> B + 'a>;
+
 pub struct Project1<'a, A: Debug, D: DomainType<'a, A>> {
     a: Val<A>,
-    f: Rc<dyn Fn(&A) -> Goal<'a, D> + 'a>,
+    f: RcFn1<'a, A, Goal<'a, D>>,
 }
 
 /** Create a [projection goal](super) that allows creating a new goal based on

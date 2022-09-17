@@ -72,8 +72,8 @@ fn basic_constrain_succeeds() {
 fn basic_constrain_fails() {
     let x = var();
     let goals: Vec<Goal<I32>> = vec![
-        unify(&val!(2), x.clone()),
-        custom(|s| s.constrain(assert(x.clone(), |x| x > &1))),
+        unify(&val!(2), x),
+        custom(|s| s.constrain(assert(x, |x| x > &1))),
         custom(|s| s.constrain(assert(x, |x| x > &3))),
     ];
     util::assert_permutations_resolve_to(goals, x, vec![]);

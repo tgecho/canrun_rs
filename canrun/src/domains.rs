@@ -75,7 +75,7 @@ impl<T: Debug> DomainValues<T> {
         DomainValues(HashMap::new())
     }
 }
-impl<'a, T: Debug> Clone for DomainValues<T> {
+impl<T: Debug> Clone for DomainValues<T> {
     fn clone(&self) -> Self {
         DomainValues(self.0.clone())
     }
