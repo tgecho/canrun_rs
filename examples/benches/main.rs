@@ -4,7 +4,7 @@ use criterion::{criterion_group, criterion_main, Criterion};
 pub fn zebra_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("zebra");
     group.sample_size(10);
-    group.bench_function("zebra", |b| b.iter(|| zebra()));
+    group.bench_function("zebra", |b| b.iter(zebra));
     group.finish();
 }
 

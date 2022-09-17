@@ -104,11 +104,8 @@ mod tests {
     fn unify_two_contains_1() {
         let x = var();
         let list = lvec![1, 2, 3];
-        let goals: Vec<Goal<Collections>> = vec![
-            lvec::member(1, x),
-            lvec::member(1, x),
-            unify(x, list.clone()),
-        ];
+        let goals: Vec<Goal<Collections>> =
+            vec![lvec::member(1, x), lvec::member(1, x), unify(x, list)];
         util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2, 3]]);
     }
 
@@ -116,11 +113,8 @@ mod tests {
     fn unify_two_contains_2() {
         let x = var();
         let list = lvec![1, 2, 3];
-        let goals: Vec<Goal<Collections>> = vec![
-            lvec::member(1, x),
-            lvec::member(2, x),
-            unify(x, list.clone()),
-        ];
+        let goals: Vec<Goal<Collections>> =
+            vec![lvec::member(1, x), lvec::member(2, x), unify(x, list)];
         util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2, 3]]);
     }
 
@@ -131,7 +125,7 @@ mod tests {
         let goals: Vec<Goal<Collections>> = vec![
             either(lvec::member(1, x), lvec::member(4, x)),
             lvec::member(2, x),
-            unify(x, list.clone()),
+            unify(x, list),
         ];
         util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2, 3]]);
     }
@@ -140,11 +134,8 @@ mod tests {
     fn unify_two_contains_4() {
         let x = var();
         let list = lvec![1, 2, 3];
-        let goals: Vec<Goal<Collections>> = vec![
-            lvec::member(1, x),
-            lvec::member(4, x),
-            unify(x, list.clone()),
-        ];
+        let goals: Vec<Goal<Collections>> =
+            vec![lvec::member(1, x), lvec::member(4, x), unify(x, list)];
 
         util::assert_permutations_resolve_to(goals, x, vec![]);
     }

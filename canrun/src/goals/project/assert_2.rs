@@ -7,10 +7,12 @@ use std::fmt;
 use std::fmt::Debug;
 use std::rc::Rc;
 
+type Fn2<'a, A, B, C> = Rc<dyn Fn(&A, &B) -> C + 'a>;
+
 pub struct Assert2<'a, A: Debug, B: Debug> {
     a: Val<A>,
     b: Val<B>,
-    f: Rc<dyn Fn(&A, &B) -> bool + 'a>,
+    f: Fn2<'a, A, B, bool>,
 }
 
 /** Create a [projection goal](super) that succeeds if the resolved values pass

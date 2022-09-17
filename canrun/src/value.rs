@@ -55,7 +55,7 @@ impl<T: Debug> Val<T> {
     */
     pub fn resolved(&self) -> Result<&T, LVar<T>> {
         match self {
-            Resolved(x) => Ok(&*x),
+            Resolved(x) => Ok(x),
             Var(x) => Err(*x),
         }
     }
@@ -145,7 +145,7 @@ impl<T: Hash + Debug> Hash for Val<T> {
     }
 }
 
-impl<'a, T: fmt::Debug> fmt::Debug for Val<T> {
+impl<T: fmt::Debug> fmt::Debug for Val<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Resolved(v) => write!(f, "Resolved({:?})", v),

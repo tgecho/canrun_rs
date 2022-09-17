@@ -138,7 +138,7 @@ where
     }
 }
 
-impl<'a, T, I, IV> From<I> for LVec<T>
+impl<T, I, IV> From<I> for LVec<T>
 where
     T: Debug,
     IV: IntoVal<T>,

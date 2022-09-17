@@ -34,8 +34,7 @@ fn basic_fork_first_success() {
         Rc::new(|s| s.unify(&val!(2), &val!(2))),
         Rc::new(|s| s.unify(&val!(1), &val!(2))),
     )));
-    let results: Vec<_> = state.unwrap().iter_resolved().collect();
-    assert_eq!(1, results.len());
+    assert_eq!(1, state.unwrap().iter_resolved().count());
 }
 
 #[test]

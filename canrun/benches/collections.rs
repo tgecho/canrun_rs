@@ -30,7 +30,7 @@ pub fn unify_lmaps(c: &mut Criterion) {
                         unify(x, range_lmap(0..*size)),
                         unify(x, range_lmap(0..*size)),
                     );
-                    goal.query(x).nth(0)
+                    goal.query(x).next()
                 });
             },
         );
@@ -61,7 +61,7 @@ pub fn unify_lmaps(c: &mut Criterion) {
                         unify(x, range_lmap(0..*size)),
                         unify(x, range_lmap(*size..(size + size))),
                     );
-                    goal.query(x).nth(0)
+                    goal.query(x).next()
                 });
             },
         );
