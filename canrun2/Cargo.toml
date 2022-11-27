@@ -1,0 +1,22 @@
+[package]
+name = "canrun2"
+description = "A logic programming library inspired by the *Kanren family of language DSLs."
+version = "0.3.0"
+authors = ["Erik Simmler <tgecho@gmail.com>"]
+repository = "https://github.com/tgecho/canrun_rs"
+documentation = "https://docs.rs/crate/canrun"
+readme="../README.md"
+categories = ["algorithms", "mathematics"]
+keywords = ["logic", "dsl", "kanren"]
+license = "MIT/Apache-2.0"
+edition = "2021"
+
+[dependencies]
+im-rc = "15.1.0"
+rand = "0.8.5"
+itertools = "0.10.3"
+canrun = { version = "0.3.0", path = "../canrun"}
+
+[dev-dependencies]
+log = "0.4.17"
+env_logger = "0.9.0"
