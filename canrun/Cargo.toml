@@ -10,6 +10,7 @@ categories = ["algorithms", "mathematics"]
 keywords = ["logic", "dsl", "kanren"]
 license = "MIT/Apache-2.0"
 edition = "2021"
+rust-version = "1.60.0"
 
 [dependencies]
 im-rc = "15.1.0"
