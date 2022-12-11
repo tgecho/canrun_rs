@@ -1,24 +1,12 @@
-use crate::state_iterator::StateIter;
+use crate::fork::Fork;
 use crate::unify::Unify;
-use crate::value::{AnyVal, LVarId, Val};
+use crate::value::{AnyVal, Value, VarId};
 
 use std::rc::Rc;
 
-pub trait Fork: 'static {
-    /// Given a [`State`], return an iterator of states that result from the
-    /// fork operation.
-    fn fork(&self, state: State) -> StateIter;
-}
-
-impl Fork for Rc<dyn Fn(State) -> StateIter> {
-    fn fork(&self, state: State) -> StateIter {
-        self(state)
-    }
-}
-
 #[derive(Clone)]
 pub struct State {
-    values: im_rc::HashMap<LVarId, AnyVal>,
+    pub(crate) values: im_rc::HashMap<VarId, AnyVal>,
     pub(crate) forks: im_rc::Vector<Rc<dyn Fork>>,
 }
 
@@ -33,7 +21,7 @@ impl State {
     fn resolve_any<'a>(&'a self, val: &'a AnyVal) -> &'a AnyVal {
         match val {
             AnyVal::Var(var) => {
-                let resolved = self.values.get(&var.id);
+                let resolved = self.values.get(var);
                 match resolved {
                     Some(AnyVal::Var(found_var)) if found_var == var => val,
                     Some(found) => self.resolve_any(found),
@@ -44,34 +32,8 @@ impl State {
         }
     }
 
-    pub fn resolve<T: Unify>(&self, val: &Val<T>) -> Option<Val<T>> {
-        match self.resolve_any(&AnyVal::from(val)) {
-            AnyVal::Var(var) => Some(Val::Var(*var)),
-            AnyVal::Value(val) => {
-                let rc_t = val.clone().downcast::<T>().ok()?;
-                Some(Val::Value(rc_t))
-            }
-        }
-    }
-
-    pub fn unify<T: Unify>(mut self, a: Val<T>, b: Val<T>) -> Option<Self> {
-        let a = self.resolve(&a)?;
-        let b = self.resolve(&b)?;
-
-        match (a, b) {
-            (Val::Value(a), Val::Value(b)) => Unify::unify(self, a, b),
-            (Val::Var(a), Val::Var(b)) if a == b => Some(self),
-            (Val::Var(var), val) | (val, Val::Var(var)) => {
-                // TODO: Add occurs check?
-                self.values.insert(var.id, AnyVal::from(val));
-                Some(self)
-            }
-        }
-    }
-
-    pub fn fork<F: Fork>(mut self, fork: Rc<F>) -> Option<Self> {
-        self.forks.push_back(fork);
-        Some(self)
+    pub fn resolve<T: Unify>(&self, val: &Value<T>) -> Option<Value<T>> {
+        self.resolve_any(&val.to_anyval()).to_value()
     }
 }
 
@@ -83,34 +45,37 @@ impl Default for State {
 
 #[cfg(test)]
 mod test {
-    use crate::{state_iterator::StateIterator, value::*};
+    use crate::{
+        state_iterator::{StateIter, StateIterator},
+        value::*,
+    };
 
     use super::*;
 
     #[test]
     fn basic_unify() {
-        let x = var();
+        let x = Value::var();
         let state = State::new();
 
-        let state = state.unify(x.clone(), val(1)).unwrap();
-        assert_eq!(state.resolve(&x).unwrap(), val(1));
+        let state = state.unify(x.clone(), Value::new(1)).unwrap();
+        assert_eq!(state.resolve(&x).unwrap(), Value::new(1));
     }
 
     struct Is1or2 {
-        x: Val<usize>,
+        x: Value<usize>,
     }
 
     impl Fork for Is1or2 {
         fn fork(&self, state: State) -> StateIter {
-            let s1 = state.clone().unify(self.x.clone(), val(1));
-            let s2 = state.unify(self.x.clone(), val(2));
+            let s1 = state.clone().unify(self.x.clone(), Value::new(1));
+            let s2 = state.unify(self.x.clone(), Value::new(2));
             Box::new(s1.into_iter().chain(s2.into_iter()))
         }
     }
 
     #[test]
     fn basic_fork() {
-        let x = var();
+        let x = Value::var();
         let state: State = State::new();
 
         let results = state
@@ -118,6 +83,6 @@ mod test {
             .into_states()
             .map(|s| s.resolve(&x).unwrap())
             .collect::<Vec<_>>();
-        assert_eq!(results, vec![val(1), val(2)]);
+        assert_eq!(results, vec![Value::new(1), Value::new(2)]);
     }
 }
