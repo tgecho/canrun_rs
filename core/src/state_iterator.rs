@@ -12,7 +12,7 @@ impl StateIterator for State {
         let fork = self.forks.pop_front();
         match fork {
             None => Box::new(once(self)),
-            Some(fork) => Box::new(fork.fork(self).flat_map(StateIterator::into_states)),
+            Some(fork) => Box::new(fork.fork(&self).flat_map(StateIterator::into_states)),
         }
     }
 }

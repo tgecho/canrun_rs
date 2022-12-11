@@ -1,7 +1,6 @@
 use crate::fork::Fork;
 use crate::unify::Unify;
 use crate::value::{AnyVal, Value, VarId};
-
 use std::rc::Rc;
 
 #[derive(Clone)]
@@ -56,32 +55,22 @@ mod test {
     fn basic_unify() {
         let x = Value::var();
         let state = State::new();
-
         let state = state.unify(x.clone(), Value::new(1)).unwrap();
         assert_eq!(state.resolve(&x).unwrap(), Value::new(1));
     }
 
-    struct Is1or2 {
-        x: Value<usize>,
-    }
-
-    impl Fork for Is1or2 {
-        fn fork(&self, state: State) -> StateIter {
-            let s1 = state.clone().unify(self.x.clone(), Value::new(1));
-            let s2 = state.unify(self.x.clone(), Value::new(2));
-            Box::new(s1.into_iter().chain(s2.into_iter()))
-        }
-    }
-
     #[test]
     fn basic_fork() {
-        let x = Value::var();
+        let x = LVar::new();
         let state: State = State::new();
-
         let results = state
-            .fork(Rc::new(Is1or2 { x: x.clone() }))
+            .fork(move |s: &State| -> StateIter {
+                let s1 = s.clone().unify(x.into(), Value::new(1));
+                let s2 = s.clone().unify(x.into(), Value::new(2));
+                Box::new(s1.into_iter().chain(s2.into_iter()))
+            })
             .into_states()
-            .map(|s| s.resolve(&x).unwrap())
+            .map(|s| s.resolve(&x.into()).unwrap())
             .collect::<Vec<_>>();
         assert_eq!(results, vec![Value::new(1), Value::new(2)]);
     }
