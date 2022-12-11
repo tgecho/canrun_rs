@@ -1,5 +1,5 @@
 [package]
-name = "canrun2"
+name = "canrun_core"
 description = "A logic programming library inspired by the *Kanren family of language DSLs."
 version = "0.3.0"
 authors = ["Erik Simmler <tgecho@gmail.com>"]
