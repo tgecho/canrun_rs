@@ -2,7 +2,7 @@ use canrun_core::State;
 
 use crate::Goal;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct Fail;
 
 impl Fail {

@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use canrun_core::State;
 
 pub mod both;
+pub mod either;
 pub mod fail;
 pub mod succeed;
 
