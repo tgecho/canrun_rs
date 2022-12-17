@@ -3,6 +3,7 @@ members = [
     "codegen",
     "canrun",
     "core",
+    "goals",
     "examples",
 ]
 

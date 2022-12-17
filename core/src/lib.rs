@@ -5,3 +5,6 @@ mod unify;
 mod value;
 
 pub use state::State;
+pub use state_iterator::{StateIter, StateIterator};
+pub use unify::Unify;
+pub use value::{LVar, Value};

@@ -1,5 +1,5 @@
 [package]
-name = "canrun_core"
+name = "canrun_goals"
 description = "A logic programming library inspired by the *Kanren family of language DSLs."
 version = "0.3.0"
 authors = ["Erik Simmler <tgecho@gmail.com>"]
@@ -12,8 +12,7 @@ license = "MIT/Apache-2.0"
 edition = "2021"
 
 [dependencies]
-im-rc = "15.1.0"
-itertools = "0.10.3"
+canrun_core = { version = "0.3.0", path = "../core"}
 
 [dev-dependencies]
 log = "0.4.17"

@@ -9,16 +9,6 @@ pub trait Unify: Any + Debug {
     fn unify(state: State, a: Rc<Self>, b: Rc<Self>) -> Option<State>;
 }
 
-impl Unify for usize {
-    fn unify(state: State, a: Rc<Self>, b: Rc<Self>) -> Option<State> {
-        if a == b {
-            Some(state)
-        } else {
-            None
-        }
-    }
-}
-
 impl State {
     pub fn unify<T: Unify>(mut self, a: Value<T>, b: Value<T>) -> Option<Self> {
         let a = self.resolve(&a)?;
@@ -32,6 +22,16 @@ impl State {
                 self.values.insert(var.id, val.to_anyval());
                 Some(self)
             }
+        }
+    }
+}
+
+impl<T: Eq + Debug + Any> Unify for T {
+    fn unify(state: State, a: Rc<Self>, b: Rc<Self>) -> Option<State> {
+        if a == b {
+            Some(state)
+        } else {
+            None
         }
     }
 }
