@@ -1,4 +1,4 @@
-use canrun_core::State;
+use crate::State;
 
 use super::Goal;
 
@@ -25,7 +25,7 @@ impl Goal for Both {
 
 #[cfg(test)]
 mod test {
-    use crate::{fail::Fail, succeed::Succeed};
+    use crate::goals::{fail::Fail, succeed::Succeed};
 
     use super::*;
 

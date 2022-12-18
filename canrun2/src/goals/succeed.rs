@@ -1,6 +1,5 @@
-use canrun_core::State;
-
-use crate::Goal;
+use crate::goals::Goal;
+use crate::State;
 
 #[derive(Debug)]
 pub struct Succeed;
@@ -8,6 +7,12 @@ pub struct Succeed;
 impl Succeed {
     pub fn new() -> Succeed {
         Succeed
+    }
+}
+
+impl Default for Succeed {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

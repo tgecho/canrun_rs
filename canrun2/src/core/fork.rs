@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{state_iterator::StateIter, State};
+use crate::{State, StateIter};
 
 pub trait Fork: 'static {
     /// Given a [`State`], return an iterator of states that result from the

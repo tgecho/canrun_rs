@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use canrun_core::State;
+use crate::State;
 
 pub mod both;
 pub mod either;

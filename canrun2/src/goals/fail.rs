@@ -1,6 +1,5 @@
-use canrun_core::State;
-
-use crate::Goal;
+use crate::goals::Goal;
+use crate::State;
 
 #[derive(Clone, Debug)]
 pub struct Fail;
@@ -8,6 +7,12 @@ pub struct Fail;
 impl Fail {
     pub fn new() -> Fail {
         Fail
+    }
+}
+
+impl Default for Fail {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

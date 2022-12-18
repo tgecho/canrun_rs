@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use canrun_core::{Fork, State};
+use crate::{Fork, State, StateIter};
 
 use super::Goal;
 
@@ -26,7 +26,7 @@ impl Goal for Either {
 }
 
 impl Fork for Either {
-    fn fork(&self, state: &State) -> canrun_core::StateIter {
+    fn fork(&self, state: &State) -> StateIter {
         let a = self.a.apply_goal(state.clone()).into_iter();
         let b = self.b.apply_goal(state.clone()).into_iter();
         Box::new(a.chain(b))
@@ -35,9 +35,9 @@ impl Fork for Either {
 
 #[cfg(test)]
 mod test {
-    use canrun_core::StateIterator;
+    use crate::StateIterator;
 
-    use crate::{fail::Fail, succeed::Succeed};
+    use crate::goals::{fail::Fail, succeed::Succeed};
 
     use super::*;
 
