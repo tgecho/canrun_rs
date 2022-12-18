@@ -55,7 +55,7 @@ mod test {
     fn basic_unify() {
         let x = Value::var();
         let state = State::new();
-        let state = state.unify(x.clone(), Value::new(1)).unwrap();
+        let state = state.unify(&x, &Value::new(1)).unwrap();
         assert_eq!(state.resolve(&x).unwrap(), Value::new(1));
     }
 
@@ -65,8 +65,8 @@ mod test {
         let state: State = State::new();
         let results = state
             .fork(move |s: &State| -> StateIter {
-                let s1 = s.clone().unify(x.into(), Value::new(1));
-                let s2 = s.clone().unify(x.into(), Value::new(2));
+                let s1 = s.clone().unify(&x.into(), &Value::new(1));
+                let s2 = s.clone().unify(&x.into(), &Value::new(2));
                 Box::new(s1.into_iter().chain(s2.into_iter()))
             })
             .into_states()

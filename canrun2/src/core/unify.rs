@@ -10,9 +10,9 @@ pub trait Unify: Any + Debug {
 }
 
 impl State {
-    pub fn unify<T: Unify>(mut self, a: Value<T>, b: Value<T>) -> Option<Self> {
-        let a = self.resolve(&a)?;
-        let b = self.resolve(&b)?;
+    pub fn unify<T: Unify>(mut self, a: &Value<T>, b: &Value<T>) -> Option<Self> {
+        let a = self.resolve(a)?;
+        let b = self.resolve(b)?;
 
         match (a, b) {
             (Value::Resolved(a), Value::Resolved(b)) => Unify::unify(self, a, b),
