@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use super::{State, StateIter};
 
 pub trait Fork: 'static {
@@ -14,12 +12,5 @@ where
 {
     fn fork(&self, state: &State) -> StateIter {
         self(state)
-    }
-}
-
-impl State {
-    pub fn fork<F: Fork>(mut self, fork: F) -> Option<Self> {
-        self.forks.push_back(Rc::new(fork));
-        Some(self)
     }
 }
