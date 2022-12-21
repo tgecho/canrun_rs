@@ -1,5 +1,5 @@
+use crate::core::State;
 use crate::goals::Goal;
-use crate::State;
 
 #[derive(Debug)]
 pub struct Succeed;
@@ -17,7 +17,7 @@ impl Default for Succeed {
 }
 
 impl Goal for Succeed {
-    fn apply_goal(&self, state: State) -> Option<State> {
+    fn apply(&self, state: State) -> Option<State> {
         Some(state)
     }
 }
@@ -30,7 +30,7 @@ mod test {
     fn succeed() {
         let state = State::new();
         let goal = Succeed::new();
-        let result = goal.apply_goal(state);
+        let result = goal.apply(state);
         assert!(result.is_some());
     }
 }

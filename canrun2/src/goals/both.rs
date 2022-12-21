@@ -1,6 +1,5 @@
-use crate::State;
-
 use super::Goal;
+use crate::core::State;
 
 #[derive(Debug)]
 pub struct Both {
@@ -18,8 +17,8 @@ impl Both {
 }
 
 impl Goal for Both {
-    fn apply_goal(&self, state: State) -> Option<State> {
-        self.a.apply_goal(state).and_then(|s| self.b.apply_goal(s))
+    fn apply(&self, state: State) -> Option<State> {
+        self.a.apply(state).and_then(|s| self.b.apply(s))
     }
 }
 
@@ -33,7 +32,7 @@ mod test {
     fn both_succeed() {
         let state = State::new();
         let goal = Both::new(Succeed::new(), Succeed::new());
-        let result = goal.apply_goal(state);
+        let result = goal.apply(state);
         assert!(result.is_some());
     }
 
@@ -41,7 +40,7 @@ mod test {
     fn both_succeed_then_fail() {
         let state = State::new();
         let goal = Both::new(Succeed::new(), Fail::new());
-        let result = goal.apply_goal(state);
+        let result = goal.apply(state);
         assert!(result.is_none());
     }
 
@@ -49,7 +48,7 @@ mod test {
     fn both_fail_then_succeed() {
         let state = State::new();
         let goal = Both::new(Fail::new(), Succeed::new());
-        let result = goal.apply_goal(state);
+        let result = goal.apply(state);
         assert!(result.is_none());
     }
 }

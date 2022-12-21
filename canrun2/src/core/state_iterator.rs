@@ -1,4 +1,4 @@
-use crate::State;
+use crate::core::State;
 use std::iter::once;
 
 pub type StateIter = Box<dyn Iterator<Item = State>>;

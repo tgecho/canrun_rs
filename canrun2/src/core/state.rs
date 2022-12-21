@@ -1,6 +1,6 @@
-use crate::core::value::{AnyVal, Value, VarId};
-use crate::Fork;
-use crate::Unify;
+use crate::core::Fork;
+use crate::core::Unify;
+use crate::value::{AnyVal, Value, VarId};
 use std::rc::Rc;
 
 #[derive(Clone)]
@@ -45,8 +45,8 @@ impl Default for State {
 #[cfg(test)]
 mod test {
     use crate::{
-        core::value::*,
-        {StateIter, StateIterator},
+        core::{StateIter, StateIterator},
+        value::*,
     };
 
     use super::*;

@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use crate::State;
+use crate::core::State;
 
 pub mod both;
 pub mod either;
@@ -9,5 +9,5 @@ pub mod succeed;
 pub mod unify;
 
 pub trait Goal: Debug + 'static {
-    fn apply_goal(&self, state: State) -> Option<State>;
+    fn apply(&self, state: State) -> Option<State>;
 }

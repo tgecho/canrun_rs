@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
-use crate::{State, Unify as UnifyTrait, Value};
+use crate::core::{State, Unify as UnifyTrait};
+use crate::value::Value;
 
 use super::Goal;
 
@@ -17,7 +18,7 @@ impl<T: UnifyTrait> Unify<T> {
 }
 
 impl<T: UnifyTrait> Goal for Unify<T> {
-    fn apply_goal(&self, state: State) -> Option<State> {
+    fn apply(&self, state: State) -> Option<State> {
         state.unify(&self.a, &self.b)
     }
 }
@@ -30,7 +31,7 @@ mod tests {
     fn deeply_nested_vars() {
         let x = Value::var();
         let goal = Unify::new(x.clone(), Value::new(1));
-        let result = goal.apply_goal(State::new());
+        let result = goal.apply(State::new());
         assert_eq!(result.unwrap().resolve(&x).unwrap(), Value::new(1));
     }
 }

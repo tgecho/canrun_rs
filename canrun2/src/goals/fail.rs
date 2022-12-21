@@ -1,5 +1,5 @@
+use crate::core::State;
 use crate::goals::Goal;
-use crate::State;
 
 #[derive(Clone, Debug)]
 pub struct Fail;
@@ -17,7 +17,7 @@ impl Default for Fail {
 }
 
 impl Goal for Fail {
-    fn apply_goal(&self, _: State) -> Option<State> {
+    fn apply(&self, _: State) -> Option<State> {
         None
     }
 }
@@ -30,7 +30,7 @@ mod test {
     fn fail() {
         let state = State::new();
         let goal = Fail::new();
-        let result = goal.apply_goal(state);
+        let result = goal.apply(state);
         assert!(result.is_none());
     }
 }
