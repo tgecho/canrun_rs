@@ -6,7 +6,7 @@ use crate::value::Value;
 use super::Goal;
 
 #[derive(Debug)]
-struct Unify<T: UnifyTrait> {
+pub struct Unify<T: UnifyTrait> {
     a: Value<T>,
     b: Value<T>,
 }
