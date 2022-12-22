@@ -5,6 +5,7 @@ use crate::core::State;
 pub mod both;
 pub mod either;
 pub mod fail;
+pub mod lazy;
 pub mod succeed;
 pub mod unify;
 

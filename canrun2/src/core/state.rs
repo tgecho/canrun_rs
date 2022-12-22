@@ -50,22 +50,6 @@ impl State {
         }
     }
 
-    /** Add a potential fork point to the state.
-
-    If there are many possibilities for a certain value or set of values,
-    this method allows you to add a [`Fork`] object that can enumerate those
-    possible alternate states.
-
-    While this is not quite as finicky as the
-    [`Constraints`](State::constrain()), you still probably want to use the
-    [`any`](crate::goals::any!) or [`either`](crate::goals::either()) goals.
-
-    [Unification](State::unify()) is performed eagerly as soon as it is
-    called. [Constraints](State::constrain()) are run as variables are
-    resolved. Forking is executed lazily at the end, when
-    [`.iter_resolved()`](crate::state::IterResolved::iter_resolved()) (or
-    [`.query()](crate::Query::query())) is called.
-    */
     pub fn fork(mut self, fork: impl Fork) -> Option<Self> {
         self.forks.push_back(Rc::new(fork));
         Some(self)
