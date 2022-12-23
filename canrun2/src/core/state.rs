@@ -1,12 +1,17 @@
+use mkmvmap::MKMVMap;
+
 use crate::core::Fork;
 use crate::core::Unify;
 use crate::value::{AnyVal, Value, VarId};
 use std::rc::Rc;
 
+use super::constrain::Constraint;
+
 #[derive(Clone)]
 pub struct State {
     pub(crate) values: im_rc::HashMap<VarId, AnyVal>,
     pub(crate) forks: im_rc::Vector<Rc<dyn Fork>>,
+    constraints: MKMVMap<VarId, Rc<dyn Constraint>>,
 }
 
 impl State {
@@ -14,6 +19,7 @@ impl State {
         State {
             values: im_rc::HashMap::new(),
             forks: im_rc::Vector::new(),
+            constraints: MKMVMap::new(),
         }
     }
 
@@ -42,10 +48,18 @@ impl State {
         match (a, b) {
             (Value::Resolved(a), Value::Resolved(b)) => Unify::unify(self, a, b),
             (Value::Var(a), Value::Var(b)) if a == b => Some(self),
-            (Value::Var(var), val) | (val, Value::Var(var)) => {
+            (Value::Var(key), value) | (value, Value::Var(key)) => {
                 // TODO: Add occurs check?
-                self.values.insert(var.id, val.to_anyval());
-                Some(self)
+                self.values.insert(key.id, value.to_anyval());
+
+                // check constraints matching newly assigned lvar
+                if let Some(constraints) = self.constraints.extract(&key.id) {
+                    constraints
+                        .into_iter()
+                        .try_fold(self, |state, func| state.constrain(func))
+                } else {
+                    Some(self)
+                }
             }
         }
     }
@@ -53,6 +67,16 @@ impl State {
     pub fn fork(mut self, fork: impl Fork) -> Option<Self> {
         self.forks.push_back(Rc::new(fork));
         Some(self)
+    }
+
+    pub fn constrain(mut self, constraint: Rc<dyn Constraint>) -> Option<Self> {
+        match constraint.attempt(&self) {
+            Ok(resolve) => resolve(self),
+            Err(watch) => {
+                self.constraints.add(watch.0, constraint);
+                Some(self)
+            }
+        }
     }
 }
 

@@ -14,6 +14,8 @@ edition = "2021"
 [dependencies]
 im-rc = "15.1.0"
 itertools = "0.10.3"
+mkmvmap = { version = "0.3.0", path = "../extra/mkmvmap"}
+
 
 [dev-dependencies]
 log = "0.4.17"

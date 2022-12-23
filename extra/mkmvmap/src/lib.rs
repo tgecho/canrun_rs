@@ -3,14 +3,14 @@ use std::fmt;
 use std::hash::Hash;
 
 #[derive(Clone, Debug)]
-struct MKMVMap<K: Eq + Hash + Clone + fmt::Debug, V: Clone> {
+pub struct MKMVMap<K: Eq + Hash + Clone + fmt::Debug, V: Clone> {
     current_id: usize,
     keys: HashMap<K, HashSet<usize>>,
     values: HashMap<usize, Value<K, V>>,
 }
 
 impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.values.is_empty()
     }
 }
@@ -37,7 +37,7 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone + PartialEq> PartialEq for MKMV
 }
 
 impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
-    pub(crate) fn new() -> MKMVMap<K, V> {
+    pub fn new() -> MKMVMap<K, V> {
         MKMVMap {
             current_id: 0,
             keys: HashMap::new(),
@@ -45,7 +45,7 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
         }
     }
 
-    pub(crate) fn add(&mut self, keys: Vec<K>, value: V) {
+    pub fn add(&mut self, keys: Vec<K>, value: V) {
         let id = self.current_id;
         self.current_id += 1;
         self.keys = keys.iter().fold(self.keys.clone(), |keys, key| {
@@ -57,7 +57,7 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
         self.values = self.values.update(id, Value { id, keys, value });
     }
 
-    pub(crate) fn extract(&mut self, key: &K) -> Option<Vec<V>> {
+    pub fn extract(&mut self, key: &K) -> Option<Vec<V>> {
         let (ids, keys) = self.keys.extract(key)?;
         self.keys = keys;
         let mut values = Vec::new();
@@ -83,6 +83,12 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
             }
         }
         Some(values)
+    }
+}
+
+impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> Default for MKMVMap<K, V> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
