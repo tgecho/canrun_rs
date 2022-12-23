@@ -72,6 +72,6 @@ mod tests {
     #[test]
     fn debug_impl() {
         let goal: Goal<I32> = lazy(Goal::succeed);
-        assert_ne!(format!("{:?}", goal), "")
+        assert_ne!(format!("{goal:?}"), "")
     }
 }

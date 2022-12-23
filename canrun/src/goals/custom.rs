@@ -77,6 +77,6 @@ mod tests {
     #[test]
     fn debug_impl() {
         let goal: Goal<I32> = custom(|_| None);
-        assert_eq!(format!("{:?}", goal), "Goal(Custom(<fn>))");
+        assert_eq!(format!("{goal:?}"), "Goal(Custom(<fn>))");
     }
 }

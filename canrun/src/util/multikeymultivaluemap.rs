@@ -142,6 +142,6 @@ mod tests {
         let mut a1: MKMVMap<usize, usize> = MKMVMap::new();
         a1.add(vec![1], 1);
 
-        assert_ne!(format!("{:?}", a1), "");
+        assert_ne!(format!("{a1:?}"), "");
     }
 }

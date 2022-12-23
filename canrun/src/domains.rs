@@ -196,6 +196,6 @@ mod test {
     #[test]
     fn debug_impl() {
         let domain: DomainValues<I32> = DomainValues::new();
-        assert_ne!(format!("{:?}", domain), "")
+        assert_ne!(format!("{domain:?}"), "")
     }
 }

@@ -105,6 +105,6 @@ mod tests {
     #[test]
     fn debug_impl() {
         let goal: Goal<I32> = map_1(1, 2, |x| x + 1, |y| y - 1);
-        assert_ne!(format!("{:?}", goal), "");
+        assert_ne!(format!("{goal:?}"), "");
     }
 }

@@ -114,7 +114,7 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = subset(&a, &b);
-            assert_eq!(goal.iter_resolved().count(), 1, "case: {:?} {:?}", a, b);
+            assert_eq!(goal.iter_resolved().count(), 1, "case: {a:?} {b:?}");
         }
     }
 
@@ -128,7 +128,7 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = subset(&a, &b);
-            assert_eq!(goal.iter_resolved().count(), 0, "case: {:?} {:?}", a, b);
+            assert_eq!(goal.iter_resolved().count(), 0, "case: {a:?} {b:?}");
         }
     }
 
@@ -142,7 +142,7 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = superset(&a, &b);
-            assert_eq!(goal.iter_resolved().count(), 1, "case: {:?} {:?}", a, b);
+            assert_eq!(goal.iter_resolved().count(), 1, "case: {a:?} {b:?}");
         }
     }
 
@@ -156,7 +156,7 @@ mod tests {
         ];
         for (a, b) in cases {
             let goal: Goal<Collections> = superset(&a, &b);
-            assert_eq!(goal.iter_resolved().count(), 0, "case: {:?} {:?}", a, b);
+            assert_eq!(goal.iter_resolved().count(), 0, "case: {a:?} {b:?}");
         }
     }
 }

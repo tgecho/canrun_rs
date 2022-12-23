@@ -143,6 +143,6 @@ mod tests {
     #[test]
     fn debug_impl() {
         let goal: Goal<Collections> = lvec::member(1, lvec![1, 2]);
-        assert_ne!(format!("{:?}", goal), "")
+        assert_ne!(format!("{goal:?}"), "")
     }
 }

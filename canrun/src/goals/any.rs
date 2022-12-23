@@ -110,6 +110,6 @@ mod tests {
     #[test]
     fn debug_impl() {
         let goal: Goal<I32> = any![];
-        assert_ne!(format!("{:?}", goal), "");
+        assert_ne!(format!("{goal:?}"), "");
     }
 }

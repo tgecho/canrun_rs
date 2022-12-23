@@ -111,6 +111,6 @@ mod tests {
     fn debug_impl() {
         let x = var::<i32>();
         let goal: Goal<Collections> = lvec::get(x, 0, lvec![1, 2, 3]);
-        assert_ne!(format!("{:?}", goal), "");
+        assert_ne!(format!("{goal:?}"), "");
     }
 }

@@ -307,6 +307,6 @@ mod tests {
         let x = var();
 
         let goal: Goal<Collections> = unify(m, lmap!(x => 1, 1 => 2));
-        assert_ne!(format!("{:?}", goal), "")
+        assert_ne!(format!("{goal:?}"), "")
     }
 }

@@ -214,6 +214,6 @@ mod tests {
     fn debug_impl() {
         let a: LVar<i32> = var();
         let watch = VarWatch::one(a);
-        assert_ne!(format!("{:?}", watch), "");
+        assert_ne!(format!("{watch:?}"), "");
     }
 }

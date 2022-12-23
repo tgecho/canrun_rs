@@ -112,6 +112,6 @@ mod tests {
     #[test]
     fn debug_impl() {
         let slice: Goal<Collections> = lvec::slice(lvec![2, 3], 1..4, lvec![1, 2, 3]);
-        assert_ne!(format!("{:?}", slice), "");
+        assert_ne!(format!("{slice:?}"), "");
     }
 }

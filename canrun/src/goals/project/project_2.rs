@@ -88,6 +88,6 @@ mod tests {
             2,
             |_, _| Goal::succeed(), // coverage-ignore
         );
-        assert_ne!(format!("{:?}", goal), "");
+        assert_ne!(format!("{goal:?}"), "");
     }
 }
