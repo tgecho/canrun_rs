@@ -6,6 +6,7 @@ pub mod both;
 pub mod either;
 pub mod fail;
 pub mod lazy;
+pub mod project;
 pub mod succeed;
 pub mod unify;
 

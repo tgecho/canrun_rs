@@ -5,8 +5,8 @@ use std::{any::Any, fmt::Debug, rc::Rc};
 
 pub(crate) type VarId = usize;
 
-#[derive(Clone, Debug, Copy)]
-pub struct LVar<T: ?Sized> {
+#[derive(Debug, Copy)]
+pub struct LVar<T> {
     pub(crate) id: VarId,
     t: PhantomData<T>,
 }
@@ -36,7 +36,7 @@ impl<T: Unify> Default for LVar<T> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Value<T: Unify> {
     Var(LVar<T>),
     Resolved(Rc<T>),
@@ -82,5 +82,28 @@ impl AnyVal {
 impl<T: Unify> From<LVar<T>> for Value<T> {
     fn from(var: LVar<T>) -> Self {
         Value::Var(var)
+    }
+}
+
+// These manual Clone impls are needed because the derive macro adds a `T:
+// Clone` constraint. See
+// https://doc.rust-lang.org/std/clone/trait.Clone.html#derivable and
+// https://stegosaurusdormant.com/understanding-derive-clone/
+
+impl<T> Clone for LVar<T> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            t: self.t,
+        }
+    }
+}
+
+impl<T: Unify> Clone for Value<T> {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Var(v) => Self::Var(v.clone()),
+            Self::Resolved(v) => Self::Resolved(v.clone()),
+        }
     }
 }

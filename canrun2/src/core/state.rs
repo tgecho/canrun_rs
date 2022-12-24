@@ -5,7 +5,7 @@ use crate::core::Unify;
 use crate::value::{AnyVal, Value, VarId};
 use std::rc::Rc;
 
-use super::constrain::Constraint;
+use super::constraints::Constraint;
 
 #[derive(Clone)]
 pub struct State {
@@ -37,13 +37,17 @@ impl State {
         }
     }
 
-    pub fn resolve<T: Unify>(&self, val: &Value<T>) -> Option<Value<T>> {
-        self.resolve_any(&val.to_anyval()).to_value()
+    pub fn resolve<T: Unify>(&self, val: &Value<T>) -> Value<T> {
+        self.resolve_any(&val.to_anyval())
+            .to_value()
+            // I think this should be safe, so long as we are careful to only
+            // store a var with the correct type internally.
+            .expect("AnyVal resolved to unexpected Value<T>")
     }
 
     pub fn unify<T: Unify>(mut self, a: &Value<T>, b: &Value<T>) -> Option<Self> {
-        let a = self.resolve(a)?;
-        let b = self.resolve(b)?;
+        let a = self.resolve(a);
+        let b = self.resolve(b);
 
         match (a, b) {
             (Value::Resolved(a), Value::Resolved(b)) => Unify::unify(self, a, b),
@@ -100,7 +104,7 @@ mod test {
         let x = Value::var();
         let state = State::new();
         let state = state.unify(&x, &Value::new(1)).unwrap();
-        assert_eq!(state.resolve(&x).unwrap(), Value::new(1));
+        assert_eq!(state.resolve(&x), Value::new(1));
     }
 
     #[test]
@@ -114,7 +118,7 @@ mod test {
                 Box::new(s1.into_iter().chain(s2.into_iter()))
             })
             .into_states()
-            .map(|s| s.resolve(&x.into()).unwrap())
+            .map(|s| s.resolve(&x.into()))
             .collect::<Vec<_>>();
         assert_eq!(results, vec![Value::new(1), Value::new(2)]);
     }

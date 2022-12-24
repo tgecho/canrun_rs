@@ -32,6 +32,6 @@ mod tests {
         let x = Value::var();
         let goal = Unify::new(x.clone(), Value::new(1));
         let result = goal.apply(State::new());
-        assert_eq!(result.unwrap().resolve(&x).unwrap(), Value::new(1));
+        assert_eq!(result.unwrap().resolve(&x), Value::new(1));
     }
 }

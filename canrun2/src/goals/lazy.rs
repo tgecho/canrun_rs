@@ -49,7 +49,7 @@ mod tests {
         let x = LVar::new();
         let goal = Lazy::new(move || Box::new(Unify::new(x.into(), Value::new(1))));
         let result = goal.apply(State::new());
-        assert_eq!(result.unwrap().resolve(&x.into()).unwrap(), Value::new(1));
+        assert_eq!(result.unwrap().resolve(&x.into()), Value::new(1));
     }
 
     #[test]
