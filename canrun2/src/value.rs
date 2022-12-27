@@ -85,6 +85,18 @@ impl<T: Unify> From<LVar<T>> for Value<T> {
     }
 }
 
+impl<T: Unify> From<&LVar<T>> for Value<T> {
+    fn from(var: &LVar<T>) -> Self {
+        Value::Var(var.clone())
+    }
+}
+
+impl<T: Unify> From<T> for Value<T> {
+    fn from(t: T) -> Self {
+        Value::Resolved(Rc::new(t))
+    }
+}
+
 // These manual Clone impls are needed because the derive macro adds a `T:
 // Clone` constraint. See
 // https://doc.rust-lang.org/std/clone/trait.Clone.html#derivable and

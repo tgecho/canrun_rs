@@ -23,15 +23,29 @@ impl<T: UnifyTrait> Goal for Unify<T> {
     }
 }
 
+pub fn unify<T, A, B>(a: A, b: B) -> Unify<T>
+where
+    T: UnifyTrait,
+    A: Into<Value<T>>,
+    B: Into<Value<T>>,
+{
+    Unify {
+        a: a.into(),
+        b: b.into(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::value::LVar;
+
     use super::*;
 
     #[test]
     fn deeply_nested_vars() {
-        let x = Value::var();
-        let goal = Unify::new(x.clone(), Value::new(1));
+        let x = LVar::new();
+        let goal = unify(x, 1);
         let result = goal.apply(State::new());
-        assert_eq!(result.unwrap().resolve(&x), Value::new(1));
+        assert_eq!(result.unwrap().resolve(&x.into()), 1.into());
     }
 }
