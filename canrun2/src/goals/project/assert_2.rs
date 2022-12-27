@@ -1,47 +1,51 @@
-use crate::core::{resolve_1, Constraint, ResolveFn, State, Unify, VarWatch};
+use crate::core::{resolve_2, Constraint, ResolveFn, State, Unify, VarWatch};
 use crate::goals::Goal;
 use crate::value::Value;
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
-pub struct Assert1<T: Unify> {
-    a: Value<T>,
-    f: Rc<dyn Fn(&T) -> bool>,
+pub struct Assert2<A: Unify, B: Unify> {
+    a: Value<A>,
+    b: Value<B>,
+    #[allow(clippy::type_complexity)]
+    f: Rc<dyn Fn(&A, &B) -> bool>,
 }
 
-impl<T: Unify> Clone for Assert1<T> {
+impl<A: Unify, B: Unify> Clone for Assert2<A, B> {
     fn clone(&self) -> Self {
         Self {
             a: self.a.clone(),
+            b: self.b.clone(),
             f: self.f.clone(),
         }
     }
 }
 
-impl<T: Unify> Assert1<T> {
-    pub fn new<F>(a: Value<T>, func: F) -> Self
+impl<A: Unify, B: Unify> Assert2<A, B> {
+    pub fn new<F>(a: Value<A>, b: Value<B>, func: F) -> Self
     where
-        F: (Fn(&T) -> bool) + 'static,
+        F: (Fn(&A, &B) -> bool) + 'static,
     {
-        Assert1 {
+        Assert2 {
             a,
+            b,
             f: Rc::new(func),
         }
     }
 }
 
-impl<T: Unify> Debug for Assert1<T> {
+impl<A: Unify, B: Unify> Debug for Assert2<A, B> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Assert1 {:?}", self.a)
+        write!(f, "Assert2 {:?} {:?}", self.a, self.b)
     }
 }
 
-impl<T: Unify> Constraint for Assert1<T> {
+impl<A: Unify, B: Unify> Constraint for Assert2<A, B> {
     fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
-        let a = resolve_1(&self.a, state)?;
+        let (a, b) = resolve_2(&self.a, &self.b, state)?;
         let assert = self.f.clone();
         Ok(Box::new(move |state| {
-            if assert(a.as_ref()) {
+            if assert(a.as_ref(), b.as_ref()) {
                 Some(state)
             } else {
                 None
@@ -50,7 +54,7 @@ impl<T: Unify> Constraint for Assert1<T> {
     }
 }
 
-impl<T: Unify> Goal for Assert1<T> {
+impl<A: Unify, B: Unify> Goal for Assert2<A, B> {
     fn apply(&self, state: State) -> Option<State> {
         state.constrain(Rc::new(self.clone()))
     }
@@ -70,7 +74,7 @@ mod tests {
         let x = LVar::new();
         let goal = Both::new(
             Unify::new(x.into(), Value::new(2)),
-            Assert1::new(x.into(), move |x| *x > 1),
+            Assert2::new(x.into(), 1.into(), move |x, y| x > y),
         );
         let result = goal.apply(State::new());
         assert_eq!(result.unwrap().resolve(&x.into()), Value::new(2));
@@ -81,7 +85,7 @@ mod tests {
         let x = LVar::new();
         let goal = Both::new(
             Unify::new(x.into(), Value::new(1)),
-            Assert1::new(x.into(), move |x| *x > 1),
+            Assert2::new(x.into(), 1.into(), move |x, y| x > y),
         );
         let result = goal.apply(State::new());
         assert!(result.is_none());
