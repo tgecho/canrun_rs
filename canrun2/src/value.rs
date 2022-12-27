@@ -56,6 +56,13 @@ impl<T: Unify> Value<T> {
             Value::Resolved(val) => AnyVal::Resolved(val.clone()),
         }
     }
+
+    pub fn resolved(&self) -> Option<&T> {
+        match self {
+            Value::Var(_) => None,
+            Value::Resolved(val) => Some(val.as_ref()),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
