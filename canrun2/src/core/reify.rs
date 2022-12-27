@@ -1,15 +1,22 @@
 use super::{State, Unify};
-use crate::value::Value;
+use crate::value::{LVar, Value};
 
 pub trait Reify {
-    type Concrete;
-    fn reify_in(&self, state: &State) -> Option<Self::Concrete>;
+    type Reified;
+    fn reify_in(&self, state: &State) -> Option<Self::Reified>;
 }
 
 impl<T: Unify + Reify> Reify for Value<T> {
-    type Concrete = T::Concrete;
-    fn reify_in(&self, state: &State) -> Option<Self::Concrete> {
+    type Reified = T::Reified;
+    fn reify_in(&self, state: &State) -> Option<Self::Reified> {
         state.resolve(self).resolved()?.reify_in(state)
+    }
+}
+
+impl<T: Unify + Reify> Reify for LVar<T> {
+    type Reified = T::Reified;
+    fn reify_in(&self, state: &State) -> Option<Self::Reified> {
+        state.resolve(&self.into()).resolved()?.reify_in(state)
     }
 }
 
@@ -17,7 +24,7 @@ macro_rules! impl_reify_copy {
     ($($type:ty),+) => {
         $(
             impl Reify for $type {
-                type Concrete = $type;
+                type Reified = $type;
                 fn reify_in(&self, _: &State) -> Option<$type> {
                     Some(*self)
                 }
@@ -29,7 +36,7 @@ macro_rules! impl_reify_clone {
     ($($type:ty),+) => {
         $(
             impl Reify for $type {
-                type Concrete = $type;
+                type Reified = $type;
                 fn reify_in(&self, _: &State) -> Option<$type> {
                     Some(self.clone())
                 }

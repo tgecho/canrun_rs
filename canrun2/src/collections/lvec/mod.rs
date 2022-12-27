@@ -46,8 +46,8 @@ impl<T: Unify> Unify for LVec<T> {
 }
 
 impl<T: Unify + Reify> Reify for LVec<T> {
-    type Concrete = Vec<T::Concrete>;
-    fn reify_in(&self, state: &State) -> Option<Vec<T::Concrete>> {
+    type Reified = Vec<T::Reified>;
+    fn reify_in(&self, state: &State) -> Option<Vec<T::Reified>> {
         self.vec
             .iter()
             .map(|v: &Value<T>| v.reify_in(state))
@@ -57,25 +57,19 @@ impl<T: Unify + Reify> Reify for LVec<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        core::{Reify, State, StateIterator},
-        goals::{unify::unify, Goal},
-        value::{LVar, Value},
-    };
+    use crate::{core::Query, goals::unify::unify, value::LVar};
 
     #[test]
     fn succeeds() {
         let x = LVar::new();
         let goal = unify(lvec![x, 2], lvec![1, 2]);
-        let result = goal.apply(State::new());
-        assert_eq!(result.unwrap().resolve(&x.into()), 1.into());
+        assert_eq!(goal.query(x).collect::<Vec<_>>(), vec![1]);
     }
 
     #[test]
-    fn reify_vec() {
-        let x = Value::new(lvec![1, 2]);
-        State::new().into_states().for_each(|state| {
-            assert_eq!(x.reify_in(&state), Some(vec![1, 2]));
-        });
+    fn fails() {
+        let x = LVar::new();
+        let goal = unify(lvec![x, 1], lvec![1, 2]);
+        assert_eq!(goal.query(x).count(), 0);
     }
 }

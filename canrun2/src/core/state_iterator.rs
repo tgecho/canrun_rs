@@ -1,5 +1,5 @@
-use crate::core::State;
-use std::iter::once;
+use crate::{core::State, goals::Goal};
+use std::iter::{empty, once};
 
 pub type StateIter = Box<dyn Iterator<Item = State>>;
 
@@ -17,8 +17,17 @@ impl StateIterator for State {
     }
 }
 
-impl<S: StateIterator, I: IntoIterator<Item = S> + 'static> StateIterator for I {
+impl StateIterator for Option<State> {
     fn into_states(self) -> StateIter {
-        Box::new(self.into_iter().flat_map(|s| s.into_states()))
+        match self {
+            None => Box::new(empty()),
+            Some(s) => s.into_states(),
+        }
+    }
+}
+
+impl<G: Goal> StateIterator for G {
+    fn into_states(self) -> StateIter {
+        self.apply(State::new()).into_states()
     }
 }
