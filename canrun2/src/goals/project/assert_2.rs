@@ -21,16 +21,18 @@ impl<A: Unify, B: Unify> Clone for Assert2<A, B> {
     }
 }
 
-impl<A: Unify, B: Unify> Assert2<A, B> {
-    pub fn new<F>(a: Value<A>, b: Value<B>, func: F) -> Self
-    where
-        F: (Fn(&A, &B) -> bool) + 'static,
-    {
-        Assert2 {
-            a,
-            b,
-            f: Rc::new(func),
-        }
+pub fn assert_2<A, IA, B, IB, F>(a: IA, b: IB, func: F) -> Assert2<A, B>
+where
+    A: Unify,
+    IA: Into<Value<A>>,
+    B: Unify,
+    IB: Into<Value<B>>,
+    F: (Fn(&A, &B) -> bool) + 'static,
+{
+    Assert2 {
+        a: a.into(),
+        b: b.into(),
+        f: Rc::new(func),
     }
 }
 
@@ -63,7 +65,8 @@ impl<A: Unify, B: Unify> Goal for Assert2<A, B> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        goals::{both::Both, unify::Unify},
+        core::Query,
+        goals::{both::both, unify::unify},
         value::LVar,
     };
 
@@ -72,22 +75,14 @@ mod tests {
     #[test]
     fn succeeds() {
         let x = LVar::new();
-        let goal = Both::new(
-            Unify::new(x.into(), Value::new(2)),
-            Assert2::new(x.into(), 1.into(), move |x, y| x > y),
-        );
-        let result = goal.apply(State::new());
-        assert_eq!(result.unwrap().resolve(&x.into()), Value::new(2));
+        let goal = both(unify(x, 2), assert_2(x, 1, move |x, y| x > y));
+        assert_eq!(goal.query(x).collect::<Vec<_>>(), vec![2]);
     }
 
     #[test]
     fn fails() {
         let x = LVar::new();
-        let goal = Both::new(
-            Unify::new(x.into(), Value::new(1)),
-            Assert2::new(x.into(), 1.into(), move |x, y| x > y),
-        );
-        let result = goal.apply(State::new());
-        assert!(result.is_none());
+        let goal = both(unify(x, 1), assert_2(x, 1, move |x, y| x > y));
+        assert_eq!(goal.query(x).count(), 0);
     }
 }

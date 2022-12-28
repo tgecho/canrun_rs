@@ -11,12 +11,6 @@ pub struct Unify<T: UnifyTrait> {
     b: Value<T>,
 }
 
-impl<T: UnifyTrait> Unify<T> {
-    pub fn new(a: Value<T>, b: Value<T>) -> Self {
-        Unify { a, b }
-    }
-}
-
 impl<T: UnifyTrait> Goal for Unify<T> {
     fn apply(&self, state: State) -> Option<State> {
         state.unify(&self.a, &self.b)

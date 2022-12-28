@@ -10,12 +10,10 @@ pub struct Either {
     b: Rc<dyn Goal>,
 }
 
-impl Either {
-    pub fn new(a: impl Goal, b: impl Goal) -> Self {
-        Either {
-            a: Rc::new(a),
-            b: Rc::new(b),
-        }
+pub fn either(a: impl Goal, b: impl Goal) -> Either {
+    Either {
+        a: Rc::new(a),
+        b: Rc::new(b),
     }
 }
 
@@ -44,7 +42,7 @@ mod test {
     #[test]
     fn either_succeed() {
         let state = State::new();
-        let goal = Either::new(Succeed::new(), Succeed::new());
+        let goal = either(Succeed, Succeed);
         let result = Box::new(goal).apply(state);
         assert_eq!(result.into_states().count(), 2);
     }
@@ -52,7 +50,7 @@ mod test {
     #[test]
     fn either_succeed_or_fail() {
         let state = State::new();
-        let goal = Either::new(Succeed::new(), Fail::new());
+        let goal = either(Succeed, Fail);
         let result = Box::new(goal).apply(state);
         assert_eq!(result.into_states().count(), 1);
     }
@@ -60,7 +58,7 @@ mod test {
     #[test]
     fn either_fail_or_succeed() {
         let state = State::new();
-        let goal = Either::new(Fail::new(), Succeed::new());
+        let goal = either(Fail, Succeed);
         let result = Box::new(goal).apply(state);
         assert_eq!(result.into_states().count(), 1);
     }
@@ -68,7 +66,7 @@ mod test {
     #[test]
     fn either_fail() {
         let state = State::new();
-        let goal = Either::new(Fail::new(), Fail::new());
+        let goal = either(Fail, Fail);
         let result = Box::new(goal).apply(state);
         assert_eq!(result.into_states().count(), 0);
     }

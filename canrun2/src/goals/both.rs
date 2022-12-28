@@ -7,12 +7,10 @@ pub struct Both {
     b: Box<dyn Goal>,
 }
 
-impl Both {
-    pub fn new(a: impl Goal, b: impl Goal) -> Both {
-        Both {
-            a: Box::new(a),
-            b: Box::new(b),
-        }
+pub fn both(a: impl Goal, b: impl Goal) -> Both {
+    Both {
+        a: Box::new(a),
+        b: Box::new(b),
     }
 }
 
@@ -31,7 +29,7 @@ mod test {
     #[test]
     fn both_succeed() {
         let state = State::new();
-        let goal = Both::new(Succeed::new(), Succeed::new());
+        let goal = both(Succeed, Succeed);
         let result = goal.apply(state);
         assert!(result.is_some());
     }
@@ -39,7 +37,7 @@ mod test {
     #[test]
     fn both_succeed_then_fail() {
         let state = State::new();
-        let goal = Both::new(Succeed::new(), Fail::new());
+        let goal = both(Succeed, Fail);
         let result = goal.apply(state);
         assert!(result.is_none());
     }
@@ -47,7 +45,7 @@ mod test {
     #[test]
     fn both_fail_then_succeed() {
         let state = State::new();
-        let goal = Both::new(Fail::new(), Succeed::new());
+        let goal = both(Fail, Succeed);
         let result = goal.apply(state);
         assert!(result.is_none());
     }

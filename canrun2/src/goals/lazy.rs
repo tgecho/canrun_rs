@@ -18,13 +18,11 @@ impl Debug for Lazy {
     }
 }
 
-impl Lazy {
-    pub fn new<F>(fun: F) -> Self
-    where
-        F: (Fn() -> Box<dyn Goal>) + 'static,
-    {
-        Lazy { fun: Rc::new(fun) }
-    }
+pub fn lazy<F>(fun: F) -> Lazy
+where
+    F: (Fn() -> Box<dyn Goal>) + 'static,
+{
+    Lazy { fun: Rc::new(fun) }
 }
 
 impl Goal for Lazy {
@@ -38,7 +36,7 @@ impl Goal for Lazy {
 #[cfg(test)]
 mod tests {
     use crate::{
-        goals::{succeed::Succeed, unify::Unify},
+        goals::{succeed::Succeed, unify::unify},
         value::{LVar, Value},
     };
 
@@ -47,14 +45,14 @@ mod tests {
     #[test]
     fn succeeds() {
         let x = LVar::new();
-        let goal = Lazy::new(move || Box::new(Unify::new(x.into(), Value::new(1))));
+        let goal = lazy(move || Box::new(unify(x, 1)));
         let result = goal.apply(State::new());
         assert_eq!(result.unwrap().resolve(&x.into()), Value::new(1));
     }
 
     #[test]
     fn debug_impl() {
-        let goal = Lazy::new(|| Box::new(Succeed::new()));
+        let goal = lazy(|| Box::new(Succeed));
         assert_ne!(format!("{:?}", goal), "")
     }
 }
