@@ -50,3 +50,25 @@ pub fn resolve_2<A: Unify, B: Unify>(
         (_, Var(var)) => Err(VarWatch::one(var)),
     }
 }
+
+/// Resolve one out of two [`Val`]s or return an [`Err(VarWatch)`](VarWatch) in
+/// a [`Constraint`].
+pub enum OneOfTwo<A: Unify, B: Unify> {
+    /// Returned when the first [`Value`] is successfully resolved.
+    A(Rc<A>, Value<B>),
+    /// Returned when the second [`Value`] is successfully resolved.
+    B(Value<A>, Rc<B>),
+}
+
+impl<A: Unify, B: Unify> OneOfTwo<A, B> {
+    /// Attempt to resolve a [`OneOfTwo`] enum from a [`State`].
+    pub fn resolve(a: &Value<A>, b: &Value<B>, state: &State) -> Result<OneOfTwo<A, B>, VarWatch> {
+        let a = state.resolve(a);
+        let b = state.resolve(b);
+        match (a, b) {
+            (Resolved(a), b) => Ok(OneOfTwo::A(a, b)),
+            (a, Resolved(b)) => Ok(OneOfTwo::B(a, b)),
+            (Var(a), Var(b)) => Err(VarWatch::two(a, b)),
+        }
+    }
+}

@@ -48,3 +48,22 @@ macro_rules! impl_reify_clone {
 impl_reify_copy!(i8, i16, i32, i64, u8, u16, u32, u64, isize, usize, f32, f64);
 impl_reify_copy!(&'static str, bool, char);
 impl_reify_clone!(String);
+
+macro_rules! impl_reify_tuple {
+    ($($t:ident => $r:ident),+) => {
+
+        impl<$($t: Reify< Reified = $r>, $r,)*> Reify for ($($t),*) {
+            type Reified = ($($t::Reified),*);
+            fn reify_in(&self, state: &State) -> Option<Self::Reified> {
+                #![allow(non_snake_case)]
+                let ($($t),*) = self;
+                Some(($($t.reify_in(state)?),*))
+            }
+        }
+    };
+}
+
+impl_reify_tuple!(Av => Ar, Bv => Br);
+impl_reify_tuple!(Av => Ar, Bv => Br, Cv => Cr);
+impl_reify_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr);
+impl_reify_tuple!(Av => Ar, Bv => Br, Cv => Cr, Dv => Dr, Ev => Er);
