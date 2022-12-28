@@ -3,3 +3,4 @@ pub mod assert_2;
 pub mod map_1;
 pub mod map_2;
 pub mod project_1;
+pub mod project_2;
