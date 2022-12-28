@@ -72,3 +72,36 @@ impl<A: Unify, B: Unify> OneOfTwo<A, B> {
         }
     }
 }
+
+/// Resolve two out of three [`Val`]s or return an [`Err(VarWatch)`](VarWatch)
+/// in a [`Constraint`].
+pub enum TwoOfThree<A: Unify, B: Unify, C: Unify> {
+    /// Returned when the first and second [`Val`]s are successfully resolved.
+    AB(Rc<A>, Rc<B>, Value<C>),
+    /// Returned when the second and third [`Val`]s are successfully resolved.
+    BC(Value<A>, Rc<B>, Rc<C>),
+    /// Returned when the first and third [`Val`]s are successfully resolved.
+    AC(Rc<A>, Value<B>, Rc<C>),
+}
+
+impl<A: Unify, B: Unify, C: Unify> TwoOfThree<A, B, C> {
+    /// Attempt to resolve a [`TwoOfThree`] enum from a [`State`].
+    pub fn resolve(
+        a: &Value<A>,
+        b: &Value<B>,
+        c: &Value<C>,
+        state: &State,
+    ) -> Result<TwoOfThree<A, B, C>, VarWatch> {
+        let a = state.resolve(a);
+        let b = state.resolve(b);
+        let c = state.resolve(c);
+        match (a, b, c) {
+            (Resolved(a), Resolved(b), c) => Ok(TwoOfThree::AB(a, b, c)),
+            (a, Resolved(b), Resolved(c)) => Ok(TwoOfThree::BC(a, b, c)),
+            (Resolved(a), b, Resolved(c)) => Ok(TwoOfThree::AC(a, b, c)),
+            (Var(a), Var(b), _) => Err(VarWatch::two(a, b)),
+            (Var(a), _, Var(c)) => Err(VarWatch::two(a, c)),
+            (_, Var(b), Var(c)) => Err(VarWatch::two(b, c)),
+        }
+    }
+}

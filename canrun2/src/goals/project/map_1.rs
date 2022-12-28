@@ -30,7 +30,7 @@ pub struct Map1<A: Unify, B: Unify> {
 
 impl<A: Unify, B: Unify> Debug for Map1<A, B> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Map1 {:?}", self.a)
+        write!(f, "Map1 {:?} {:?}", self.a, self.b)
     }
 }
 
