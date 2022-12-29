@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use crate::core::State;
 
 pub mod all;
+pub mod any;
 pub mod both;
 pub mod either;
 pub mod fail;
