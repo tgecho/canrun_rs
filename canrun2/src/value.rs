@@ -98,6 +98,12 @@ impl<T: Unify> From<&LVar<T>> for Value<T> {
     }
 }
 
+impl<T: Unify> From<&Value<T>> for Value<T> {
+    fn from(var: &Value<T>) -> Self {
+        var.clone()
+    }
+}
+
 impl<T: Unify> From<T> for Value<T> {
     fn from(t: T) -> Self {
         Value::Resolved(Rc::new(t))

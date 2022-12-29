@@ -23,10 +23,10 @@ impl<T: Unify> Clone for Get<T> {
     }
 }
 
-pub fn get<T, Item, Index, Collection>(item: Item, index: Index, collection: Collection) -> Get<T>
+pub fn get<T, IntoT, Index, Collection>(item: IntoT, index: Index, collection: Collection) -> Get<T>
 where
     T: Unify,
-    Item: Into<Value<T>>,
+    IntoT: Into<Value<T>>,
     Index: Into<Value<usize>>,
     Collection: Into<Value<LVec<T>>>,
 {

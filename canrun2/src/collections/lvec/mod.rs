@@ -1,5 +1,7 @@
 mod get;
+mod member;
 pub use get::{get, Get};
+pub use member::{member, Member};
 
 use std::rc::Rc;
 

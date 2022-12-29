@@ -8,6 +8,14 @@ pub struct Any {
     goals: Vec<Rc<dyn Goal>>,
 }
 
+impl<I: Iterator<Item = Rc<dyn Goal>>> From<I> for Any {
+    fn from(iter: I) -> Self {
+        Any {
+            goals: iter.collect(),
+        }
+    }
+}
+
 impl Goal for Any {
     fn apply(&self, state: State) -> Option<State> {
         state.fork(self.clone())

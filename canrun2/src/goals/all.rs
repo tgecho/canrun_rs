@@ -6,6 +6,14 @@ pub struct All {
     goals: Vec<Box<dyn Goal>>,
 }
 
+impl<I: Iterator<Item = Box<dyn Goal>>> From<I> for All {
+    fn from(iter: I) -> Self {
+        All {
+            goals: iter.collect(),
+        }
+    }
+}
+
 impl Goal for All {
     fn apply(&self, state: State) -> Option<State> {
         self.goals.iter().try_fold(state, |s, g| g.apply(s))

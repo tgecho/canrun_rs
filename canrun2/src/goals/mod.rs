@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, rc::Rc};
 
 use crate::core::State;
 
@@ -14,4 +14,10 @@ pub mod unify;
 
 pub trait Goal: Debug + 'static {
     fn apply(&self, state: State) -> Option<State>;
+}
+
+impl Goal for Rc<dyn Goal> {
+    fn apply(&self, state: State) -> Option<State> {
+        self.as_ref().apply(state)
+    }
 }
