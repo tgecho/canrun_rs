@@ -1,6 +1,6 @@
+use crate::core::Value;
 use crate::core::{resolve_1, Constraint, ResolveFn, State, Unify, VarWatch};
 use crate::goals::Goal;
-use crate::value::Value;
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
@@ -59,9 +59,9 @@ impl<T: Unify> Goal for Assert1<T> {
 #[cfg(test)]
 mod tests {
     use crate::{
+        core::LVar,
         core::Query,
         goals::{both::both, unify::unify},
-        value::LVar,
     };
 
     use super::*;

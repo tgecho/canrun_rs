@@ -2,9 +2,9 @@ use std::fmt;
 use std::fmt::Debug;
 use std::rc::Rc;
 
+use crate::core::Value;
 use crate::core::{resolve_2, Constraint, ResolveFn, State, Unify, VarWatch};
 use crate::goals::Goal;
-use crate::value::Value;
 
 #[allow(clippy::type_complexity)]
 pub struct Project2<A: Unify, B: Unify> {
@@ -61,11 +61,10 @@ impl<A: Unify + Debug, B: Unify + Debug> Debug for Project2<A, B> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::Query,
+        core::{LVar, Query},
         goals::{
             both::both, fail::Fail, project::project_2::project_2, succeed::Succeed, unify::unify,
         },
-        value::LVar,
     };
 
     #[test]

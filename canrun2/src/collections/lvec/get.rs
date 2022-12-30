@@ -1,8 +1,7 @@
 use super::LVec;
 use crate::{
-    core::{resolve_2, Constraint, ResolveFn, State, Unify, VarWatch},
+    core::{resolve_2, Constraint, ResolveFn, State, Unify, Value, VarWatch},
     goals::Goal,
-    value::Value,
 };
 use std::{fmt::Debug, rc::Rc};
 
@@ -62,7 +61,7 @@ impl<T: Unify> Constraint for Get<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{core::Query, lvec, value::LVar};
+    use crate::{core::LVar, core::Query, lvec};
 
     #[test]
     fn basic_get() {

@@ -1,21 +1,23 @@
 mod get;
 mod member;
+
+use crate::core::{Reify, State, Unify, Value};
 pub use get::{get, Get};
 pub use member::{member, Member};
 
 use std::rc::Rc;
 
-use crate::{
-    core::{Reify, State, Unify},
-    value::Value,
-};
-
-/// A [`Vec`]-like data structure with [`LVar`](crate::value::LVar) values.
+/// A [`Vec`]-like data structure with [`LVar`](crate::core::LVar) values.
 #[derive(Debug, Default)]
 pub struct LVec<T: Unify> {
     vec: Vec<Value<T>>,
 }
 
+/** Create an [`LVec<T>`](crate::collections::lvec::LVec) with automatic `Into<Value<T>>` conversion.
+
+The primary benefit is that it allows freely mixing resolved values and
+[`LVar`s](crate::core::LVar).
+*/
 #[macro_export]
 macro_rules! lvec {
     ($($item:expr),* $(,)?) => {
@@ -62,7 +64,7 @@ impl<T: Unify + Reify> Reify for LVec<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{core::Query, goals::unify::unify, value::LVar};
+    use crate::{core::LVar, core::Query, goals::unify::unify};
 
     #[test]
     fn succeeds() {

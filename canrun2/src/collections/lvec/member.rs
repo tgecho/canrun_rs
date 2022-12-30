@@ -1,8 +1,8 @@
+use crate::core::Value;
 use crate::core::{resolve_1, Constraint, ResolveFn, State, Unify, VarWatch};
 use crate::goals::any::Any;
 use crate::goals::unify::unify;
 use crate::goals::Goal;
-use crate::value::Value;
 use std::fmt::Debug;
 use std::iter::repeat;
 use std::rc::Rc;
@@ -60,11 +60,11 @@ mod tests {
     use std::rc::Rc;
 
     use crate::{
+        core::LVar,
         core::Query,
         goal_vec,
         goals::{either::either, unify::unify},
         lvec,
-        value::LVar,
     };
 
     use super::member;

@@ -30,6 +30,12 @@ impl Fork for Any {
     }
 }
 
+/// Create a [goal](crate::goals::Goal) that yields a state for every successful
+/// sub-goal.
+///
+/// This is essentially an "OR" operation on a vector of goals. It may yield
+/// from zero to as many resolved [states](crate::core::State) as there
+/// are sub-goals.
 #[macro_export]
 macro_rules! any {
     ($($item:expr),* $(,)?) => {
@@ -41,9 +47,9 @@ pub use any;
 #[cfg(test)]
 mod tests {
     use crate::{
+        core::LVar,
         core::Query,
         goals::{both::both, fail::Fail, unify::unify},
-        value::LVar,
     };
 
     use super::any;

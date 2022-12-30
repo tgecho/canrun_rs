@@ -20,6 +20,13 @@ impl Goal for All {
     }
 }
 
+/// Create a [goal](crate::goals::Goal) that only succeeds if all sub-goals
+/// succeed.
+///
+/// This is essentially an "AND" operation on a vector of goals. The resulting
+/// state will be the result of the combining all of the sub-goals.
+///
+/// If the any goal fails, the rest of the goals will not be attempted.
 #[macro_export]
 macro_rules! all {
     ($($item:expr),* $(,)?) => {
@@ -30,7 +37,7 @@ pub use all;
 
 #[cfg(test)]
 mod tests {
-    use crate::{core::Query, goals::unify::unify, value::LVar};
+    use crate::{core::LVar, core::Query, goals::unify::unify};
 
     use super::all;
 

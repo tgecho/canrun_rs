@@ -1,6 +1,6 @@
+use crate::core::Value;
 use crate::core::{Constraint, OneOfTwo, ResolveFn, State, Unify, VarWatch};
 use crate::goals::Goal;
-use crate::value::Value;
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
@@ -74,10 +74,10 @@ impl<A: Unify, B: Unify> Constraint for Map1<A, B> {
 #[cfg(test)]
 mod tests {
     use super::map_1;
+    use crate::core::LVar;
     use crate::core::Query;
     use crate::goals::both::both;
     use crate::goals::unify::unify;
-    use crate::value::LVar;
 
     #[test]
     fn succeeds() {

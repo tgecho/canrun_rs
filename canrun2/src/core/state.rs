@@ -2,7 +2,7 @@ use mkmvmap::MKMVMap;
 
 use crate::core::Fork;
 use crate::core::Unify;
-use crate::value::{AnyVal, Value, VarId};
+use crate::core::{AnyVal, Value, VarId};
 use std::rc::Rc;
 
 use super::constraints::Constraint;
@@ -92,10 +92,7 @@ impl Default for State {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        core::{StateIter, StateIterator},
-        value::*,
-    };
+    use crate::core::*;
 
     use super::*;
 

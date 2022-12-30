@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
+use crate::core::Value;
 use crate::core::{State, Unify as UnifyTrait};
-use crate::value::Value;
 
 use super::Goal;
 
@@ -31,7 +31,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::value::LVar;
+    use crate::core::LVar;
 
     use super::*;
 

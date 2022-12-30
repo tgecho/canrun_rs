@@ -53,6 +53,7 @@ impl GoalVec {
     }
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! goal_vec {
     ($($item:expr),* $(,)?) => {

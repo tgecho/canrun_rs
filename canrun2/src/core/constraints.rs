@@ -1,7 +1,7 @@
 use std::{fmt::Debug, rc::Rc};
 
 use super::{State, Unify};
-use crate::value::{LVar, Value, Value::*, VarId};
+use crate::core::{LVar, Value, Value::*, VarId};
 
 pub type ResolveFn = Box<dyn FnOnce(State) -> Option<State>>;
 
@@ -26,7 +26,7 @@ pub trait Constraint {
     fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch>;
 }
 
-/// Resolve one [`Val`] or return an [`Err(VarWatch)`](VarWatch) in a
+/// Resolve one [`Value`] or return an [`Err(VarWatch)`](VarWatch) in a
 /// [`Constraint`].
 pub fn resolve_1<A: Unify>(val: &Value<A>, state: &State) -> Result<Rc<A>, VarWatch> {
     match state.resolve(val) {
@@ -35,7 +35,7 @@ pub fn resolve_1<A: Unify>(val: &Value<A>, state: &State) -> Result<Rc<A>, VarWa
     }
 }
 
-/// Resolve two [`Val`]s or return an [`Err(VarWatch)`](VarWatch) in a
+/// Resolve two [`Value`]s or return an [`Err(VarWatch)`](VarWatch) in a
 /// [`Constraint`].
 pub fn resolve_2<A: Unify, B: Unify>(
     a: &Value<A>,
@@ -51,7 +51,7 @@ pub fn resolve_2<A: Unify, B: Unify>(
     }
 }
 
-/// Resolve one out of two [`Val`]s or return an [`Err(VarWatch)`](VarWatch) in
+/// Resolve one out of two [`Value`]s or return an [`Err(VarWatch)`](VarWatch) in
 /// a [`Constraint`].
 pub enum OneOfTwo<A: Unify, B: Unify> {
     /// Returned when the first [`Value`] is successfully resolved.
@@ -73,14 +73,14 @@ impl<A: Unify, B: Unify> OneOfTwo<A, B> {
     }
 }
 
-/// Resolve two out of three [`Val`]s or return an [`Err(VarWatch)`](VarWatch)
+/// Resolve two out of three [`Value`]s or return an [`Err(VarWatch)`](VarWatch)
 /// in a [`Constraint`].
 pub enum TwoOfThree<A: Unify, B: Unify, C: Unify> {
-    /// Returned when the first and second [`Val`]s are successfully resolved.
+    /// Returned when the first and second [`Value`]s are successfully resolved.
     AB(Rc<A>, Rc<B>, Value<C>),
-    /// Returned when the second and third [`Val`]s are successfully resolved.
+    /// Returned when the second and third [`Value`]s are successfully resolved.
     BC(Value<A>, Rc<B>, Rc<C>),
-    /// Returned when the first and third [`Val`]s are successfully resolved.
+    /// Returned when the first and third [`Value`]s are successfully resolved.
     AC(Rc<A>, Value<B>, Rc<C>),
 }
 

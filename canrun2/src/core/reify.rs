@@ -1,5 +1,5 @@
 use super::{State, Unify};
-use crate::value::{LVar, Value};
+use crate::core::{LVar, Value};
 
 pub trait Reify {
     type Reified;
