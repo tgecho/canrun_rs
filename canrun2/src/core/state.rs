@@ -1,7 +1,10 @@
 use mkmvmap::MKMVMap;
 
 use super::constraints::Constraint;
-use crate::core::{AnyVal, Fork, Unify, Value, VarId};
+use crate::{
+    core::{AnyVal, Fork, Unify, Value, VarId},
+    Reify,
+};
 use std::rc::Rc;
 
 /** The core struct used to contain and manage [`Value`] bindings.
@@ -230,6 +233,32 @@ impl State {
     pub fn fork(mut self, fork: impl Fork) -> Option<Self> {
         self.forks.push_back(Rc::new(fork));
         Some(self)
+    }
+
+    /** Attempt to [reify](crate::core::Reify) the value of a [logic
+    variable](crate::core::LVar) in a state.
+
+    # Example:
+    ```
+    use canrun2::{State, StateIterator, Value, LVar};
+
+    let x = LVar::new();
+
+    let state = State::new()
+        .unify(&x.into(), &Value::new(1));
+
+    let results: Vec<_> = state.into_states()
+        .map(|resolved| resolved.reify(x))
+        .collect();
+
+    assert_eq!(results, vec![Some(1)]);
+    ```
+    */
+    pub fn reify<T, R>(&self, value: T) -> Option<R>
+    where
+        T: Reify<Reified = R>,
+    {
+        value.reify_in(self)
     }
 }
 
