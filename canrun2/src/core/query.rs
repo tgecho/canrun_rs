@@ -21,7 +21,7 @@ queryable.
 */
 pub trait Query<'a> {
     /**
-    Get [reified](crate::core::Reify) results from things that can produce [`StateIter`]s.
+    Get [reified](crate::core::Reify) results from things that can produce [`StateIter`](crate::core::StateIter)s.
 
     # Examples:
 

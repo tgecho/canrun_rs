@@ -14,12 +14,12 @@ pub type StateIter = Box<dyn Iterator<Item = State>>;
 
 This trait is implemented on the typical values that contain or represent an
 open state, such as [`Goal`](crate::goals::Goal) and of course
-[`State`](crate::state::State) itself.
+[`State`](crate::core::State) itself.
 */
 pub trait StateIterator: 'static {
     /**
     Iterate over [`States`](crate::State) by applying all pending [`Fork`](crate::Fork)s
-    and checking [`Constraint`](crate::Constraint)s.
+    and checking [`Constraint`](crate::core::constraints::Constraint)s.
     */
     fn into_states(self) -> StateIter;
 }

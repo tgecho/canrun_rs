@@ -9,8 +9,7 @@ pub(crate) type VarId = usize;
 
 `LVars` are are passed into [goals](crate::goals) to relate
 [values](crate::Value) and other variables to each other. They can also be
-used to [query](crate::Query) for values in a
-[`ResolvedState`](crate::state::ResolvedState).
+used to [query](crate::Query) for values.
 
 The main reason to deal with an `LVar` directly as opposed to just
 [`Value::Var`](crate::core::Value::Var) is that `LVar` implements [`Copy`],
@@ -63,7 +62,7 @@ impl<T: Unify> Default for LVar<T> {
 
 /**
 Contain individual resolved values or variables that can be bound through
-[unification](crate::Unify).
+[unification](crate::core::Unify).
 */
 #[derive(Debug, PartialEq)]
 pub enum Value<T: Unify> {
@@ -78,7 +77,7 @@ pub enum Value<T: Unify> {
     /** A resolved value.
 
     When a state is split into an arbitrary number of [resolved
-    states](crate::state::ResolvedState), some of the internal data
+    states](crate::core::State), some of the internal data
     structures often need to be cloned. In an attempt to avoid unnecessary
     cloning of every value in the state, we wrap it in an [Rc] so that
     references can be shared.

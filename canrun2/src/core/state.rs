@@ -201,7 +201,7 @@ impl State {
     values are available. `.constrain()` provides a low level way to run
     custom imperative code whenever certain bindings are updated.
 
-    See the [`Constraint` trait](constraints::Constraint) for more usage information.
+    See the [`Constraint` trait](crate::core::constraints::Constraint) for more usage information.
     */
     pub fn constrain(mut self, constraint: Rc<dyn Constraint>) -> Option<Self> {
         match constraint.attempt(&self) {
@@ -222,7 +222,7 @@ impl State {
 
     While this is not quite as finicky as
     [`Constraints`](State::constrain()), you still probably want to use the
-    [`any`](crate::goals::any!) or [`either`](crate::goals::either()) goals.
+    [`any`](crate::goals::any::any!) or [`either`](crate::goals::either::either()) goals.
 
     [Unification](State::unify()) is performed eagerly as soon as it is
     called. [Constraints](State::constrain()) are run as variables are
