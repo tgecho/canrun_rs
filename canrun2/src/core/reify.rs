@@ -1,8 +1,70 @@
 use super::{State, Unify};
 use crate::core::{LVar, Value};
 
+/**
+Extract a fully resolved `T` from a [`Value<T>`](Value) associated with a [`State`].
+
+Used by [Query](crate::Query) to ensure that result values are fully and
+recursively resolved.
+*/
 pub trait Reify {
+    /// The "concrete" type that `Self` reifies to.
     type Reified;
+
+    /**
+    Extract a reified `Self` from a compatible [`State`]. This trait is usually
+    used indirectly through the [`Query`](crate::Query) trait.
+
+    # Examples:
+    Simple values are typically copied or cloned (since the `Value` uses
+    an [Rc](std::rc::Rc) internally).
+    ```
+    use canrun2::{Value, Reify, StateIterator, State};
+    State::new()
+        .into_states()
+        .for_each(|state| {
+            let x = Value::new(1);
+            // This value is already resolved, so we simply get it back.
+            assert_eq!(x.reify_in(&state), Some(1));
+        });
+    ```
+    Structures containing additional `Value`s should be recursively reified.
+    `Reify` is implemented for several tuple sizes to allow easy querying of
+    multiple `Value`s.
+    ```
+    # use canrun2::{Value, Reify, StateIterator, State};
+    State::new()
+        .into_states()
+        .for_each(|state| {
+            let x = (Value::new(1), Value::new(2));
+            assert_eq!(x.reify_in(&state), Some((1, 2)));
+        });
+    ```
+    Returns `None` if the [`Value`] is unresolved. Note that this does not
+    currently do anything to help you if there are pending forks or
+    constraints that *could* affect resolution.
+    ```
+    # use canrun2::{Value, Reify, StateIterator, State};
+    State::new()
+        .into_states()
+        .for_each(|state| {
+            let x: Value<usize> = Value::var();
+            assert_eq!(x.reify_in(&state), None);
+        });
+    ```
+    Also returns `None` if `Self` is a structure containing any unresolved
+    `Value`s.
+    ```
+    # use canrun2::{Value, Reify, StateIterator, State};
+    State::new()
+        .into_states()
+        .for_each(|state| {
+            let x: Value<i32> = Value::var();
+            let y = (x, Value::new(2));
+            assert_eq!(y.reify_in(&state), None);
+        });
+    ```
+    */
     fn reify_in(&self, state: &State) -> Option<Self::Reified>;
 }
 
