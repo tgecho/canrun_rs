@@ -1,12 +1,38 @@
 use mkmvmap::MKMVMap;
 
-use crate::core::Fork;
-use crate::core::Unify;
-use crate::core::{AnyVal, Value, VarId};
+use super::constraints::Constraint;
+use crate::core::{AnyVal, Fork, Unify, Value, VarId};
 use std::rc::Rc;
 
-use super::constraints::Constraint;
+/** The core struct used to contain and manage [`Value`] bindings.
 
+An open [State] can be updated in a few different ways. Most update methods
+return an `Option<State>` to reflect the fact each new constraint can
+invalidate the state. This gives you the ability to quickly short circuit with the
+[`?` operator](https://doc.rust-lang.org/reference/expressions/operator-expr.html#the-question-mark-operator)
+as soon the state hits a dead end.
+
+A [`State`] is designed to be cheap to `clone()`, so make a copy if you want
+to try multiple paths.
+
+In general, it is most ergonomic to manipulate a state inside a function
+that returns an `Option<State>` to allow the use of the question mark
+operator (Note that the [`.apply()`](State::apply()) function makes it easy
+to do this).
+
+```
+use canrun2::{State, Value};
+
+fn my_fn() -> Option<State> {
+    let x = Value::var();
+    let y = Value::var();
+    let state = State::new();
+    let maybe: Option<State> = state.unify(&x, &Value::new(1));
+    maybe?.unify(&x, &y)
+}
+assert!(my_fn().is_some());
+```
+*/
 #[derive(Clone)]
 pub struct State {
     pub(crate) values: im_rc::HashMap<VarId, AnyVal>,
@@ -15,12 +41,56 @@ pub struct State {
 }
 
 impl State {
+    /**
+    Create a new, empty state.
+
+    This often does not need to be used directly as you can
+    [`.query()`](crate::Query::query()) a [`Goal`](crate::goals::Goal)
+    directly, which handles the state creation internally.
+
+    However, there are use cases for creating and managing a state
+    independently of any goals.
+
+    # Example:
+    ```
+    use canrun2::{State};
+    let state = State::new();
+    ```
+    */
     pub fn new() -> Self {
         State {
             values: im_rc::HashMap::new(),
             forks: im_rc::Vector::new(),
             constraints: MKMVMap::new(),
         }
+    }
+
+    /**
+    Apply an arbitrary function to a state.
+
+    This is primarily a helper to make it easier to get into a function
+    where you can use the question mark operator while applying multiple
+    updates to a state.
+
+    # Example:
+    ```
+    use canrun2::{State, Query, Value};
+
+    let state = State::new();
+    let x = Value::var();
+    let state = state.apply(|s| {
+        s.unify(&x, &Value::new(1))?
+         .unify(&Value::new(1), &x)
+    });
+    let results: Vec<_> = state.query(x).collect();
+    assert_eq!(results, vec![1]);
+    ```
+    */
+    pub fn apply<F>(self, func: F) -> Option<Self>
+    where
+        F: Fn(Self) -> Option<Self>,
+    {
+        func(self)
     }
 
     fn resolve_any<'a>(&'a self, val: &'a AnyVal) -> &'a AnyVal {
@@ -37,6 +107,33 @@ impl State {
         }
     }
 
+    /** Recursively resolve a [`Value`] as far as the currently
+    known variable bindings allow.
+
+    This will return either the final [`Value::Resolved`] (if found) or the
+    last [`Value::Var`] it attempted to resolve. It will not force
+    [`forks`](State::fork()) to enumerate all potential states, so potential
+    bindings that may eventually become confirmed are not considered. Use
+    [`StateIterator::into_states`](super::state_iterator::StateIterator::into_states)
+    if you want to attempt resolving against all (known) possible states.
+
+    # Example:
+    ```
+    use canrun2::{State, Query, Value};
+
+    # fn test() -> Option<()> {
+    let state = State::new();
+
+    let x = Value::var();
+    assert_eq!(state.resolve(&x), x);
+
+    let state = state.unify(&x, &Value::new(1))?;
+    assert_eq!(state.resolve(&x), Value::new(1));
+    # Some(())
+    # }
+    # test();
+    ```
+    */
     pub fn resolve<T: Unify>(&self, val: &Value<T>) -> Value<T> {
         self.resolve_any(&val.to_anyval())
             .to_value()
@@ -45,6 +142,32 @@ impl State {
             .expect("AnyVal resolved to unexpected Value<T>")
     }
 
+    /**
+    Attempt to [unify](crate::unify::Unify) two values with each other.
+
+    If the unification fails, [`None`](std::option::Option::None) will be
+    returned. [`Value::Var`]s will be checked against relevant
+    [constraints](State::constrain), which can also cause a state to fail.
+
+    # Examples:
+
+    ```
+    use canrun2::{State, Query, Value};
+
+    let x = Value::var();
+
+    let state = State::new();
+    let state = state.unify(&x, &Value::new(1));
+    assert!(state.is_some());
+    ```
+
+    ```
+    # use canrun2::{State, Query, Value};
+    let state = State::new();
+    let state = state.unify(&Value::new(1), &Value::new(2));
+    assert!(state.is_none());
+    ```
+    */
     pub fn unify<T: Unify>(mut self, a: &Value<T>, b: &Value<T>) -> Option<Self> {
         let a = self.resolve(a);
         let b = self.resolve(b);
@@ -68,11 +191,15 @@ impl State {
         }
     }
 
-    pub fn fork(mut self, fork: impl Fork) -> Option<Self> {
-        self.forks.push_back(Rc::new(fork));
-        Some(self)
-    }
+    /**
+    Add a constraint to the store that can be reevaluated as variables are resolved.
 
+    Some logic is not easy or even possible to express until the resolved
+    values are available. `.constrain()` provides a low level way to run
+    custom imperative code whenever certain bindings are updated.
+
+    See the [`Constraint` trait](constraints::Constraint) for more usage information.
+    */
     pub fn constrain(mut self, constraint: Rc<dyn Constraint>) -> Option<Self> {
         match constraint.attempt(&self) {
             Ok(resolve) => resolve(self),
@@ -81,6 +208,28 @@ impl State {
                 Some(self)
             }
         }
+    }
+
+    /**
+    Add a potential fork point to the state.
+
+    If there are many possibilities for a certain value or set of values,
+    this method allows you to add a [`Fork`] object that can enumerate those
+    possible alternate states.
+
+    While this is not quite as finicky as
+    [`Constraints`](State::constrain()), you still probably want to use the
+    [`any`](crate::goals::any!) or [`either`](crate::goals::either()) goals.
+
+    [Unification](State::unify()) is performed eagerly as soon as it is
+    called. [Constraints](State::constrain()) are run as variables are
+    resolved. Forking is executed lazily at the end, when
+    [`StateIterator::into_states`](super::state_iterator::StateIterator::into_states)
+    or [`.query()`](crate::Query::query()) is called.
+    */
+    pub fn fork(mut self, fork: impl Fork) -> Option<Self> {
+        self.forks.push_back(Rc::new(fork));
+        Some(self)
     }
 }
 
