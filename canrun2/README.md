@@ -20,8 +20,9 @@ worst it may just be a poor misinterpretation with fatal flaws.
 ## Quick Start
 
 ```rust
-use canrun::core::{LVar, Query};
-use canrun::goals::{both, unify};
+use canrun2::{LVar, Query};
+// TODO: reduce the goal module::function inception
+use canrun2::goals::{both::both, unify::unify};
 
 let x = LVar::new();
 let y = LVar::new();

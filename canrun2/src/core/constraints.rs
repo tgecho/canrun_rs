@@ -1,10 +1,22 @@
+//! Run code when [`variables`](LVar) are resolved.
+
 use std::{fmt::Debug, rc::Rc};
 
 use super::{State, Unify};
 use crate::core::{LVar, Value, Value::*, VarId};
 
+/**
+An alias for the function that should be returned by a successful
+[`Constraint::attempt`] to update the [`State`].
+*/
 pub type ResolveFn = Box<dyn FnOnce(State) -> Option<State>>;
 
+/**
+A set of variables to watch on behalf of a [`Constraint`].
+
+Consider generating this with the [`resolve_1`], [`resolve_2`], [`OneOfTwo`]
+or [`TwoOfThree`] helpers.
+*/
 #[derive(Debug)]
 pub struct VarWatch(pub(crate) Vec<VarId>);
 
@@ -20,6 +32,58 @@ impl VarWatch {
     }
 }
 
+/** Update a [`State`] whenever one or more [`LVar`]s are resolved.
+
+The [`Constraint::attempt`] function will be run when it is initially added.
+Returning a [`Err([VarWatch])`](VarWatch) signals that the constraint is not
+satisfied. The constraint will be re-attempted when one of the specified
+variables is bound to another value.
+
+You probably want to use the higher level [goal projection](crate::goals::project)
+functions.
+
+# NOTE:
+The [`attempt`](Constraint::attempt) function must take care to [fully
+resolve](State::resolve) any variables before creating a [`VarWatch`].
+The [`resolve_1`], [`resolve_2`], [`OneOfTwo`] and [`TwoOfThree`]
+helpers can simplify handling this (plus returning the [`VarWatch`]).
+
+# Example:
+```
+use canrun2::{State, Unify, Query, Value};
+use canrun2::constraints::{Constraint, resolve_1, ResolveFn, VarWatch};
+use std::rc::Rc;
+
+struct Assert<T: Unify> {
+    val: Value<T>,
+    assert: Rc<dyn Fn(&T) -> bool>,
+}
+
+impl<T: Unify> Constraint for Assert<T>
+{
+    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+        let resolved = resolve_1(&self.val, state)?;
+        let assert = self.assert.clone();
+        Ok(Box::new(
+            move |state: State| if assert(&*resolved) { Some(state) } else { None },
+        ))
+    }
+}
+
+# fn test() -> Option<()> {
+let x = Value::var();
+
+let state = State::new();
+let state = state.constrain(Rc::new(Assert {val: x.clone(), assert: Rc::new(|x| x > &1)}));
+let state = state?.unify(&x, &Value::new(2));
+
+let results: Vec<i32> = state.query(x).collect();
+assert_eq!(results, vec![2]);
+# Some(())
+# }
+# test();
+```
+*/
 pub trait Constraint {
     /// Resolve required variables in a state and resubscribe or request to
     /// update the state.

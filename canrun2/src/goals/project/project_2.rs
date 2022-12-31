@@ -2,9 +2,11 @@ use std::fmt;
 use std::fmt::Debug;
 use std::rc::Rc;
 
-use crate::core::Value;
-use crate::core::{resolve_2, Constraint, ResolveFn, State, Unify, VarWatch};
 use crate::goals::Goal;
+use crate::{
+    constraints::{resolve_2, Constraint, ResolveFn, VarWatch},
+    core::{State, Unify, Value},
+};
 
 #[allow(clippy::type_complexity)]
 pub struct Project2<A: Unify, B: Unify> {

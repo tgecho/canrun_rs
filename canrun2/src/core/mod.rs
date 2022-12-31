@@ -1,6 +1,6 @@
 //! Low level implementation with basic unification, forking and constraint tracking.
 
-mod constraints;
+pub mod constraints;
 mod fork;
 mod query;
 mod reify;
@@ -9,7 +9,6 @@ mod state_iterator;
 mod unify;
 mod value;
 
-pub use constraints::*;
 pub use fork::*;
 pub use query::*;
 pub use reify::*;

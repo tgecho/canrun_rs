@@ -1,6 +1,9 @@
-use crate::core::Value;
-use crate::core::{Constraint, ResolveFn, State, TwoOfThree, Unify, VarWatch};
+use crate::constraints::TwoOfThree;
 use crate::goals::Goal;
+use crate::{
+    constraints::{Constraint, ResolveFn, VarWatch},
+    core::{State, Unify, Value},
+};
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 

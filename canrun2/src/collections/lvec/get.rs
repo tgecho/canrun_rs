@@ -1,6 +1,9 @@
 use super::LVec;
 use crate::{
-    core::{resolve_2, Constraint, ResolveFn, State, Unify, Value, VarWatch},
+    core::{
+        constraints::{resolve_2, Constraint, ResolveFn, VarWatch},
+        State, Unify, Value,
+    },
     goals::Goal,
 };
 use std::{fmt::Debug, rc::Rc};
