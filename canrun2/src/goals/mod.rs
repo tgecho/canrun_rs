@@ -28,6 +28,7 @@ mod custom;
 mod either;
 mod fail;
 mod lazy;
+pub mod ops;
 pub mod project;
 mod succeed;
 mod unify;

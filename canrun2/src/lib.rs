@@ -10,4 +10,4 @@ pub mod util;
 
 pub use crate::core::*;
 pub use collections::*;
-pub use goals::{both, custom, either, lazy, project, unify, Fail, Succeed};
+pub use goals::{both, custom, either, lazy, ops, project, unify, Fail, Succeed};
