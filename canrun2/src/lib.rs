@@ -1,6 +1,11 @@
 #![warn(missing_docs)]
 #![warn(rustdoc::missing_crate_level_docs)]
 #![doc = include_str!("../README.md")]
+//! What's next? Go read a breakdown of this example in the deeper [Quick Start
+//! explanation](crate::docs::quickstart).
+
+#[cfg(doc)]
+pub mod docs;
 
 pub mod collections;
 pub mod core;
