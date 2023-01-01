@@ -49,7 +49,7 @@ mod tests {
     use crate::{
         core::LVar,
         core::Query,
-        goals::{both::both, fail::Fail, unify::unify},
+        goals::{both::both, fail::Fail, unify},
     };
 
     use super::any;

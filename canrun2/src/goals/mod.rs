@@ -15,15 +15,25 @@ use std::{fmt::Debug, rc::Rc};
 
 use crate::core::State;
 
-pub mod all;
-pub mod any;
-pub mod both;
-pub mod either;
-pub mod fail;
-pub mod lazy;
+mod all;
+mod any;
+mod both;
+mod either;
+mod fail;
+mod lazy;
 pub mod project;
-pub mod succeed;
-pub mod unify;
+mod succeed;
+mod unify;
+
+pub use all::*;
+pub use any::*;
+pub use both::*;
+pub use either::*;
+pub use fail::*;
+pub use lazy::*;
+pub use project::*;
+pub use succeed::*;
+pub use unify::*;
 
 pub trait Goal: Debug + 'static {
     fn apply(&self, state: State) -> Option<State>;

@@ -64,9 +64,7 @@ impl<A: Unify + Debug, B: Unify + Debug> Debug for Project2<A, B> {
 mod tests {
     use crate::{
         core::{LVar, Query},
-        goals::{
-            both::both, fail::Fail, project::project_2::project_2, succeed::Succeed, unify::unify,
-        },
+        goals::{both::both, fail::Fail, project::project_2::project_2, succeed::Succeed, unify},
     };
 
     #[test]

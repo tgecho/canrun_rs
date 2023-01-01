@@ -1,29 +1,29 @@
 use std::fmt::Debug;
 
 use crate::core::Value;
-use crate::core::{State, Unify as UnifyTrait};
+use crate::core::{State, Unify};
 
 use super::Goal;
 
 #[derive(Debug)]
-pub struct Unify<T: UnifyTrait> {
+pub struct UnifyGoal<T: Unify> {
     a: Value<T>,
     b: Value<T>,
 }
 
-impl<T: UnifyTrait> Goal for Unify<T> {
+impl<T: Unify> Goal for UnifyGoal<T> {
     fn apply(&self, state: State) -> Option<State> {
         state.unify(&self.a, &self.b)
     }
 }
 
-pub fn unify<T, A, B>(a: A, b: B) -> Unify<T>
+pub fn unify<T, A, B>(a: A, b: B) -> UnifyGoal<T>
 where
-    T: UnifyTrait,
+    T: Unify,
     A: Into<Value<T>>,
     B: Into<Value<T>>,
 {
-    Unify {
+    UnifyGoal {
         a: a.into(),
         b: b.into(),
     }

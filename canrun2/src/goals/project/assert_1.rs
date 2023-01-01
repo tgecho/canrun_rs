@@ -63,7 +63,7 @@ mod tests {
     use crate::{
         core::LVar,
         core::Query,
-        goals::{both::both, unify::unify},
+        goals::{both::both, unify},
     };
 
     use super::*;

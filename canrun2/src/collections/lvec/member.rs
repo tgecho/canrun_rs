@@ -2,8 +2,8 @@ use crate::core::{
     constraints::{resolve_1, Constraint, ResolveFn, VarWatch},
     State, Unify, Value,
 };
-use crate::goals::any::Any;
-use crate::goals::unify::unify;
+use crate::goals::unify;
+use crate::goals::Any;
 use crate::goals::Goal;
 use std::fmt::Debug;
 use std::iter::repeat;
@@ -65,7 +65,7 @@ mod tests {
         core::LVar,
         core::Query,
         goal_vec,
-        goals::{either::either, unify::unify},
+        goals::{either, unify},
         lvec,
     };
 

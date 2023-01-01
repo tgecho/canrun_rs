@@ -64,7 +64,7 @@ impl<T: Unify + Reify> Reify for LVec<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{core::LVar, core::Query, goals::unify::unify};
+    use crate::{core::LVar, core::Query, goals::unify};
 
     #[test]
     fn succeeds() {

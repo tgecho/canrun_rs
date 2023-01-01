@@ -146,7 +146,7 @@ impl State {
     }
 
     /**
-    Attempt to [unify](crate::unify::Unify) two values with each other.
+    Attempt to [unify](crate::Unify) two values with each other.
 
     If the unification fails, [`None`](std::option::Option::None) will be
     returned. [`Value::Var`]s will be checked against relevant
@@ -222,7 +222,7 @@ impl State {
 
     While this is not quite as finicky as
     [`Constraints`](State::constrain()), you still probably want to use the
-    [`any`](crate::goals::any::any!) or [`either`](crate::goals::either::either()) goals.
+    [`any`](crate::goals::any!) or [`either`](crate::goals::either()) goals.
 
     [Unification](State::unify()) is performed eagerly as soon as it is
     called. [Constraints](State::constrain()) are run as variables are

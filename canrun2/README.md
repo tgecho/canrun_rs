@@ -21,8 +21,7 @@ worst it may just be a poor misinterpretation with fatal flaws.
 
 ```rust
 use canrun2::{LVar, Query};
-// TODO: reduce the goal module::function inception
-use canrun2::goals::{both::both, unify::unify};
+use canrun2::goals::{both, unify};
 
 let x = LVar::new();
 let y = LVar::new();

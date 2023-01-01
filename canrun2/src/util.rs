@@ -5,7 +5,7 @@ use std::{fmt::Debug, rc::Rc};
 
 use crate::{
     core::{Query, Reify},
-    goals::{all::All, Goal},
+    goals::{All, Goal},
 };
 
 pub(crate) fn all_permutations(

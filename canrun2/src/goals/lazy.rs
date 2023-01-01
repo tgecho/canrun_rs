@@ -37,7 +37,7 @@ impl Goal for Lazy {
 mod tests {
     use crate::{
         core::{LVar, Value},
-        goals::{succeed::Succeed, unify::unify},
+        goals::{succeed::Succeed, unify},
     };
 
     use super::*;

@@ -102,7 +102,7 @@ mod tests {
     use super::map_2;
     use crate::core::{LVar, Query};
     use crate::goals::both::both;
-    use crate::goals::unify::unify;
+    use crate::goals::unify;
 
     #[test]
     fn succeeds() {

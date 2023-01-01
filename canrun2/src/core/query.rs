@@ -28,7 +28,7 @@ pub trait Query<'a> {
     ## Goals
     ```
     use canrun2::{Goal, Query, LVar};
-    use canrun2::goals::unify::unify;
+    use canrun2::goals::unify;
 
     let x = LVar::new();
     let goal = unify(x, 1);

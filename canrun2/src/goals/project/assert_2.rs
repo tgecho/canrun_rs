@@ -68,7 +68,7 @@ impl<A: Unify, B: Unify> Goal for Assert2<A, B> {
 mod tests {
     use crate::{
         core::{LVar, Query},
-        goals::{both::both, unify::unify},
+        goals::{both::both, unify},
     };
 
     use super::*;

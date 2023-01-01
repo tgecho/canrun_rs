@@ -80,7 +80,7 @@ mod tests {
     use crate::core::LVar;
     use crate::core::Query;
     use crate::goals::both::both;
-    use crate::goals::unify::unify;
+    use crate::goals::unify;
 
     #[test]
     fn succeeds() {

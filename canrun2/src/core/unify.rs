@@ -2,8 +2,7 @@ use std::any::Any;
 use std::fmt::Debug;
 use std::rc::Rc;
 
-use crate::core::State;
-use crate::core::Value;
+use crate::core::{State, Value};
 
 /**
 How compatible values are matched with each other.
@@ -44,7 +43,7 @@ Default implementations are provided for most primitive types, and a few general
 
 TODO: Create a derive macro
 ```
-use canrun2::{State, Unify, Value};
+use canrun2::core::{State, Unify, Value};
 use std::rc::Rc;
 
 #[derive(Debug)]
