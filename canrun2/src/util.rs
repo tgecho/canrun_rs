@@ -61,7 +61,7 @@ impl GoalVec {
 #[macro_export]
 macro_rules! goal_vec {
     ($($item:expr),* $(,)?) => {
-        $crate::util::GoalVec(vec![$(Rc::new($item),)*])
+        $crate::util::GoalVec(vec![$(std::rc::Rc::new($item),)*])
     };
 }
 pub use goal_vec;

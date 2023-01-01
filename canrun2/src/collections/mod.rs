@@ -8,4 +8,5 @@ specifying and implementing these operations correctly means that they could
 be flat out wrong. More testing, benchmarking and refinement is required.
 */
 
+pub mod lmap;
 pub mod lvec;

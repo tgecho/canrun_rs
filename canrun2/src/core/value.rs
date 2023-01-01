@@ -1,4 +1,5 @@
 use crate::core::Unify;
+use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{any::Any, fmt::Debug, rc::Rc};
@@ -22,7 +23,7 @@ debugging purposes as no guarantees are made about the type or generation of
 the id value. Also, these ids are only valid within the context of a single
 execution. They cannot be safely persisted or shared between processes.
 */
-#[derive(Debug, Copy)]
+#[derive(Debug, Copy, Eq)]
 pub struct LVar<T> {
     pub(crate) id: VarId,
     t: PhantomData<T>,
@@ -31,6 +32,12 @@ pub struct LVar<T> {
 impl<T> PartialEq for LVar<T> {
     fn eq(&self, other: &LVar<T>) -> bool {
         self.id == other.id
+    }
+}
+
+impl<T> Hash for LVar<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }
 
@@ -64,7 +71,7 @@ impl<T: Unify> Default for LVar<T> {
 Contain individual resolved values or variables that can be bound through
 [unification](crate::core::Unify).
 */
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum Value<T: Unify> {
     /**
     A [logical variable](LVar).

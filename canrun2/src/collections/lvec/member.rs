@@ -92,8 +92,6 @@ impl<T: Unify> Constraint for Member<T> {
 
 #[cfg(test)]
 mod tests {
-    use std::rc::Rc;
-
     use crate::{
         core::LVar,
         core::Query,

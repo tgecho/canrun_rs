@@ -14,7 +14,7 @@ the resolved value. Create with [`project_1`].
 #[allow(clippy::type_complexity)]
 pub struct Project1<A: Unify> {
     a: Value<A>,
-    f: Rc<dyn Fn(&A) -> Box<dyn Goal>>,
+    f: Rc<dyn Fn(Rc<A>) -> Box<dyn Goal>>,
 }
 
 /** Create a [projection goal](super) that allows creating a new goal based on
@@ -34,7 +34,7 @@ pub fn project_1<A, IA, F>(a: IA, func: F) -> Project1<A>
 where
     A: Unify,
     IA: Into<Value<A>>,
-    F: Fn(&A) -> Box<dyn Goal> + 'static,
+    F: Fn(Rc<A>) -> Box<dyn Goal> + 'static,
 {
     Project1 {
         a: a.into(),
@@ -60,7 +60,7 @@ impl<A: Unify> Goal for Project1<A> {
 impl<A: Unify> Constraint for Project1<A> {
     fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
         let a = resolve_1(&self.a, state)?;
-        let goal = (self.f)(&*a);
+        let goal = (self.f)(a);
         Ok(Box::new(move |state| goal.apply(state)))
     }
 }

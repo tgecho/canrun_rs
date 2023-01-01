@@ -15,7 +15,7 @@ the resolved values. Create with [`project_2`].
 pub struct Project2<A: Unify, B: Unify> {
     a: Value<A>,
     b: Value<B>,
-    f: Rc<dyn Fn(&A, &B) -> Box<dyn Goal>>,
+    f: Rc<dyn Fn(Rc<A>, Rc<B>) -> Box<dyn Goal>>,
 }
 
 /** Create a [projection goal](super) that allows creating a new goal based on
@@ -41,7 +41,7 @@ where
     IA: Into<Value<A>>,
     B: Unify,
     IB: Into<Value<B>>,
-    F: Fn(&A, &B) -> Box<dyn Goal> + 'static,
+    F: Fn(Rc<A>, Rc<B>) -> Box<dyn Goal> + 'static,
 {
     Project2 {
         a: a.into(),
@@ -69,7 +69,7 @@ impl<A: Unify, B: Unify> Goal for Project2<A, B> {
 impl<A: Unify, B: Unify> Constraint for Project2<A, B> {
     fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
         let (a, b) = resolve_2(&self.a, &self.b, state)?;
-        let goal = (self.f)(&*a, &*b);
+        let goal = (self.f)(a, b);
         Ok(Box::new(move |state| goal.apply(state)))
     }
 }
