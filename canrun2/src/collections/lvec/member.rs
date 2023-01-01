@@ -11,6 +11,36 @@ use std::rc::Rc;
 
 use super::LVec;
 
+/** Create a [`Goal`] that attempts to unify a `Value<T>` with
+any of the items in a `LVec<T>`.
+
+This goal will fork the state for each match found.
+
+# Examples:
+```
+use canrun2::{LVar, all, unify, lvec, Query};
+
+let x = LVar::new();
+let xs = LVar::new();
+let goal = all![
+    unify(&x, 1),
+    unify(&xs, lvec![1, 2, 3]),
+    lvec::member(x, xs),
+];
+let results: Vec<_> = goal.query(x).collect();
+assert_eq!(results, vec![1]);
+```
+
+```
+# use canrun2::{LVar, all, unify, lvec, Query};
+let x = LVar::new();
+let goal = all![
+    lvec::member(x, lvec![1, 2, 3]),
+];
+let results: Vec<_> = goal.query(x).collect();
+assert_eq!(results, vec![1, 2, 3]);
+```
+*/
 pub fn member<T, IntoT, IntoLVecT>(item: IntoT, collection: IntoLVecT) -> Member<T>
 where
     T: Unify,
@@ -23,6 +53,9 @@ where
     }
 }
 
+/** A [`Goal`] that attempts to unify a `Value<T>` with
+any of the items in a `LVec<T>`. Create with [`member`].
+*/
 #[derive(Debug)]
 pub struct Member<T: Unify> {
     item: Value<T>,

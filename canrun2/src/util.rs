@@ -15,6 +15,10 @@ pub(crate) fn all_permutations(
     goals.into_iter().permutations(goals_len)
 }
 
+/**
+Given a `Vec<Rc<dyn Goal>>`, it will ensure each permutation of the goals
+(wrapped in an [`All`](crate::goals::All)) generate the expected results.
+ */
 pub fn assert_permutations_resolve_to<Q>(
     goals: Vec<Rc<dyn Goal>>,
     query: Q,

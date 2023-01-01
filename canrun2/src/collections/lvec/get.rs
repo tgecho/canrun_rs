@@ -8,6 +8,9 @@ use crate::{
 };
 use std::{fmt::Debug, rc::Rc};
 
+/**
+Create a [`Goal`] that attempts to unify a `Value<T>` with
+the item at a specific index in a `LVec<T>`. Create with [`get`]. */
 #[derive(Debug)]
 pub struct Get<T: Unify> {
     item: Value<T>,
@@ -25,6 +28,26 @@ impl<T: Unify> Clone for Get<T> {
     }
 }
 
+/**
+Create a [`Goal`] that attempts to unify a `Value<T>` with
+the item at a specific index in a `LVec<T>`.
+
+# Examples:
+```
+use canrun2::{LVar, all, unify, lvec, Query};
+
+let needle = LVar::new();
+let index = LVar::new();
+let haystack = LVar::new();
+let goal = all![
+    unify(index, 0),
+    unify(&haystack, lvec![1, 2, 3]),
+    lvec::get(needle, index, haystack),
+];
+let results: Vec<_> = goal.query(needle).collect();
+assert_eq!(results, vec![1]);
+```
+*/
 pub fn get<T, IntoT, Index, Collection>(item: IntoT, index: Index, collection: Collection) -> Get<T>
 where
     T: Unify,

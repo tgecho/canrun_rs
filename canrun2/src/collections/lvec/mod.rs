@@ -1,3 +1,5 @@
+//! A [`Vec`]-like data structure with [`Value`](crate::Value) values.
+
 mod get;
 mod member;
 
@@ -7,36 +9,28 @@ pub use member::{member, Member};
 
 use std::rc::Rc;
 
-/// A [`Vec`]-like data structure with [`LVar`](crate::core::LVar) values.
-#[derive(Debug, Default)]
+/// A [`Vec`]-like data structure with [`Value`](crate::Value) values.
+///
+/// Construct with the [`lvec!`](crate::lvec!) macro, or you can use the
+/// `From<Vec<Value<T>>>` or `FromIterator<Value<T>>` trait implementations.
+#[derive(Debug)]
 pub struct LVec<T: Unify> {
     vec: Vec<Value<T>>,
 }
 
 /** Create an [`LVec<T>`](crate::collections::lvec::LVec) with automatic `Into<Value<T>>` conversion.
 
-The primary benefit is that it allows freely mixing resolved values and
-[`LVar`s](crate::core::LVar).
+The primary benefit is that it allows freely mixing `T`, [`Value<T>`](crate::Value) and
+[`LVar<T>`](crate::LVar) without needing to do manual conversion.
 */
 #[macro_export]
 macro_rules! lvec {
     ($($item:expr),* $(,)?) => {
         {
-            let mut lv = $crate::collections::lvec::LVec::new();
-            $(lv.push($item.into());)*
-            lv
+            let vec = vec![$($item.into(),)*];
+            $crate::collections::lvec::LVec::from(vec)
         }
     };
-}
-
-impl<T: Unify> LVec<T> {
-    pub fn new() -> Self {
-        LVec { vec: Vec::new() }
-    }
-
-    pub fn push(&mut self, value: Value<T>) {
-        self.vec.push(value);
-    }
 }
 
 impl<T: Unify> Unify for LVec<T> {
@@ -59,6 +53,20 @@ impl<T: Unify + Reify> Reify for LVec<T> {
             .iter()
             .map(|v: &Value<T>| v.reify_in(state))
             .collect()
+    }
+}
+
+impl<T: Unify> From<Vec<Value<T>>> for LVec<T> {
+    fn from(vec: Vec<Value<T>>) -> Self {
+        LVec { vec }
+    }
+}
+
+impl<T: Unify> FromIterator<Value<T>> for LVec<T> {
+    fn from_iter<I: IntoIterator<Item = Value<T>>>(iter: I) -> Self {
+        LVec {
+            vec: iter.into_iter().collect(),
+        }
     }
 }
 
