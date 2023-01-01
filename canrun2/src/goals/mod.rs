@@ -9,6 +9,12 @@ goal constructors.
 
 While [`State`] exposes a lower level API, in practice there really
 shouldn't be anything that can't be expressed using goals.
+
+Most structs that implement `Goal` are constructed with one of the many
+[constructor functions](crate::goals#functions) and
+[macros](crate::goals#macros). These high level methods provide automatic
+[`Value`](crate::Value) wrapping through [`Into<Value<T>>`]
+and other niceties.
 */
 
 use std::{fmt::Debug, rc::Rc};
@@ -35,7 +41,33 @@ pub use project::*;
 pub use succeed::*;
 pub use unify::*;
 
+/**
+Types implementing `Goal` represent declarative, lazily applied state updates.
+*/
 pub trait Goal: Debug + 'static {
+    /**
+    Apply the `Goal` to a state, returning `Some` if the state is still valid, or `None`.
+
+    # Example:
+    ```
+    use canrun2::{State, Query, Value};
+    use canrun2::goals::Goal;
+
+    #[derive(Debug)]
+    struct Is1 {value: Value<usize>}
+
+    impl Goal for Is1 {
+        fn apply(&self, state: State) -> Option<State> {
+            state.unify(&Value::new(1), &self.value)
+        }
+    }
+
+    let x = Value::var();
+    let goal = Is1 {value: x.clone()};
+    let results: Vec<_> = goal.query(x).collect();
+    assert_eq!(results, vec![1]);
+    ```
+    */
     fn apply(&self, state: State) -> Option<State>;
 }
 

@@ -47,12 +47,12 @@ impl<T: Unify> Clone for Member<T> {
 impl<T: Unify> Constraint for Member<T> {
     fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
         let collection = resolve_1(&self.collection, state)?;
-        let goals = collection
+        let any = collection
             .vec
             .iter()
             .zip(repeat(self.item.clone()))
-            .map(|(a, b)| Rc::new(unify(a, b)) as Rc<dyn Goal>);
-        let any = Any::from(goals);
+            .map(|(a, b)| Rc::new(unify(a, b)) as Rc<dyn Goal>)
+            .collect::<Any>();
         Ok(Box::new(move |state| any.apply(state)))
     }
 }

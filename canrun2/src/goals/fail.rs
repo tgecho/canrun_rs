@@ -1,6 +1,18 @@
 use crate::core::State;
 use crate::goals::Goal;
 
+/** A [`Goal`] that always fails.
+
+# Example
+```
+use canrun2::{Fail, all, unify, LVar, Query};
+
+let x = LVar::new();
+let goal = all![unify(x, 1), Fail];
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![])
+```
+*/
 #[derive(Clone, Debug)]
 pub struct Fail;
 

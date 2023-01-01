@@ -27,7 +27,7 @@ pub fn assert_permutations_resolve_to<Q>(
         let perm_goals = permutation
             .iter()
             .map(|g| Box::new(g.clone()) as Box<dyn Goal>);
-        let all_goals = All::from(perm_goals);
+        let all_goals: All = perm_goals.collect();
         let results: Vec<Q::Reified> = all_goals.query(query.clone()).collect();
         if !expected
             .clone()

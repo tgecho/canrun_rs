@@ -1,6 +1,18 @@
 use crate::core::State;
 use crate::goals::Goal;
 
+/** A [`Goal`] that always succeeds.
+
+# Example
+```
+use canrun2::{Succeed, unify, Value, all, Query};
+
+let x = Value::var();
+let goal = all![unify(x.clone(), 1), Succeed];
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![1])
+```
+*/
 #[derive(Debug)]
 pub struct Succeed;
 
