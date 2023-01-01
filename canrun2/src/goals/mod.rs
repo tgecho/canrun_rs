@@ -24,6 +24,7 @@ use crate::core::State;
 mod all;
 mod any;
 mod both;
+pub mod cmp;
 mod custom;
 mod either;
 mod fail;
