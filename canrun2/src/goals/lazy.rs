@@ -6,6 +6,11 @@ use crate::core::State;
 use super::Goal;
 
 type LazyFun = dyn Fn() -> Box<dyn Goal>;
+
+/**
+A [Goal](crate::goals::Goal) that is generated via callback just as
+it is about to be evaluated. Create with [`lazy`].
+ */
 pub struct Lazy {
     fun: Rc<LazyFun>,
 }
@@ -18,6 +23,27 @@ impl Debug for Lazy {
     }
 }
 
+/**
+Create a [goal](crate::goals::Goal) that is generated via callback just as
+it is about to be evaluated.
+
+The primary uses for this function involve introducing new internal vars.
+The passed in callback function should return a valid goal to be evaluated.
+
+# Examples
+
+```
+use canrun2::{lazy, both, unify, LVar, Query};
+
+let x = LVar::new();
+let goal = lazy(move || {
+    let y = LVar::new();
+    Box::new(both(unify(y, 1), unify(x, y)))
+});
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![1])
+```
+*/
 pub fn lazy<F>(fun: F) -> Lazy
 where
     F: (Fn() -> Box<dyn Goal>) + 'static,

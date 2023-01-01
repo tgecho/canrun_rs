@@ -6,6 +6,10 @@ use crate::goals::Goal;
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
+/**
+A [projection goal](super) that succeeds if the resolved value passes
+an assertion test. Create with [`assert_1`].
+ */
 pub struct Assert1<T: Unify> {
     a: Value<T>,
     f: Rc<dyn Fn(&T) -> bool>,
@@ -20,6 +24,19 @@ impl<T: Unify> Clone for Assert1<T> {
     }
 }
 
+/** Create a [projection goal](super) that succeeds if the resolved value passes
+an assertion test.
+
+```
+use canrun2::{LVar, Query};
+use canrun2::goals::{assert_1, both, unify};
+
+let x = LVar::new();
+let goal = both(unify(1, x), assert_1(x, |x| *x < 2));
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![1])
+```
+*/
 pub fn assert_1<T, A, F>(a: A, func: F) -> Assert1<T>
 where
     T: Unify,

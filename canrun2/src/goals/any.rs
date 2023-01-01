@@ -4,7 +4,7 @@ use super::Goal;
 use crate::core::{Fork, State, StateIter};
 
 /**
-A Goal that yields a state for every successful
+A [`Goal`] that yields a state for every successful
 sub-goal.
 
 See the [`any!`](any) macro for a more ergonomic way to

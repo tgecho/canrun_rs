@@ -2,7 +2,7 @@ use super::Goal;
 use crate::core::State;
 
 /**
-A Goal that only succeeds if all sub-goals succeed.
+A [`Goal`] that only succeeds if all sub-goals succeed.
 
 See the [`all!`](all) macro for a more ergonomic way to construct static `All` goals.
 

@@ -7,6 +7,26 @@ use crate::{
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
+/** Create a [projection goal](super) that allows deriving one resolved value
+from the other two.
+
+Functions must be provided to derive from any combination of two values.
+Whichever two are resolved first will be used to derive the other.
+
+```
+use canrun2::{LVar, Query};
+use canrun2::goals::{map_2, all, unify};
+
+let (x, y, z) = (LVar::new(), LVar::new(), LVar::new());
+let goal = all![
+    unify(1, x),
+    unify(2, y),
+    map_2(x, y, z, |x, y| x + y, |x, z| z - x, |y, z| z - y),
+];
+let result: Vec<_> = goal.query(z).collect();
+assert_eq!(result, vec![3])
+```
+*/
 pub fn map_2<A, IA, B, IB, C, IC, ABtoC, ACtoB, BCtoA>(
     a: IA,
     b: IB,
@@ -36,6 +56,9 @@ where
     }
 }
 
+/** A [projection goal](super) that allows deriving one resolved value
+from the other two. Create with [`map_2`].
+*/
 #[allow(clippy::type_complexity)]
 pub struct Map2<A: Unify, B: Unify, C: Unify> {
     a: Value<A>,

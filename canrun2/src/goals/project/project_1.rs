@@ -8,12 +8,28 @@ use crate::{
     core::{State, Unify, Value},
 };
 
+/** A [projection goal](super) that allows creating a new goal based on
+the resolved value. Create with [`project_1`].
+*/
 #[allow(clippy::type_complexity)]
 pub struct Project1<A: Unify> {
     a: Value<A>,
     f: Rc<dyn Fn(&A) -> Box<dyn Goal>>,
 }
 
+/** Create a [projection goal](super) that allows creating a new goal based on
+the resolved value.
+
+```
+use canrun2::{LVar, Query};
+use canrun2::goals::{project_1, both, unify, Succeed, Fail};
+
+let x = LVar::new();
+let goal = both(unify(1, x), project_1(x, |x| if *x < 2 { Box::new(Succeed) } else { Box::new(Fail) }));
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![1])
+```
+*/
 pub fn project_1<A, IA, F>(a: IA, func: F) -> Project1<A>
 where
     A: Unify,

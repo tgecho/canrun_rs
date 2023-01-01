@@ -7,6 +7,25 @@ use crate::{
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
+/** Create a [projection goal](super) that allows deriving one resolved value
+from the other.
+
+Functions must be provided to derive in both directions. Whichever value is
+resolved first will be used to derive the other.
+
+```
+use canrun2::{LVar, Query};
+use canrun2::goals::{map_1, all, unify};
+
+let (x, y) = (LVar::new(), LVar::new());
+let goal = all![
+    unify(1, x),
+    map_1(x, y, |x| x + 1, |y| y - 1),
+];
+let result: Vec<_> = goal.query(y).collect();
+assert_eq!(result, vec![2])
+```
+*/
 pub fn map_1<A, AV, B, BV, AtoB, BtoA>(a: AV, b: BV, a_to_b: AtoB, b_to_a: BtoA) -> Map1<A, B>
 where
     A: Unify,
@@ -24,6 +43,9 @@ where
     }
 }
 
+/** A [projection goal](super) that allows deriving one resolved value
+from the other. Create with [`map_1`].
+*/
 pub struct Map1<A: Unify, B: Unify> {
     a: Value<A>,
     b: Value<B>,

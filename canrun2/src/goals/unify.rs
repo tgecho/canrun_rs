@@ -5,6 +5,10 @@ use crate::core::{State, Value};
 
 use super::Goal;
 
+/**
+Create a [goal](crate::goals::Goal) that attempts to
+[unify](crate::core::Unify) two values with each other. Create with [`unify`].
+ */
 #[derive(Debug)]
 pub struct Unify<T: core::Unify> {
     a: Value<T>,
@@ -17,6 +21,35 @@ impl<T: core::Unify> Goal for Unify<T> {
     }
 }
 
+/**
+Create a [goal](crate::goals::Goal) that attempts to
+[unify](crate::core::Unify) two values with each other.
+
+If one of the values is an unbound [`LVar`](crate::LVar), it will be
+bound to the other value. If both values are able to be resolved, they will
+be compared with [`Unify::unify`](crate::Unify::unify). If this unification fails, the goal will fail.
+
+# Examples
+
+Unifying a fresh `LVar` will bind it to the other value:
+```
+use canrun2::{unify, LVar, Query};
+
+let x = LVar::new();
+let goal = unify(1, x);
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![1])
+```
+
+Attempting to unify two unequal values will fail:
+```
+# use canrun2::{unify, LVar, Query};
+# let x: LVar<usize> = LVar::new();
+let goal = unify(1, 2);
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![])
+```
+*/
 pub fn unify<T, A, B>(a: A, b: B) -> Unify<T>
 where
     T: core::Unify,
