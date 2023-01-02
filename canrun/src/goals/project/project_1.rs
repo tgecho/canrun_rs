@@ -1,58 +1,112 @@
-use crate::domains::DomainType;
-use crate::state::constraints::{resolve_1, Constraint, ResolveFn, VarWatch};
-use crate::value::{IntoVal, Val};
-use crate::{Goal, State};
 use std::fmt;
 use std::fmt::Debug;
 use std::rc::Rc;
 
-type RcFn1<'a, A, B> = Rc<dyn Fn(&A) -> B + 'a>;
+use crate::goals::Goal;
+use crate::{
+    constraints::{resolve_1, Constraint, ResolveFn, VarWatch},
+    core::{State, Unify, Value},
+};
 
-pub struct Project1<'a, A: Debug, D: DomainType<'a, A>> {
-    a: Val<A>,
-    f: RcFn1<'a, A, Goal<'a, D>>,
+/** A [projection goal](super) that allows creating a new goal based on
+the resolved value. Create with [`project_1`].
+*/
+#[allow(clippy::type_complexity)]
+pub struct Project1<A: Unify> {
+    a: Value<A>,
+    f: Rc<dyn Fn(Rc<A>) -> Box<dyn Goal>>,
 }
 
 /** Create a [projection goal](super) that allows creating a new goal based on
 the resolved value.
 
 ```
-use canrun::{Goal, both, unify, var, project_1};
-use canrun::example::I32;
+use canrun::{LVar, Query};
+use canrun::goals::{project_1, both, unify, Succeed, Fail};
 
-let x = var();
-let goal: Goal<I32> = both(unify(1, x), project_1(x, |x| if *x < 2 { Goal::succeed() } else { Goal::fail() }));
+let x = LVar::new();
+let goal = both(unify(1, x), project_1(x, |x| if *x < 2 { Box::new(Succeed) } else { Box::new(Fail) }));
 let result: Vec<_> = goal.query(x).collect();
 assert_eq!(result, vec![1])
 ```
 */
-pub fn project_1<'a, A, AV, D, F>(a: AV, func: F) -> Goal<'a, D>
+pub fn project_1<A, IA, F>(a: IA, func: F) -> Project1<A>
 where
-    A: Debug + 'a,
-    AV: IntoVal<A>,
-    D: DomainType<'a, A>,
-    F: Fn(&A) -> Goal<'a, D> + 'a,
+    A: Unify,
+    IA: Into<Value<A>>,
+    F: Fn(Rc<A>) -> Box<dyn Goal> + 'static,
 {
-    Goal::constraint(Project1 {
-        a: a.into_val(),
+    Project1 {
+        a: a.into(),
         f: Rc::new(func),
-    })
+    }
 }
 
-impl<'a, A, Dom> Constraint<'a, Dom> for Project1<'a, A, Dom>
-where
-    A: Debug,
-    Dom: DomainType<'a, A>,
-{
-    fn attempt(&self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
+impl<A: Unify> Clone for Project1<A> {
+    fn clone(&self) -> Self {
+        Self {
+            a: self.a.clone(),
+            f: self.f.clone(),
+        }
+    }
+}
+
+impl<A: Unify> Goal for Project1<A> {
+    fn apply(&self, state: State) -> Option<State> {
+        state.constrain(Rc::new(self.clone()))
+    }
+}
+
+impl<A: Unify> Constraint for Project1<A> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
         let a = resolve_1(&self.a, state)?;
-        let goal = (self.f)(&*a);
+        let goal = (self.f)(a);
         Ok(Box::new(move |state| goal.apply(state)))
     }
 }
 
-impl<'a, A: Debug, D: DomainType<'a, A>> Debug for Project1<'a, A, D> {
+impl<A: Unify + Debug> Debug for Project1<A> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Project1 {:?}", self.a)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        core::{LVar, Query},
+        goals::{both::both, fail::Fail, project::project_1::project_1, succeed::Succeed, unify},
+    };
+
+    #[test]
+    fn succeeds() {
+        let x = LVar::new();
+        let goal = both(
+            unify(1, x),
+            project_1(x, |x| {
+                if *x < 2 {
+                    Box::new(Succeed)
+                } else {
+                    Box::new(Fail)
+                }
+            }),
+        );
+        assert_eq!(goal.query(x).collect::<Vec<_>>(), vec![1]);
+    }
+
+    #[test]
+    fn fails() {
+        let x = LVar::new();
+        let goal = both(
+            unify(1, x),
+            project_1(x, |x| {
+                if *x < 1 {
+                    Box::new(Succeed)
+                } else {
+                    Box::new(Fail)
+                }
+            }),
+        );
+        assert_eq!(goal.query(x).collect::<Vec<_>>(), vec![]);
     }
 }

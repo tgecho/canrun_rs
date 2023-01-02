@@ -1,9 +1,9 @@
 #![allow(clippy::extra_unused_lifetimes)]
 
-use canrun2::goals::Goal;
-use canrun2::lvec::{member, LVec};
-use canrun2::{all, either, ltup, Value};
-use canrun2::{lvec, LVar, Query};
+use canrun::goals::Goal;
+use canrun::lvec::{member, LVec};
+use canrun::{all, either, ltup, Value};
+use canrun::{lvec, LVar, Query};
 
 type LHouse = (
     Value<&'static str>,

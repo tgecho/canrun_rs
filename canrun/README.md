@@ -1,4 +1,4 @@
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/tgecho/canrun_rs/CI)](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml)
+[![CI](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml/badge.svg)](https://github.com/tgecho/canrun_rs/actions/workflows/tests.yml)
 [![Coverage](https://img.shields.io/codecov/c/gh/tgecho/canrun_rs?token=7HSAMYDWEB)](https://codecov.io/gh/tgecho/canrun_rs)
 [![Crate](https://img.shields.io/crates/v/canrun.svg)](https://crates.io/crates/canrun)
 [![Documentation](https://docs.rs/canrun/badge.svg)](https://docs.rs/canrun/latest/canrun/)
@@ -20,15 +20,12 @@ worst it may just be a poor misinterpretation with fatal flaws.
 ## Quick Start
 
 ```rust
-use canrun::{domain, var, Goal, both, unify};
+use canrun::{LVar, Query};
+use canrun::goals::{both, unify};
 
-domain! {
-    pub I32 { i32 }
-}
-
-let x = var();
-let y = var();
-let goal: Goal<I32> = both(unify(x, y), unify(1, x));
+let x = LVar::new();
+let y = LVar::new();
+let goal = both(unify(x, y), unify(1, x));
 
 let result: Vec<_> = goal.query(y).collect();
 

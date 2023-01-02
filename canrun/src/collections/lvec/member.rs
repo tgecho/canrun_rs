@@ -1,28 +1,30 @@
-use crate::goals::{unify, Goal};
-use crate::lvec::LVec;
-use crate::state::{
+use crate::core::{
     constraints::{resolve_1, Constraint, ResolveFn, VarWatch},
-    State,
+    State, Unify, Value,
 };
-use crate::value::{IntoVal, Val};
-use crate::{DomainType, UnifyIn};
+use crate::goals::unify;
+use crate::goals::Any;
+use crate::goals::Goal;
 use std::fmt::Debug;
 use std::iter::repeat;
+use std::rc::Rc;
 
-/** Create a [`Goal`] that attempts to unify a `Val<T>` with
+use super::LVec;
+
+/** Create a [`Goal`] that attempts to unify a `Value<T>` with
 any of the items in a `LVec<T>`.
 
 This goal will fork the state for each match found.
 
 # Examples:
 ```
-use canrun::{Goal, val, var, all, unify, lvec, example::Collections};
+use canrun::{LVar, all, unify, lvec, Query};
 
-let x = var();
-let xs = var();
-let goal: Goal<Collections> = all![
-    unify(x, 1),
-    unify(xs, lvec![1, 2, 3]),
+let x = LVar::new();
+let xs = LVar::new();
+let goal = all![
+    unify(&x, 1),
+    unify(&xs, lvec![1, 2, 3]),
     lvec::member(x, xs),
 ];
 let results: Vec<_> = goal.query(x).collect();
@@ -30,119 +32,125 @@ assert_eq!(results, vec![1]);
 ```
 
 ```
-# use canrun::{Goal, val, var, all, unify};
-use canrun::{lvec, example::Collections};
-#
-let x = var();
-let goal: Goal<Collections> = all![
+# use canrun::{LVar, all, unify, lvec, Query};
+let x = LVar::new();
+let goal = all![
     lvec::member(x, lvec![1, 2, 3]),
 ];
 let results: Vec<_> = goal.query(x).collect();
 assert_eq!(results, vec![1, 2, 3]);
 ```
 */
-pub fn member<'a, I, IV, CV, D>(item: IV, collection: CV) -> Goal<'a, D>
+pub fn member<T, IntoT, IntoLVecT>(item: IntoT, collection: IntoLVecT) -> Member<T>
 where
-    I: UnifyIn<'a, D> + 'a,
-    IV: IntoVal<I>,
-    LVec<I>: UnifyIn<'a, D>,
-    CV: IntoVal<LVec<I>>,
-    D: DomainType<'a, I> + DomainType<'a, LVec<I>>,
+    T: Unify,
+    IntoT: Into<Value<T>>,
+    IntoLVecT: Into<Value<LVec<T>>>,
 {
-    Goal::constraint(Member {
-        item: item.into_val(),
-        collection: collection.into_val(),
-    })
+    Member {
+        item: item.into(),
+        collection: collection.into(),
+    }
 }
 
+/** A [`Goal`] that attempts to unify a `Value<T>` with
+any of the items in a `LVec<T>`. Create with [`member`].
+*/
 #[derive(Debug)]
-struct Member<I: Debug> {
-    item: Val<I>,
-    collection: Val<LVec<I>>,
+pub struct Member<T: Unify> {
+    item: Value<T>,
+    collection: Value<LVec<T>>,
 }
 
-impl<'a, I, D> Constraint<'a, D> for Member<I>
-where
-    I: UnifyIn<'a, D>,
-    D: DomainType<'a, I> + DomainType<'a, LVec<I>>,
-{
-    fn attempt(&self, state: &State<'a, D>) -> Result<ResolveFn<'a, D>, VarWatch> {
+impl<T: Unify> Goal for Member<T> {
+    fn apply(&self, state: State) -> Option<State> {
+        state.constrain(Rc::new(self.clone()))
+    }
+}
+
+impl<T: Unify> Clone for Member<T> {
+    fn clone(&self) -> Self {
+        Self {
+            item: self.item.clone(),
+            collection: self.collection.clone(),
+        }
+    }
+}
+
+impl<T: Unify> Constraint for Member<T> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
         let collection = resolve_1(&self.collection, state)?;
-        let goals: Vec<_> = collection
+        let any = collection
             .vec
             .iter()
             .zip(repeat(self.item.clone()))
-            .map(|(a, b)| unify::<I, &Val<I>, Val<I>, D>(a, b) as Goal<D>)
-            .collect();
-        Ok(Box::new(|state| Goal::any(goals).apply(state)))
+            .map(|(a, b)| Rc::new(unify(a, b)) as Rc<dyn Goal>)
+            .collect::<Any>();
+        Ok(Box::new(move |state| any.apply(state)))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::example::Collections;
-    use crate::goals::{either, unify, Goal};
-    use crate::lvec;
-    use crate::util;
-    use crate::value::var;
+    use crate::{
+        core::LVar,
+        core::Query,
+        goal_vec,
+        goals::{either, unify},
+        lvec,
+    };
+
+    use super::member;
 
     #[test]
     fn basic_member() {
-        let x = var::<i32>();
-        let goals: Vec<Goal<Collections>> = vec![lvec::member(x, lvec![1, 2, 3])];
-        util::assert_permutations_resolve_to(goals, x, vec![1, 2, 3]);
+        let x = LVar::new();
+        let goal = member(x, lvec![1, 2, 3]);
+        let results = goal.query(x).collect::<Vec<_>>();
+        assert_eq!(results, vec![1, 2, 3]);
     }
 
     #[test]
     fn member_with_conditions() {
-        let x = var();
-        let goals: Vec<Goal<Collections>> = vec![unify(x, 2), lvec::member(x, lvec![1, 2, 3])];
-        util::assert_permutations_resolve_to(goals, x, vec![2]);
+        let x = LVar::new();
+        let goals = goal_vec![unify(x, 2), member(x, lvec![1, 2, 3])];
+        goals.assert_permutations_resolve_to(x, vec![2]);
     }
 
     #[test]
     fn unify_two_contains_1() {
-        let x = var();
+        let x = LVar::new();
         let list = lvec![1, 2, 3];
-        let goals: Vec<Goal<Collections>> =
-            vec![lvec::member(1, x), lvec::member(1, x), unify(x, list)];
-        util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2, 3]]);
+        let goals = goal_vec![member(1, &x), member(1, &x), unify(&x, list)];
+        goals.assert_permutations_resolve_to(x, vec![vec![1, 2, 3]]);
     }
 
     #[test]
     fn unify_two_contains_2() {
-        let x = var();
+        let x = LVar::new();
         let list = lvec![1, 2, 3];
-        let goals: Vec<Goal<Collections>> =
-            vec![lvec::member(1, x), lvec::member(2, x), unify(x, list)];
-        util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2, 3]]);
+        let goals = goal_vec![member(1, &x), member(2, &x), unify(&x, list)];
+        goals.assert_permutations_resolve_to(x, vec![vec![1, 2, 3]]);
     }
 
     #[test]
     fn unify_two_contains_3() {
-        let x = var();
+        let x = LVar::new();
         let list = lvec![1, 2, 3];
-        let goals: Vec<Goal<Collections>> = vec![
-            either(lvec::member(1, x), lvec::member(4, x)),
-            lvec::member(2, x),
-            unify(x, list),
+        let goals = goal_vec![
+            either(member(1, &x), member(4, &x)),
+            member(2, &x),
+            unify(&x, list),
         ];
-        util::assert_permutations_resolve_to(goals, x, vec![vec![1, 2, 3]]);
+        goals.assert_permutations_resolve_to(x, vec![vec![1, 2, 3]]);
     }
 
     #[test]
     fn unify_two_contains_4() {
-        let x = var();
+        let x = LVar::new();
         let list = lvec![1, 2, 3];
-        let goals: Vec<Goal<Collections>> =
-            vec![lvec::member(1, x), lvec::member(4, x), unify(x, list)];
+        let goals = goal_vec![member(1, &x), member(4, &x), unify(&x, list)];
 
-        util::assert_permutations_resolve_to(goals, x, vec![]);
-    }
-
-    #[test]
-    fn debug_impl() {
-        let goal: Goal<Collections> = lvec::member(1, lvec![1, 2]);
-        assert_ne!(format!("{goal:?}"), "")
+        goals.assert_permutations_resolve_to(x, vec![]);
     }
 }
