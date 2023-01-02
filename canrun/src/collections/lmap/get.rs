@@ -18,7 +18,6 @@ use canrun::lmap::{lmap, get};
 let x = LVar::new();
 let goal = get(1, x, lmap! {1 => 2});
 let results: Vec<_> = goal.query(x).collect();
-assert_eq!(results, vec![2]);
 ```
 */
 pub fn get<K, KV, V, VV, B>(key: KV, value: VV, b: B) -> impl Goal
@@ -30,4 +29,18 @@ where
     B: Into<Value<LMap<K, V>>>,
 {
     subset(lmap! {key => value}, b)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::lmap::{get, lmap};
+    use crate::{LVar, Query};
+
+    #[test]
+    fn succeeds() {
+        let x = LVar::new();
+        let goal = get(1, x, lmap! {1 => 2});
+        let results: Vec<_> = goal.query(x).collect();
+        assert_eq!(results, vec![2]);
+    }
 }

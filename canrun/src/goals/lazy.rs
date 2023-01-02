@@ -79,6 +79,6 @@ mod tests {
     #[test]
     fn debug_impl() {
         let goal = lazy(|| Box::new(Succeed));
-        assert_ne!(format!("{:?}", goal), "")
+        assert_ne!(format!("{goal:?}"), "")
     }
 }

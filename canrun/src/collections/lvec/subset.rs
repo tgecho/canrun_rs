@@ -157,6 +157,13 @@ mod tests {
     }
 
     #[test]
+    fn subset_against_smaller() {
+        let x = LVar::new();
+        let goals = goal_vec![lvec::subset(lvec![x, 2], lvec![1])];
+        goals.assert_permutations_resolve_to(x, vec![]);
+    }
+
+    #[test]
     fn debug_impl() {
         let goal = lvec::subset(lvec![1], lvec![1, 2]);
         assert_ne!(format!("{goal:?}"), "")

@@ -36,3 +36,17 @@ where
         }))
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::lmap::{lmap, subset};
+    use crate::{LVar, Query};
+
+    #[test]
+    fn succeeds() {
+        let x = LVar::new();
+        let goal = subset(lmap! {x => 2}, lmap! {1 => 2, 3 => 4});
+        let results: Vec<_> = goal.query(x).collect();
+        assert_eq!(results, vec![1]);
+    }
+}

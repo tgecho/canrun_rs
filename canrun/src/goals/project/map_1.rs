@@ -114,4 +114,12 @@ mod tests {
         );
         assert_eq!(goal.query((x, y)).collect::<Vec<_>>(), vec![(1, 2)]);
     }
+
+    #[test]
+    fn debug() {
+        let x = LVar::new();
+        let y = LVar::new();
+        let goal = map_1(x, y, |x| x + 1, |y| y - 1);
+        assert_ne!(format!("{goal:?}"), "");
+    }
 }

@@ -30,3 +30,17 @@ where
 {
     subset(b, a)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::lmap::{lmap, superset};
+    use crate::{LVar, Query};
+
+    #[test]
+    fn succeeds() {
+        let x = LVar::new();
+        let goal = superset(lmap! {x => 2, 3 => 4}, lmap! {1 => 2});
+        let results: Vec<_> = goal.query(x).collect();
+        assert_eq!(results, vec![1]);
+    }
+}

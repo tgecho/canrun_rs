@@ -95,9 +95,17 @@ impl<T: Unify> FromIterator<Value<T>> for LVec<T> {
     }
 }
 
+impl<T: Unify> FromIterator<T> for LVec<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        LVec {
+            vec: iter.into_iter().map(Value::new).collect(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{core::LVar, core::Query, goals::unify};
+    use crate::{core::LVar, core::Query, goals::unify, lvec::LVec, Value};
 
     #[test]
     fn succeeds() {
@@ -111,5 +119,23 @@ mod tests {
         let x = LVar::new();
         let goal = unify(lvec![x, 1], lvec![1, 2]);
         assert_eq!(goal.query(x).count(), 0);
+    }
+
+    #[test]
+    fn is_empty() {
+        let empty: LVec<usize> = lvec![];
+        assert!(empty.is_empty());
+    }
+
+    #[test]
+    fn from_iter_value_t() {
+        let from_iter: LVec<usize> = (1..3).collect();
+        assert_eq!(from_iter.vec, vec![Value::new(1), Value::new(2)]);
+    }
+
+    #[test]
+    fn from_iter_t() {
+        let from_iter: LVec<usize> = (1..3).map(Value::new).collect();
+        assert_eq!(from_iter.vec, vec![Value::new(1), Value::new(2)]);
     }
 }
