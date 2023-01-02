@@ -1,82 +1,78 @@
-use super::{Goal, GoalEnum};
-use crate::domains::Domain;
-use crate::state::State;
 use std::fmt;
 use std::rc::Rc;
 
-#[derive(Clone)]
-pub struct Custom<'a, D: Domain<'a>>(Rc<dyn Fn(State<'a, D>) -> Option<State<'a, D>> + 'a>);
+use crate::State;
 
-impl<'a, D: Domain<'a>> Custom<'a, D> {
-    pub(crate) fn run(self, state: State<'a, D>) -> Option<State<'a, D>>
-    where
-        D: Domain<'a>,
-    {
-        let func = self.0;
-        func(state)
+use super::Goal;
+
+/// A [Goal](crate::goals::Goal) that gives access to the underlying
+/// [`State`](crate::core::State) struct. Create with [`custom`].
+#[derive(Clone)]
+pub struct Custom(Rc<dyn Fn(State) -> Option<State>>);
+
+impl Goal for Custom {
+    fn apply(&self, state: State) -> Option<State> {
+        (self.0)(state)
     }
 }
 
-/// Create a [goal](crate::goals::Goal) that gives access to the underlying
-/// [`State`](crate::state::State) struct.
-///
-/// Similar to [`lazy`](crate::goals::lazy()), the passed in callback is given
-/// access to the state so it can call the lower level [State] manipulation
-/// methods. This should approach should be used sparingly. Ideally most logic
-/// should be composable out of lower level primitive goals.
-///
-/// Because the [State] methods return an `Option<[State]>` the
-/// [question mark operator `?`](https://doc.rust-lang.org/edition-guide/rust-2018/error-handling-and-panics/the-question-mark-operator-for-easier-error-handling.html)
-/// can be used to allow chaining operations on the [State].
-///
-/// # Examples
-///
-/// ```
-/// use canrun::{Goal, custom, val, var};
-/// use canrun::example::I32;
-///
-/// let x = var();
-/// let goal: Goal<I32> = custom(|state| {
-///     let y = var();
-///     state.unify(&val!(y), &val!(1))?
-///          .unify(&val!(x), &val!(y))
-/// });
-/// let result: Vec<_> = goal.query(x).collect();
-/// assert_eq!(result, vec![1])
-/// ```
-pub fn custom<'a, D, F>(func: F) -> Goal<'a, D>
+/**
+Create a [goal](crate::goals::Goal) that gives access to the underlying
+[`State`](crate::core::State) struct.
+
+Similar to [`lazy`](crate::goals::lazy()), the passed in callback is given
+access to the state so it can call the lower level [State] manipulation
+methods. This should approach should be used sparingly. Ideally most logic
+should be composable out of lower level primitive goals.
+
+Because the [State] methods return an `Option<[State]>` the
+[question mark operator `?`](https://doc.rust-lang.org/edition-guide/rust-2018/error-handling-and-panics/the-question-mark-operator-for-easier-error-handling.html)
+can be used to allow chaining operations on the [State].
+
+# Examples
+
+```
+use canrun::{custom, LVar, Query};
+
+let x = LVar::new();
+let goal = custom(move |state| {
+    let y = LVar::new();
+    state.unify(&y.into(), &1.into())?
+         .unify(&x.into(), &y.into())
+});
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![1])
+```
+*/
+pub fn custom<F>(func: F) -> Custom
 where
-    D: Domain<'a>,
-    F: Fn(State<'a, D>) -> Option<State<'a, D>> + 'a,
+    F: Fn(State) -> Option<State> + 'static,
 {
-    Goal(GoalEnum::Custom(Custom(Rc::new(func))))
+    Custom(Rc::new(func))
 }
 
-impl<'a, D: Domain<'a>> fmt::Debug for Custom<'a, D> {
+impl fmt::Debug for Custom {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<fn>")
+        write!(f, "Custom(<fn>)")
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::custom;
-    use crate::example::I32;
-    use crate::goals::Goal;
-    use crate::util;
-    use crate::value::{var, IntoVal};
+    use crate::{LVar, Query};
 
     #[test]
     fn succeeds() {
-        let x = var::<i32>();
-        let goal: Goal<I32> = custom(|s| s.unify(&x.into_val(), &1.into_val()));
-        let results = util::goal_resolves_to(goal, x);
+        let x = LVar::new();
+        let goal = custom(move |s| s.unify(&x.into(), &1.into()));
+        let results: Vec<_> = goal.query(x).collect();
         assert_eq!(results, vec![1]);
     }
 
     #[test]
     fn debug_impl() {
-        let goal: Goal<I32> = custom(|_| None);
-        assert_eq!(format!("{:?}", goal), "Goal(Custom(<fn>))");
+        let goal = custom(|_| None);
+        assert_eq!(format!("{goal:?}"), "Custom(<fn>)");
     }
 }

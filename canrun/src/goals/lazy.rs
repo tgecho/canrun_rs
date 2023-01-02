@@ -1,77 +1,84 @@
-use super::{Goal, GoalEnum};
-use crate::domains::Domain;
-use crate::state::State;
-use std::fmt;
+use std::fmt::Debug;
 use std::rc::Rc;
 
-#[derive(Clone)]
-pub struct Lazy<'a, D: Domain<'a>>(Rc<dyn Fn() -> Goal<'a, D> + 'a>);
+use crate::core::State;
 
-impl<'a, D: Domain<'a>> Lazy<'a, D> {
-    pub(crate) fn run(self, state: State<'a, D>) -> Option<State<'a, D>>
-    where
-        D: Domain<'a>,
-    {
-        let func = self.0;
-        let goal = func();
-        goal.apply(state)
+use super::Goal;
+
+type LazyFun = dyn Fn() -> Box<dyn Goal>;
+
+/**
+A [Goal](crate::goals::Goal) that is generated via callback just as
+it is about to be evaluated. Create with [`lazy`].
+ */
+pub struct Lazy {
+    fun: Rc<LazyFun>,
+}
+
+impl Debug for Lazy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Lazy")
+            .field("fun", &"Rc<dyn Fn() -> Box<dyn Goal>>")
+            .finish()
     }
 }
 
-/// Create a [goal](crate::goals::Goal) that is generated via callback just as
-/// it is about to be evaluated.
-///
-/// The primary uses for this function involve introducing new internal vars.
-/// The passed in callback function should return a valid goal to be evaluated.
-///
-/// # Examples
-///
-/// ```
-/// use canrun::{Goal, lazy, both, unify, var};
-/// use canrun::example::I32;
-///
-/// let x = var();
-/// let goal: Goal<I32> = lazy(|| {
-///     let y = var();
-///     both(unify(y, 1), unify(x, y))
-/// });
-/// let result: Vec<_> = goal.query(x).collect();
-/// assert_eq!(result, vec![1])
-/// ```
-pub fn lazy<'a, D, F>(func: F) -> Goal<'a, D>
+/**
+Create a [goal](crate::goals::Goal) that is generated via callback just as
+it is about to be evaluated.
+
+The primary uses for this function involve introducing new internal vars.
+The passed in callback function should return a valid goal to be evaluated.
+
+# Examples
+
+```
+use canrun::{lazy, both, unify, LVar, Query};
+
+let x = LVar::new();
+let goal = lazy(move || {
+    let y = LVar::new();
+    Box::new(both(unify(y, 1), unify(x, y)))
+});
+let result: Vec<_> = goal.query(x).collect();
+assert_eq!(result, vec![1])
+```
+*/
+pub fn lazy<F>(fun: F) -> Lazy
 where
-    D: Domain<'a>,
-    F: Fn() -> Goal<'a, D> + 'a,
+    F: (Fn() -> Box<dyn Goal>) + 'static,
 {
-    Goal(GoalEnum::Lazy(Lazy(Rc::new(func))))
+    Lazy { fun: Rc::new(fun) }
 }
 
-impl<'a, D: Domain<'a>> fmt::Debug for Lazy<'a, D> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Lazy ??")
+impl Goal for Lazy {
+    fn apply(&self, state: State) -> Option<State> {
+        let fun = &self.fun;
+        let goal = fun();
+        goal.apply(state)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::lazy;
-    use crate::example::I32;
-    use crate::goals::unify::unify;
-    use crate::goals::Goal;
-    use crate::util;
-    use crate::value::var;
+    use crate::{
+        core::{LVar, Value},
+        goals::{succeed::Succeed, unify},
+    };
+
+    use super::*;
 
     #[test]
     fn succeeds() {
-        let x = var();
-        let goal: Goal<I32> = lazy(|| unify(x, 1));
-        let results = util::goal_resolves_to(goal, x);
-        assert_eq!(results, vec![1]);
+        let x = LVar::new();
+        let goal = lazy(move || Box::new(unify(x, 1)));
+        let result = goal.apply(State::new());
+        assert_eq!(result.unwrap().resolve(&x.into()), Value::new(1));
     }
 
     #[test]
     fn debug_impl() {
-        let goal: Goal<I32> = lazy(Goal::succeed);
-        assert_ne!(format!("{:?}", goal), "")
+        let goal = lazy(|| Box::new(Succeed));
+        assert_ne!(format!("{goal:?}"), "")
     }
 }

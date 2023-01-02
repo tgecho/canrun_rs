@@ -1,59 +1,101 @@
-use crate::domains::DomainType;
+use crate::core::{
+    constraints::{resolve_1, Constraint, ResolveFn, VarWatch},
+    State, Unify, Value,
+};
 use crate::goals::Goal;
-use crate::state::constraints::{resolve_1, Constraint, ResolveFn, VarWatch};
-use crate::state::State;
-use crate::value::{IntoVal, Val};
-use std::fmt;
-use std::fmt::Debug;
+use std::fmt::{self, Debug};
 use std::rc::Rc;
 
-pub struct Assert1<'a, A: Debug> {
-    a: Val<A>,
-    f: Rc<dyn Fn(&A) -> bool + 'a>,
+/**
+A [projection goal](super) that succeeds if the resolved value passes
+an assertion test. Create with [`assert_1`].
+ */
+pub struct Assert1<T: Unify> {
+    a: Value<T>,
+    f: Rc<dyn Fn(&T) -> bool>,
+}
+
+impl<T: Unify> Clone for Assert1<T> {
+    fn clone(&self) -> Self {
+        Self {
+            a: self.a.clone(),
+            f: self.f.clone(),
+        }
+    }
 }
 
 /** Create a [projection goal](super) that succeeds if the resolved value passes
 an assertion test.
 
 ```
-use canrun::{Goal, both, unify, var, assert_1};
-use canrun::example::I32;
+use canrun::{LVar, Query};
+use canrun::goals::{assert_1, both, unify};
 
-let x = var();
-let goal: Goal<I32> = both(unify(1, x), assert_1(x, |x| *x < 2));
+let x = LVar::new();
+let goal = both(unify(1, x), assert_1(x, |x| *x < 2));
 let result: Vec<_> = goal.query(x).collect();
 assert_eq!(result, vec![1])
 ```
 */
-pub fn assert_1<'a, A, AV, D, F>(a: AV, func: F) -> Goal<'a, D>
+pub fn assert_1<T, A, F>(a: A, func: F) -> Assert1<T>
 where
-    A: Debug + 'a,
-    AV: IntoVal<A>,
-    D: DomainType<'a, A>,
-    F: Fn(&A) -> bool + 'a,
+    T: Unify,
+    A: Into<Value<T>>,
+    F: (Fn(&T) -> bool) + 'static,
 {
-    Goal::constraint(Assert1 {
-        a: a.into_val(),
+    Assert1 {
+        a: a.into(),
         f: Rc::new(func),
-    })
-}
-
-impl<'a, A, Dom> Constraint<'a, Dom> for Assert1<'a, A>
-where
-    A: Debug + 'a,
-    Dom: DomainType<'a, A>,
-{
-    fn attempt(&self, state: &State<'a, Dom>) -> Result<ResolveFn<'a, Dom>, VarWatch> {
-        let a = resolve_1(&self.a, state)?;
-        let assert = self.f.clone();
-        Ok(Box::new(
-            move |state| if assert(&*a) { Some(state) } else { None },
-        ))
     }
 }
 
-impl<'a, A: Debug> Debug for Assert1<'a, A> {
+impl<T: Unify> Debug for Assert1<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Assert1 {:?}", self.a)
+    }
+}
+
+impl<T: Unify> Constraint for Assert1<T> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+        let a = resolve_1(&self.a, state)?;
+        let assert = self.f.clone();
+        Ok(Box::new(move |state| {
+            if assert(a.as_ref()) {
+                Some(state)
+            } else {
+                None
+            }
+        }))
+    }
+}
+
+impl<T: Unify> Goal for Assert1<T> {
+    fn apply(&self, state: State) -> Option<State> {
+        state.constrain(Rc::new(self.clone()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        core::LVar,
+        core::Query,
+        goals::{both::both, unify},
+    };
+
+    use super::*;
+
+    #[test]
+    fn succeeds() {
+        let x = LVar::new();
+        let goal = both(unify(x, 2), assert_1(x, move |x| *x > 1));
+        assert_eq!(goal.query(x).collect::<Vec<_>>(), vec![2]);
+    }
+
+    #[test]
+    fn fails() {
+        let x = LVar::new();
+        let goal = both(unify(x, 1), assert_1(x, move |x| *x > 1));
+        assert_eq!(goal.query(x).count(), 0);
     }
 }

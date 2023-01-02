@@ -1,6 +1,4 @@
-#![warn(missing_docs)]
-
-/*! Collections and related [goal](crate::goals) functions.
+/*! Unifiable collections with supporting [goal](crate::goals) functions.
 
 # NOTE: These are not very battle tested and may be fatally flawed
 
@@ -11,4 +9,5 @@ be flat out wrong. More testing, benchmarking and refinement is required.
 */
 
 pub mod lmap;
+pub mod ltup;
 pub mod lvec;

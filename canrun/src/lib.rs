@@ -1,4 +1,5 @@
 #![warn(missing_docs)]
+#![warn(rustdoc::missing_crate_level_docs)]
 #![doc = include_str!("../README.md")]
 //! What's next? Go read a breakdown of this example in the deeper [Quick Start
 //! explanation](crate::docs::quickstart).
@@ -7,30 +8,11 @@
 pub mod docs;
 
 pub mod collections;
-pub mod domains;
-pub mod example;
+pub mod core;
 pub mod goals;
-mod impls;
-mod query;
-mod reify;
-pub mod state;
-mod unify;
+#[doc(hidden)]
 pub mod util;
-pub mod value;
 
+pub use crate::core::*;
 pub use collections::*;
-pub use domains::*;
-pub use goals::*;
-pub use impls::tuples::*;
-pub use query::*;
-pub use reify::*;
-pub use state::*;
-pub use unify::*;
-pub use value::*;
-
-#[cfg(test)]
-mod tests {
-    mod test_constrain;
-    mod test_fork;
-    mod test_unify;
-}
+pub use goals::{both, cmp, custom, either, lazy, ops, project, unify, Fail, Succeed};

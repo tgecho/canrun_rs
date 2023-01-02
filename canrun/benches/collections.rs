@@ -1,12 +1,10 @@
-use canrun::example::Collections;
-use canrun::lmap;
-use canrun::{both, unify, var, Goal};
+use canrun::{both, lmap, unify, LVar, Query};
 use criterion::{BenchmarkId, Criterion, Throughput};
 use std::ops::Range;
 
 fn range_lmap(range: Range<i32>) -> lmap::LMap<i32, i32> {
     range.fold(lmap::LMap::new(), |mut map, n| {
-        map.insert(var(), n);
+        map.insert(LVar::new(), n);
         map
     })
 }
@@ -25,10 +23,10 @@ pub fn unify_lmaps(c: &mut Criterion) {
             &size,
             |bench, size| {
                 bench.iter(|| {
-                    let x = var();
-                    let goal: Goal<Collections> = both(
-                        unify(x, range_lmap(0..*size)),
-                        unify(x, range_lmap(0..*size)),
+                    let x = LVar::new();
+                    let goal = both(
+                        unify(&x, range_lmap(0..*size)),
+                        unify(&x, range_lmap(0..*size)),
                     );
                     goal.query(x).next()
                 });
@@ -40,10 +38,10 @@ pub fn unify_lmaps(c: &mut Criterion) {
             &size,
             |bench, size| {
                 bench.iter(|| {
-                    let x = var();
-                    let goal: Goal<Collections> = both(
-                        unify(x, range_lmap(0..*size)),
-                        unify(x, range_lmap(0..*size)),
+                    let x = LVar::new();
+                    let goal = both(
+                        unify(&x, range_lmap(0..*size)),
+                        unify(&x, range_lmap(0..*size)),
                     );
                     let results: Vec<_> = goal.query(x).collect();
                     results
@@ -56,10 +54,10 @@ pub fn unify_lmaps(c: &mut Criterion) {
             &size,
             |bench, size| {
                 bench.iter(|| {
-                    let x = var();
-                    let goal: Goal<Collections> = both(
-                        unify(x, range_lmap(0..*size)),
-                        unify(x, range_lmap(*size..(size + size))),
+                    let x = LVar::new();
+                    let goal = both(
+                        unify(&x, range_lmap(0..*size)),
+                        unify(&x, range_lmap(*size..(size + size))),
                     );
                     goal.query(x).next()
                 });
@@ -71,10 +69,10 @@ pub fn unify_lmaps(c: &mut Criterion) {
             &size,
             |bench, size| {
                 bench.iter(|| {
-                    let x = var();
-                    let goal: Goal<Collections> = both(
-                        unify(x, range_lmap(0..*size)),
-                        unify(x, range_lmap(*size..(size + size))),
+                    let x = LVar::new();
+                    let goal = both(
+                        unify(&x, range_lmap(0..*size)),
+                        unify(&x, range_lmap(*size..(size + size))),
                     );
                     let results: Vec<_> = goal.query(x).collect();
                     results
