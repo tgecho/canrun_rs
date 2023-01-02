@@ -80,12 +80,6 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
     }
 }
 
-impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> Default for MKMVMap<K, V> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl<K: Eq + Hash + Clone + fmt::Debug, V> fmt::Debug for Value<K, V> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Value {:?} {:?}", self.id, self.keys)

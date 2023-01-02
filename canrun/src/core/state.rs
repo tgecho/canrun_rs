@@ -297,4 +297,15 @@ mod test {
             .collect::<Vec<_>>();
         assert_eq!(results, vec![Value::new(1), Value::new(2)]);
     }
+
+    #[test]
+    fn basic_apply() {
+        let x = LVar::new();
+        let state: State = State::new();
+        let results: Vec<_> = state
+            .apply(move |s| s.unify(&x.into(), &1.into()))
+            .query(x)
+            .collect();
+        assert_eq!(results, vec![1]);
+    }
 }

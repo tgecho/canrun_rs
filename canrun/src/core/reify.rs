@@ -110,3 +110,20 @@ macro_rules! impl_reify_clone {
 impl_reify_copy!(i8, i16, i32, i64, u8, u16, u32, u64, isize, usize, f32, f64);
 impl_reify_copy!(&'static str, bool, char);
 impl_reify_clone!(String);
+
+#[cfg(test)]
+mod tests {
+    use crate::{Reify, State, Value};
+
+    #[test]
+    fn reify_copy() {
+        let resolved = Value::new(1);
+        assert_eq!(resolved.reify_in(&State::new()), Some(1));
+    }
+
+    #[test]
+    fn reify_clone() {
+        let resolved = Value::new("foo".to_string());
+        assert_eq!(resolved.reify_in(&State::new()), Some("foo".to_string()));
+    }
+}
