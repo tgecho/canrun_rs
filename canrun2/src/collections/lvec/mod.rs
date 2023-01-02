@@ -2,10 +2,14 @@
 
 mod get;
 mod member;
+mod slice;
+mod subset;
 
 use crate::core::{Reify, State, Unify, Value};
 pub use get::{get, Get};
 pub use member::{member, Member};
+pub use slice::{slice, Slice};
+pub use subset::{subset, Subset};
 
 use std::rc::Rc;
 
@@ -16,6 +20,19 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub struct LVec<T: Unify> {
     vec: Vec<Value<T>>,
+}
+
+impl<T: Unify> LVec<T> {
+    /// Returns the number of elements in the LVec.
+    pub fn len(&self) -> usize {
+        self.vec.len()
+    }
+
+    /// Returns true if the LVec contains no elements.
+
+    pub fn is_empty(&self) -> bool {
+        self.vec.is_empty()
+    }
 }
 
 /** Create an [`LVec<T>`](crate::collections::lvec::LVec) with automatic `Into<Value<T>>` conversion.
@@ -59,6 +76,14 @@ impl<T: Unify + Reify> Reify for LVec<T> {
 impl<T: Unify> From<Vec<Value<T>>> for LVec<T> {
     fn from(vec: Vec<Value<T>>) -> Self {
         LVec { vec }
+    }
+}
+
+impl<T: Unify> From<&[Value<T>]> for LVec<T> {
+    fn from(slice: &[Value<T>]) -> Self {
+        LVec {
+            vec: slice.to_vec(),
+        }
     }
 }
 

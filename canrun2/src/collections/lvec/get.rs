@@ -114,6 +114,6 @@ mod tests {
     fn get_fails() {
         let x = LVar::new();
         let goal = get(x, 3, lvec![1, 2]);
-        assert_eq!(goal.query(x).collect::<Vec<_>>(), vec![]);
+        assert_eq!(goal.query(x).collect::<Vec<_>>(), vec![] as Vec<i32>);
     }
 }

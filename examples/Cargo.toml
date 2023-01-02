@@ -10,7 +10,7 @@ edition = "2021"
 rust-version = "1.60.0"
 
 [dependencies]
-canrun = { path = "../canrun"}
+canrun2 = { path = "../canrun2"}
 
 [dev-dependencies]
 env_logger = "0.10.0"

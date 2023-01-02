@@ -9,4 +9,5 @@ be flat out wrong. More testing, benchmarking and refinement is required.
 */
 
 pub mod lmap;
+pub mod ltup;
 pub mod lvec;
