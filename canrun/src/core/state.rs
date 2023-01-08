@@ -96,20 +96,6 @@ impl State {
         func(self)
     }
 
-    fn resolve_any<'a>(&'a self, val: &'a AnyVal) -> &'a AnyVal {
-        match val {
-            AnyVal::Var(var) => {
-                let resolved = self.values.get(var);
-                match resolved {
-                    Some(AnyVal::Var(found_var)) if found_var == var => val,
-                    Some(found) => self.resolve_any(found),
-                    None => val,
-                }
-            }
-            value => value,
-        }
-    }
-
     /** Recursively resolve a [`Value`] as far as the currently
     known variable bindings allow.
 
@@ -138,7 +124,7 @@ impl State {
     ```
     */
     pub fn resolve<T: Unify>(&self, val: &Value<T>) -> Value<T> {
-        self.resolve_any(&val.to_anyval())
+        resolve_any(&self.values, &val.to_anyval())
             .to_value()
             // I think this should be safe, so long as we are careful to only
             // store a var with the correct type internally.
@@ -259,6 +245,23 @@ impl State {
         T: Reify<Reified = R>,
     {
         value.reify_in(self)
+    }
+}
+
+pub(crate) fn resolve_any<'a>(
+    values: &'a im_rc::HashMap<VarId, AnyVal>,
+    val: &'a AnyVal,
+) -> &'a AnyVal {
+    match val {
+        AnyVal::Var(var) => {
+            let resolved = values.get(var);
+            match resolved {
+                Some(AnyVal::Var(found_var)) if found_var == var => val,
+                Some(found) => resolve_any(values, found),
+                None => val,
+            }
+        }
+        value => value,
     }
 }
 
