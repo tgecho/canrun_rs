@@ -160,6 +160,10 @@ impl AnyVal {
             }
         }
     }
+
+    pub fn is_resolved(&self) -> bool {
+        matches!(self, AnyVal::Resolved(_))
+    }
 }
 
 impl<T: Unify> From<LVar<T>> for Value<T> {

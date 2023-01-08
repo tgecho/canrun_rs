@@ -4,8 +4,8 @@ use std::rc::Rc;
 
 use crate::goals::Goal;
 use crate::{
-    constraints::{resolve_1, Constraint, ResolveFn, VarWatch},
-    core::{State, Unify, Value},
+    constraints::{resolve_1, Constraint, ResolveFn},
+    {LVarList, State, Unify, Value},
 };
 
 /** A [projection goal](super) that allows creating a new goal based on
@@ -58,7 +58,7 @@ impl<A: Unify> Goal for Project1<A> {
 }
 
 impl<A: Unify> Constraint for Project1<A> {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let a = resolve_1(&self.a, state)?;
         let goal = (self.f)(a);
         Ok(Box::new(move |state| goal.apply(state)))

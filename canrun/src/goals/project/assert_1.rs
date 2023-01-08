@@ -1,8 +1,7 @@
-use crate::core::{
-    constraints::{resolve_1, Constraint, ResolveFn, VarWatch},
-    State, Unify, Value,
+use crate::{
+    constraints::{resolve_1, Constraint, ResolveFn},
+    Goal, LVarList, State, Unify, Value,
 };
-use crate::goals::Goal;
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
@@ -56,7 +55,7 @@ impl<T: Unify> Debug for Assert1<T> {
 }
 
 impl<T: Unify> Constraint for Assert1<T> {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let a = resolve_1(&self.a, state)?;
         let assert = self.f.clone();
         Ok(Box::new(move |state| {

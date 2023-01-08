@@ -1,7 +1,7 @@
-use crate::constraints::{resolve_2, Constraint, ResolveFn, VarWatch};
+use crate::constraints::{resolve_2, Constraint, ResolveFn};
 use crate::goals::{unify, Goal};
 use crate::lvec::LVec;
-use crate::{State, Unify, Value};
+use crate::{LVarList, State, Unify, Value};
 use std::fmt::Debug;
 use std::ops::Range;
 use std::rc::Rc;
@@ -68,7 +68,7 @@ impl<T: Unify> Constraint for Slice<T>
 where
     T: Unify,
 {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let (range, collection) = resolve_2(&self.range, &self.collection, state)?;
         let slice_a = self.slice.clone();
         let slice_b = collection.vec.get((*range).clone());

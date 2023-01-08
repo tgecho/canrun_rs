@@ -1,9 +1,11 @@
+use itertools::Itertools;
+
 use super::mkmvmap::MKMVMap;
 
 use super::constraints::Constraint;
 use crate::{
     core::{AnyVal, Fork, Unify, Value, VarId},
-    ReadyState,
+    LVarList, ReadyState,
 };
 use std::rc::Rc;
 
@@ -221,6 +223,17 @@ impl State {
         Some(self)
     }
 
+    /**
+    Generate a list of [`LVar`](crate::LVar)s in this state. This takes into account bound variables
+    and constraint watches.
+    */
+    pub fn vars(&self) -> LVarList {
+        let vars = self.values.keys();
+        let watched_ids = self.constraints.keys();
+        let ids: Vec<_> = vars.chain(watched_ids).unique().copied().collect();
+        LVarList(ids)
+    }
+
     /** Returns `true` if the `State` has no open forks or constraints.
 
     If ready, then a [`ReadyState`] can be derived with [`State::ready()`]. */
@@ -262,7 +275,10 @@ impl Default for State {
 
 #[cfg(test)]
 mod test {
-    use crate::core::*;
+    use crate::{
+        core::*,
+        goals::{assert_1, Goal},
+    };
 
     use super::*;
 
@@ -299,5 +315,24 @@ mod test {
             .query(x)
             .collect();
         assert_eq!(results, vec![1]);
+    }
+
+    #[test]
+    fn unify_vars() {
+        let x = LVar::new();
+        let state: State = State::new();
+        let results = state
+            .apply(move |s| s.unify(&x.into(), &1.into()))
+            .unwrap()
+            .vars();
+        assert_eq!(results.0, vec![x.id]);
+    }
+
+    #[test]
+    fn constraint_vars() {
+        let x: LVar<usize> = LVar::new();
+        let state: State = State::new();
+        let results = assert_1(x, |x| *x == 1).apply(state).unwrap().vars();
+        assert_eq!(results.0, vec![x.id]);
     }
 }

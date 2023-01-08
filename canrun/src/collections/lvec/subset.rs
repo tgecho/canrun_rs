@@ -1,7 +1,7 @@
-use crate::constraints::{resolve_2, Constraint, ResolveFn, VarWatch};
+use crate::constraints::{resolve_2, Constraint, ResolveFn};
 use crate::goals::{unify, Any, Goal};
 use crate::lvec::LVec;
-use crate::{State, Unify, Value};
+use crate::{LVarList, State, Unify, Value};
 use std::fmt::Debug;
 use std::iter::repeat;
 use std::rc::Rc;
@@ -64,7 +64,7 @@ impl<T: Unify> Goal for Subset<T> {
 }
 
 impl<T: Unify> Constraint for Subset<T> {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let (subset, collection) = resolve_2(&self.subset, &self.collection, state)?;
 
         let col_size = collection.len();

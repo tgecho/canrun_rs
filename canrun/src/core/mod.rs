@@ -2,6 +2,7 @@
 
 pub mod constraints;
 mod fork;
+mod lvarlist;
 mod mkmvmap;
 mod query;
 mod ready_state;
@@ -12,6 +13,7 @@ mod unify;
 mod value;
 
 pub use fork::*;
+pub use lvarlist::*;
 pub use query::*;
 pub use ready_state::*;
 pub use reify::*;

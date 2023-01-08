@@ -1,9 +1,12 @@
-//! Run code when [`variables`](LVar) are resolved.
+//! Run code when [`variables`](crate::LVar) are resolved.
 
-use std::{fmt::Debug, rc::Rc};
+use std::rc::Rc;
 
 use super::{State, Unify};
-use crate::core::{LVar, Value, Value::*, VarId};
+use crate::{
+    core::{Value, Value::*},
+    LVarList,
+};
 
 /**
 An alias for the function that should be returned by a successful
@@ -11,31 +14,10 @@ An alias for the function that should be returned by a successful
 */
 pub type ResolveFn = Box<dyn FnOnce(State) -> Option<State>>;
 
-/**
-A set of variables to watch on behalf of a [`Constraint`].
-
-Consider generating this with the [`resolve_1`], [`resolve_2`], [`OneOfTwo`]
-or [`TwoOfThree`] helpers.
-*/
-#[derive(Debug)]
-pub struct VarWatch(pub(crate) Vec<VarId>);
-
-impl VarWatch {
-    /// Watch one [`LVar`] for changes in a [`Constraint`].
-    pub fn one<A>(a: LVar<A>) -> Self {
-        VarWatch(vec![a.id])
-    }
-
-    /// Watch two [`LVar`]s for changes in a [`Constraint`].
-    pub fn two<A, B>(a: LVar<A>, b: LVar<B>) -> Self {
-        VarWatch(vec![a.id, b.id])
-    }
-}
-
-/** Update a [`State`] whenever one or more [`LVar`]s are resolved.
+/** Update a [`State`] whenever one or more [`crate::LVar`]s are resolved.
 
 The [`Constraint::attempt`] function will be run when it is initially added.
-Returning a [`Err([VarWatch])`](VarWatch) signals that the constraint is not
+Returning a [`Err([LVarList])`](LVarList) signals that the constraint is not
 satisfied. The constraint will be re-attempted when one of the specified
 variables is bound to another value.
 
@@ -44,14 +26,14 @@ functions.
 
 # NOTE:
 The [`attempt`](Constraint::attempt) function must take care to [fully
-resolve](State::resolve) any variables before creating a [`VarWatch`].
+resolve](State::resolve) any variables before creating a [`LVarList`].
 The [`resolve_1`], [`resolve_2`], [`OneOfTwo`] and [`TwoOfThree`]
-helpers can simplify handling this (plus returning the [`VarWatch`]).
+helpers can simplify handling this (plus returning the [`LVarList`]).
 
 # Example:
 ```
-use canrun::{State, Unify, Query, Value};
-use canrun::constraints::{Constraint, resolve_1, ResolveFn, VarWatch};
+use canrun::{State, Unify, Query, Value, LVarList};
+use canrun::constraints::{Constraint, resolve_1, ResolveFn};
 use std::rc::Rc;
 
 struct Assert<T: Unify> {
@@ -61,7 +43,7 @@ struct Assert<T: Unify> {
 
 impl<T: Unify> Constraint for Assert<T>
 {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let resolved = resolve_1(&self.val, state)?;
         let assert = self.assert.clone();
         Ok(Box::new(
@@ -87,35 +69,35 @@ assert_eq!(results, vec![2]);
 pub trait Constraint {
     /// Resolve required variables in a state and resubscribe or request to
     /// update the state.
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch>;
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList>;
 }
 
-/// Resolve one [`Value`] or return an [`Err(VarWatch)`](VarWatch) in a
+/// Resolve one [`Value`] or return an [`Err(LVarList)`](LVarList) in a
 /// [`Constraint`].
-pub fn resolve_1<A: Unify>(val: &Value<A>, state: &State) -> Result<Rc<A>, VarWatch> {
+pub fn resolve_1<A: Unify>(val: &Value<A>, state: &State) -> Result<Rc<A>, LVarList> {
     match state.resolve(val) {
         Resolved(a) => Ok(a),
-        Var(var) => Err(VarWatch::one(var)),
+        Var(var) => Err(LVarList::one(var)),
     }
 }
 
-/// Resolve two [`Value`]s or return an [`Err(VarWatch)`](VarWatch) in a
+/// Resolve two [`Value`]s or return an [`Err(LVarList)`](LVarList) in a
 /// [`Constraint`].
 pub fn resolve_2<A: Unify, B: Unify>(
     a: &Value<A>,
     b: &Value<B>,
     state: &State,
-) -> Result<(Rc<A>, Rc<B>), VarWatch> {
+) -> Result<(Rc<A>, Rc<B>), LVarList> {
     let a = state.resolve(a);
     let b = state.resolve(b);
     match (a, b) {
         (Resolved(a), Resolved(b)) => Ok((a, b)),
-        (Var(var), _) => Err(VarWatch::one(var)),
-        (_, Var(var)) => Err(VarWatch::one(var)),
+        (Var(var), _) => Err(LVarList::one(var)),
+        (_, Var(var)) => Err(LVarList::one(var)),
     }
 }
 
-/// Resolve one out of two [`Value`]s or return an [`Err(VarWatch)`](VarWatch) in
+/// Resolve one out of two [`Value`]s or return an [`Err(LVarList)`](LVarList) in
 /// a [`Constraint`].
 pub enum OneOfTwo<A: Unify, B: Unify> {
     /// Returned when the first [`Value`] is successfully resolved.
@@ -126,18 +108,18 @@ pub enum OneOfTwo<A: Unify, B: Unify> {
 
 impl<A: Unify, B: Unify> OneOfTwo<A, B> {
     /// Attempt to resolve a [`OneOfTwo`] enum from a [`State`].
-    pub fn resolve(a: &Value<A>, b: &Value<B>, state: &State) -> Result<OneOfTwo<A, B>, VarWatch> {
+    pub fn resolve(a: &Value<A>, b: &Value<B>, state: &State) -> Result<OneOfTwo<A, B>, LVarList> {
         let a = state.resolve(a);
         let b = state.resolve(b);
         match (a, b) {
             (Resolved(a), b) => Ok(OneOfTwo::A(a, b)),
             (a, Resolved(b)) => Ok(OneOfTwo::B(a, b)),
-            (Var(a), Var(b)) => Err(VarWatch::two(a, b)),
+            (Var(a), Var(b)) => Err(LVarList::two(a, b)),
         }
     }
 }
 
-/// Resolve two out of three [`Value`]s or return an [`Err(VarWatch)`](VarWatch)
+/// Resolve two out of three [`Value`]s or return an [`Err(LVarList)`](LVarList)
 /// in a [`Constraint`].
 pub enum TwoOfThree<A: Unify, B: Unify, C: Unify> {
     /// Returned when the first and second [`Value`]s are successfully resolved.
@@ -155,7 +137,7 @@ impl<A: Unify, B: Unify, C: Unify> TwoOfThree<A, B, C> {
         b: &Value<B>,
         c: &Value<C>,
         state: &State,
-    ) -> Result<TwoOfThree<A, B, C>, VarWatch> {
+    ) -> Result<TwoOfThree<A, B, C>, LVarList> {
         let a = state.resolve(a);
         let b = state.resolve(b);
         let c = state.resolve(c);
@@ -163,9 +145,9 @@ impl<A: Unify, B: Unify, C: Unify> TwoOfThree<A, B, C> {
             (Resolved(a), Resolved(b), c) => Ok(TwoOfThree::AB(a, b, c)),
             (a, Resolved(b), Resolved(c)) => Ok(TwoOfThree::BC(a, b, c)),
             (Resolved(a), b, Resolved(c)) => Ok(TwoOfThree::AC(a, b, c)),
-            (Var(a), Var(b), _) => Err(VarWatch::two(a, b)),
-            (Var(a), _, Var(c)) => Err(VarWatch::two(a, c)),
-            (_, Var(b), Var(c)) => Err(VarWatch::two(b, c)),
+            (Var(a), Var(b), _) => Err(LVarList::two(a, b)),
+            (Var(a), _, Var(c)) => Err(LVarList::two(a, c)),
+            (_, Var(b), Var(c)) => Err(LVarList::two(b, c)),
         }
     }
 }
