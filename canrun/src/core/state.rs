@@ -3,7 +3,7 @@ use super::mkmvmap::MKMVMap;
 use super::constraints::Constraint;
 use crate::{
     core::{AnyVal, Fork, Unify, Value, VarId},
-    Reify,
+    ReadyState,
 };
 use std::rc::Rc;
 
@@ -221,30 +221,19 @@ impl State {
         Some(self)
     }
 
-    /** Attempt to [reify](crate::core::Reify) the value of a [logic
-    variable](crate::core::LVar) in a state.
+    /** Returns `true` if the `State` has no open forks or constraints.
 
-    # Example:
-    ```
-    use canrun::{State, StateIterator, Value, LVar};
-
-    let x = LVar::new();
-
-    let state = State::new()
-        .unify(&x.into(), &Value::new(1));
-
-    let results: Vec<_> = state.into_states()
-        .map(|resolved| resolved.reify(x))
-        .collect();
-
-    assert_eq!(results, vec![Some(1)]);
-    ```
-    */
-    pub fn reify<T, R>(&self, value: T) -> Option<R>
-    where
-        T: Reify<Reified = R>,
-    {
-        value.reify_in(self)
+    If ready, then a [`ReadyState`] can be derived with [`State::ready()`]. */
+    pub fn is_ready(&self) -> bool {
+        self.forks.is_empty() && self.constraints.is_empty()
+    }
+    /** Returns a [`ReadyState`] if the `State` has no open forks or constraints. */
+    pub fn ready(self) -> Option<ReadyState> {
+        if self.is_ready() {
+            Some(ReadyState::new(self.values))
+        } else {
+            None
+        }
     }
 }
 

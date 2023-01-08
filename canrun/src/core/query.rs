@@ -9,11 +9,16 @@ resolved states.
 [`.query()`](Query::query()) on them with any type that implements
 [`Reify`].
 
-This is a convenient wrapper around the common pattern of obtaining a [`StateIter`](crate::core::StateIter), calling
-[`.reify(query)`](crate::core::State::reify()) on each state and returning only the
+This is a convenient wrapper around the common pattern of obtaining a
+[`StateIter`](crate::core::StateIter), making sure each resulting state is
+[`.ready()`](crate::State::ready), and calling
+[`.reify(query)`](crate::core::ReadyState::reify()) to return only the
 valid, fully resolved results. Query is implemented on a variety of
 [`State`](crate::State) related types, allowing it to be used in many
 contexts.
+
+If a state is not ready (meaning it has open forks and/or constraints still
+waiting for variables to be resolved) it will not be returned by the query.
 
 A blanket impl covers anything that implements [`StateIterator`], so many
 types including [`Goal`](crate::goals) and [`State`](crate::State) are
@@ -21,7 +26,11 @@ queryable.
 */
 pub trait Query<'a> {
     /**
-    Get [reified](crate::core::Reify) results from things that can produce [`StateIter`](crate::core::StateIter)s.
+    Get [reified](crate::core::Reify) results from things that can produce
+    [`StateIter`](crate::core::StateIter)s.
+
+    This will call [`State::ready()`](crate::State::ready) internally, so results will not be returned
+    from states with unresolved constraints.
 
     # Examples:
 
@@ -55,7 +64,7 @@ impl<'a, S: StateIterator + 'a> Query<'a> for S {
     fn query<Q: Reify + 'a>(self, query: Q) -> Box<dyn Iterator<Item = Q::Reified> + 'a> {
         Box::new(
             self.into_states()
-                .filter_map(move |resolved| query.reify_in(&resolved)),
+                .filter_map(move |s| query.reify_in(&s.ready()?)),
         )
     }
 }
