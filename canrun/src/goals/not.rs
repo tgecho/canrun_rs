@@ -30,12 +30,25 @@ result state is a success, it adds a constraint that will continue checking unti
 sub-goal has no unresolved variables or open constraints. At this point, if it succeeds
 at least once, the outer `Not` will fail.
 
-## Caveats
+# Examples
+```
+use canrun::{State, Query, LVar, all, any, unify, not};
+
+let x = LVar::new();
+let goal = all![
+    any![unify(x, 1), unify(x, 2)],
+    not(unify(x, 1)),
+];
+let results: Vec<_> = goal.query(x).collect();
+assert_eq!(results, vec![2]);
+```
+
+# Caveats
 This is a somewhat recurring complication in the logic programming world, and I can't claim
 a very deep understanding of the space. I have not yet found this approach to yield incorrect
 results, but, well... proving a negative is hard!
 
-## Performance considerations
+# Performance considerations
 This goal will do a speculative fork of the outer state in an attempt to search for success
 states. It will short circuit as soon as one is found, but this could be a lot of computation
 depending on the complexity of the outer state.
