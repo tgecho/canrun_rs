@@ -1,7 +1,7 @@
 use crate::goals::Goal;
 use crate::{
-    constraints::{resolve_2, Constraint, ResolveFn, VarWatch},
-    core::{State, Unify, Value},
+    constraints::{resolve_2, Constraint, ResolveFn},
+    {LVarList, State, Unify, Value},
 };
 use std::fmt::{self, Debug};
 use std::rc::Rc;
@@ -65,7 +65,7 @@ impl<A: Unify, B: Unify> Debug for Assert2<A, B> {
 }
 
 impl<A: Unify, B: Unify> Constraint for Assert2<A, B> {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let (a, b) = resolve_2(&self.a, &self.b, state)?;
         let assert = self.f.clone();
         Ok(Box::new(move |state| {

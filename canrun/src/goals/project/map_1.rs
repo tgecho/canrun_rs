@@ -1,8 +1,8 @@
 use crate::constraints::OneOfTwo;
 use crate::goals::Goal;
 use crate::{
-    constraints::{Constraint, ResolveFn, VarWatch},
-    core::{State, Unify, Value},
+    constraints::{Constraint, ResolveFn},
+    {LVarList, State, Unify, Value},
 };
 use std::fmt::{self, Debug};
 use std::rc::Rc;
@@ -77,7 +77,7 @@ impl<A: Unify, B: Unify> Goal for Map1<A, B> {
 }
 
 impl<A: Unify, B: Unify> Constraint for Map1<A, B> {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let resolved = OneOfTwo::resolve(&self.a, &self.b, state)?;
         match resolved {
             OneOfTwo::A(a, b) => {

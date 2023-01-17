@@ -1,8 +1,8 @@
 use crate::constraints::TwoOfThree;
 use crate::goals::Goal;
 use crate::{
-    constraints::{Constraint, ResolveFn, VarWatch},
-    core::{State, Unify, Value},
+    constraints::{Constraint, ResolveFn},
+    {LVarList, State, Unify, Value},
 };
 use std::fmt::{self, Debug};
 use std::rc::Rc;
@@ -95,7 +95,7 @@ impl<A: Unify, B: Unify, C: Unify> Goal for Map2<A, B, C> {
 }
 
 impl<A: Unify, B: Unify, C: Unify> Constraint for Map2<A, B, C> {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let resolved = TwoOfThree::resolve(&self.a, &self.b, &self.c, state)?;
         match resolved {
             TwoOfThree::AB(a, b, c) => {

@@ -1,9 +1,11 @@
+use itertools::Itertools;
+
 use super::mkmvmap::MKMVMap;
 
 use super::constraints::Constraint;
 use crate::{
     core::{AnyVal, Fork, Unify, Value, VarId},
-    Reify,
+    LVarList, ReadyState,
 };
 use std::rc::Rc;
 
@@ -96,20 +98,6 @@ impl State {
         func(self)
     }
 
-    fn resolve_any<'a>(&'a self, val: &'a AnyVal) -> &'a AnyVal {
-        match val {
-            AnyVal::Var(var) => {
-                let resolved = self.values.get(var);
-                match resolved {
-                    Some(AnyVal::Var(found_var)) if found_var == var => val,
-                    Some(found) => self.resolve_any(found),
-                    None => val,
-                }
-            }
-            value => value,
-        }
-    }
-
     /** Recursively resolve a [`Value`] as far as the currently
     known variable bindings allow.
 
@@ -138,7 +126,7 @@ impl State {
     ```
     */
     pub fn resolve<T: Unify>(&self, val: &Value<T>) -> Value<T> {
-        self.resolve_any(&val.to_anyval())
+        resolve_any(&self.values, &val.to_anyval())
             .to_value()
             // I think this should be safe, so long as we are careful to only
             // store a var with the correct type internally.
@@ -235,30 +223,47 @@ impl State {
         Some(self)
     }
 
-    /** Attempt to [reify](crate::core::Reify) the value of a [logic
-    variable](crate::core::LVar) in a state.
-
-    # Example:
-    ```
-    use canrun::{State, StateIterator, Value, LVar};
-
-    let x = LVar::new();
-
-    let state = State::new()
-        .unify(&x.into(), &Value::new(1));
-
-    let results: Vec<_> = state.into_states()
-        .map(|resolved| resolved.reify(x))
-        .collect();
-
-    assert_eq!(results, vec![Some(1)]);
-    ```
+    /**
+    Generate a list of [`LVar`](crate::LVar)s in this state. This takes into account bound variables
+    and constraint watches.
     */
-    pub fn reify<T, R>(&self, value: T) -> Option<R>
-    where
-        T: Reify<Reified = R>,
-    {
-        value.reify_in(self)
+    pub fn vars(&self) -> LVarList {
+        let vars = self.values.keys();
+        let watched_ids = self.constraints.keys();
+        let ids: Vec<_> = vars.chain(watched_ids).unique().copied().collect();
+        LVarList(ids)
+    }
+
+    /** Returns `true` if the `State` has no open forks or constraints.
+
+    If ready, then a [`ReadyState`] can be derived with [`State::ready()`]. */
+    pub fn is_ready(&self) -> bool {
+        self.forks.is_empty() && self.constraints.is_empty()
+    }
+    /** Returns a [`ReadyState`] if the `State` has no open forks or constraints. */
+    pub fn ready(self) -> Option<ReadyState> {
+        if self.is_ready() {
+            Some(ReadyState::new(self.values))
+        } else {
+            None
+        }
+    }
+}
+
+pub(crate) fn resolve_any<'a>(
+    values: &'a im_rc::HashMap<VarId, AnyVal>,
+    val: &'a AnyVal,
+) -> &'a AnyVal {
+    match val {
+        AnyVal::Var(var) => {
+            let resolved = values.get(var);
+            match resolved {
+                Some(AnyVal::Var(found_var)) if found_var == var => val,
+                Some(found) => resolve_any(values, found),
+                None => val,
+            }
+        }
+        value => value,
     }
 }
 
@@ -270,7 +275,10 @@ impl Default for State {
 
 #[cfg(test)]
 mod test {
-    use crate::core::*;
+    use crate::{
+        core::*,
+        goals::{assert_1, Goal},
+    };
 
     use super::*;
 
@@ -307,5 +315,24 @@ mod test {
             .query(x)
             .collect();
         assert_eq!(results, vec![1]);
+    }
+
+    #[test]
+    fn unify_vars() {
+        let x = LVar::new();
+        let state: State = State::new();
+        let results = state
+            .apply(move |s| s.unify(&x.into(), &1.into()))
+            .unwrap()
+            .vars();
+        assert_eq!(results.0, vec![x.id]);
+    }
+
+    #[test]
+    fn constraint_vars() {
+        let x: LVar<usize> = LVar::new();
+        let state: State = State::new();
+        let results = assert_1(x, |x| *x == 1).apply(state).unwrap().vars();
+        assert_eq!(results.0, vec![x.id]);
     }
 }

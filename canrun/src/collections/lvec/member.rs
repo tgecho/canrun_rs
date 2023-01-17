@@ -1,6 +1,6 @@
 use crate::core::{
-    constraints::{resolve_1, Constraint, ResolveFn, VarWatch},
-    State, Unify, Value,
+    constraints::{resolve_1, Constraint, ResolveFn},
+    LVarList, State, Unify, Value,
 };
 use crate::goals::unify;
 use crate::goals::Any;
@@ -78,7 +78,7 @@ impl<T: Unify> Clone for Member<T> {
 }
 
 impl<T: Unify> Constraint for Member<T> {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let collection = resolve_1(&self.collection, state)?;
         let any = collection
             .vec

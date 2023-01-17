@@ -1,8 +1,11 @@
-use super::{State, Unify};
-use crate::core::{LVar, Value};
+use super::Unify;
+use crate::{
+    core::{LVar, Value},
+    ReadyState,
+};
 
 /**
-Extract a fully resolved `T` from a [`Value<T>`](Value) associated with a [`State`].
+Extract a fully resolved `T` from a [`Value<T>`](Value) associated with a [`State`](crate::State).
 
 Used by [Query](crate::Query) to ensure that result values are fully and
 recursively resolved.
@@ -12,7 +15,7 @@ pub trait Reify {
     type Reified;
 
     /**
-    Extract a reified `Self` from a compatible [`State`]. This trait is usually
+    Extract a reified `Self` from a compatible [`State`](crate::State). This trait is usually
     used indirectly through the [`Query`](crate::Query) trait.
 
     # Examples:
@@ -22,6 +25,7 @@ pub trait Reify {
     use canrun::{Value, Reify, StateIterator, State};
     State::new()
         .into_states()
+        .filter_map(|s| s.ready())
         .for_each(|state| {
             let x = Value::new(1);
             // This value is already resolved, so we simply get it back.
@@ -35,6 +39,7 @@ pub trait Reify {
     # use canrun::{Value, Reify, StateIterator, State};
     State::new()
         .into_states()
+        .filter_map(|s| s.ready())
         .for_each(|state| {
             let x = (Value::new(1), Value::new(2));
             assert_eq!(x.reify_in(&state), Some((1, 2)));
@@ -47,6 +52,7 @@ pub trait Reify {
     # use canrun::{Value, Reify, StateIterator, State};
     State::new()
         .into_states()
+        .filter_map(|s| s.ready())
         .for_each(|state| {
             let x: Value<usize> = Value::var();
             assert_eq!(x.reify_in(&state), None);
@@ -58,6 +64,7 @@ pub trait Reify {
     # use canrun::{Value, Reify, StateIterator, State};
     State::new()
         .into_states()
+        .filter_map(|s| s.ready())
         .for_each(|state| {
             let x: Value<i32> = Value::var();
             let y = (x, Value::new(2));
@@ -65,19 +72,19 @@ pub trait Reify {
         });
     ```
     */
-    fn reify_in(&self, state: &State) -> Option<Self::Reified>;
+    fn reify_in(&self, state: &ReadyState) -> Option<Self::Reified>;
 }
 
 impl<T: Unify + Reify> Reify for Value<T> {
     type Reified = T::Reified;
-    fn reify_in(&self, state: &State) -> Option<Self::Reified> {
+    fn reify_in(&self, state: &ReadyState) -> Option<Self::Reified> {
         state.resolve(self).resolved()?.reify_in(state)
     }
 }
 
 impl<T: Unify + Reify> Reify for LVar<T> {
     type Reified = T::Reified;
-    fn reify_in(&self, state: &State) -> Option<Self::Reified> {
+    fn reify_in(&self, state: &ReadyState) -> Option<Self::Reified> {
         state.resolve(&self.into()).resolved()?.reify_in(state)
     }
 }
@@ -87,7 +94,7 @@ macro_rules! impl_reify_copy {
         $(
             impl Reify for $type {
                 type Reified = $type;
-                fn reify_in(&self, _: &State) -> Option<$type> {
+                fn reify_in(&self, _: &ReadyState) -> Option<$type> {
                     Some(*self)
                 }
             }
@@ -99,7 +106,7 @@ macro_rules! impl_reify_clone {
         $(
             impl Reify for $type {
                 type Reified = $type;
-                fn reify_in(&self, _: &State) -> Option<$type> {
+                fn reify_in(&self, _: &ReadyState) -> Option<$type> {
                     Some(self.clone())
                 }
             }
@@ -118,12 +125,15 @@ mod tests {
     #[test]
     fn reify_copy() {
         let resolved = Value::new(1);
-        assert_eq!(resolved.reify_in(&State::new()), Some(1));
+        assert_eq!(resolved.reify_in(&State::new().ready().unwrap()), Some(1));
     }
 
     #[test]
     fn reify_clone() {
         let resolved = Value::new("foo".to_string());
-        assert_eq!(resolved.reify_in(&State::new()), Some("foo".to_string()));
+        assert_eq!(
+            resolved.reify_in(&State::new().ready().unwrap()),
+            Some("foo".to_string())
+        );
     }
 }

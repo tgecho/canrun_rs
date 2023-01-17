@@ -61,7 +61,9 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
                 // This attempts to be "correct" by cleaning up all of the ids
                 // when a value is extracted, but this does mean doing a fair
                 // amount of work every time. In theory we could one not bother
-                // and would only pay a minor cost skipping over the garbage.
+                // and would only pay a minor cost skipping over the garbage,
+                // except we have some other areas that depend on this being an
+                // accurate reflection of what is actually being watched.
                 self.keys = self.keys.alter(
                     |existing| {
                         let updated = existing?.without(&value.id);
@@ -77,6 +79,14 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
             }
         }
         Some(values)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.keys.is_empty()
+    }
+
+    pub fn keys(&self) -> impl Iterator<Item = &K> {
+        self.keys.keys()
     }
 }
 

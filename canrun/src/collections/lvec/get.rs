@@ -1,8 +1,8 @@
 use super::LVec;
 use crate::{
     core::{
-        constraints::{resolve_2, Constraint, ResolveFn, VarWatch},
-        State, Unify, Value,
+        constraints::{resolve_2, Constraint, ResolveFn},
+        LVarList, State, Unify, Value,
     },
     goals::Goal,
 };
@@ -69,7 +69,7 @@ impl<T: Unify> Goal for Get<T> {
 }
 
 impl<T: Unify> Constraint for Get<T> {
-    fn attempt(&self, state: &State) -> Result<ResolveFn, VarWatch> {
+    fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         let (index, collection) = resolve_2(&self.index, &self.collection, state)?;
         let item = self.item.clone();
         let found = collection.vec.get(*index);

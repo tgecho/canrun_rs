@@ -138,7 +138,7 @@ where
     Vv: Unify + Reify<Reified = Vr>,
 {
     type Reified = HashMap<Kr, Vr>;
-    fn reify_in(&self, state: &State) -> Option<Self::Reified> {
+    fn reify_in(&self, state: &ReadyState) -> Option<Self::Reified> {
         let LMap { map } = self;
         let init = HashMap::with_capacity(map.len());
         map.iter().try_fold(init, |mut map, (k, v)| {
@@ -178,7 +178,7 @@ macro_rules! lmap {
 #[doc(inline)]
 pub use lmap;
 
-use crate::{Fork, Reify, State, StateIter, Unify, Value};
+use crate::{Fork, ReadyState, Reify, State, StateIter, Unify, Value};
 
 #[cfg(test)]
 mod tests {
