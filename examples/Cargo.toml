@@ -14,7 +14,7 @@ canrun = { path = "../canrun"}
 
 [dev-dependencies]
 env_logger = "0.10.0"
-criterion = "0.4.0"
+criterion = "0.5.1"
 
 [[bench]]
 name = "main"
