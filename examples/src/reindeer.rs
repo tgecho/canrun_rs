@@ -1,5 +1,5 @@
 //! A port of the puzzle from
-//! https://gist.github.com/Spuffynism/446c7c2d498477491d8137e8f234d4a9
+//! <https://gist.github.com/Spuffynism/446c7c2d498477491d8137e8f234d4a9>
 //!
 //! This is based on the "nicer" implentation, where we (mostly) just need to
 //! define the `lt` and `gt relationships between the reindeer.

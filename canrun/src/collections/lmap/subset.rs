@@ -10,7 +10,7 @@ use super::{unify_entries, LMap};
 /** Assert that [`LMap`] `a` is a subset of [`LMap`] `b`.
 
 This means that all of the keys in `a` unify with keys in `b` AND the
-corresponding values also unify. This is the opposite of [`superset`](crate::lmap::superset).
+corresponding values also unify. This is the opposite of [`superset`](crate::lmap::superset::superset).
 
 # Example:
 ```

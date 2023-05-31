@@ -8,7 +8,7 @@ use super::{subset, LMap};
 Assert that [`LMap`] `a` is a superset of [`LMap`] `b`.
 
 This means that all of the keys in `b` unify with keys in `a` AND the
-corresponding values also unify. This is the opposite of [`subset`](crate::lmap::subset).
+corresponding values also unify. This is the opposite of [`subset`](crate::lmap::subset::subset).
 
 # Example:
 ```
