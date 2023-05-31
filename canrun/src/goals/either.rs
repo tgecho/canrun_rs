@@ -85,7 +85,7 @@ mod test {
     fn either_succeed() {
         let state = State::new();
         let goal = either(Succeed, Succeed);
-        let result = Box::new(goal).apply(state);
+        let result = goal.apply(state);
         assert_eq!(result.into_states().count(), 2);
     }
 
@@ -93,7 +93,7 @@ mod test {
     fn either_succeed_or_fail() {
         let state = State::new();
         let goal = either(Succeed, Fail);
-        let result = Box::new(goal).apply(state);
+        let result = goal.apply(state);
         assert_eq!(result.into_states().count(), 1);
     }
 
@@ -101,7 +101,7 @@ mod test {
     fn either_fail_or_succeed() {
         let state = State::new();
         let goal = either(Fail, Succeed);
-        let result = Box::new(goal).apply(state);
+        let result = goal.apply(state);
         assert_eq!(result.into_states().count(), 1);
     }
 
@@ -109,7 +109,7 @@ mod test {
     fn either_fail() {
         let state = State::new();
         let goal = either(Fail, Fail);
-        let result = Box::new(goal).apply(state);
+        let result = goal.apply(state);
         assert_eq!(result.into_states().count(), 0);
     }
 }
