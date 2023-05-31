@@ -4,7 +4,10 @@ use std::rc::Rc;
 
 use super::{State, Unify};
 use crate::{
-    core::{Value, Value::*},
+    core::{
+        Value,
+        Value::{Resolved, Var},
+    },
     LVarList,
 };
 
@@ -69,20 +72,30 @@ assert_eq!(results, vec![2]);
 pub trait Constraint {
     /// Resolve required variables in a state and resubscribe or request to
     /// update the state.
+    ///
+    /// # Errors
+    /// Will return a list of unresolved variables required to check the
+    /// constraint.
     fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList>;
 }
 
 /// Resolve one [`Value`] or return an [`Err(LVarList)`](LVarList) in a
 /// [`Constraint`].
+///
+/// # Errors
+/// Returns a list containing the single [`LVar`] if it is still unresolved.
 pub fn resolve_1<A: Unify>(val: &Value<A>, state: &State) -> Result<Rc<A>, LVarList> {
     match state.resolve(val) {
         Resolved(a) => Ok(a),
-        Var(var) => Err(LVarList::one(var)),
+        Var(unresolved) => Err(LVarList::one(&unresolved)),
     }
 }
 
 /// Resolve two [`Value`]s or return an [`Err(LVarList)`](LVarList) in a
 /// [`Constraint`].
+///
+/// # Errors
+/// Returns a list with either or both [`LVar`]s if they are still unresolved.
 pub fn resolve_2<A: Unify, B: Unify>(
     a: &Value<A>,
     b: &Value<B>,
@@ -92,8 +105,8 @@ pub fn resolve_2<A: Unify, B: Unify>(
     let b = state.resolve(b);
     match (a, b) {
         (Resolved(a), Resolved(b)) => Ok((a, b)),
-        (Var(var), _) => Err(LVarList::one(var)),
-        (_, Var(var)) => Err(LVarList::one(var)),
+        (Var(var), _) => Err(LVarList::one(&var)),
+        (_, Var(var)) => Err(LVarList::one(&var)),
     }
 }
 
@@ -107,47 +120,48 @@ pub enum OneOfTwo<A: Unify, B: Unify> {
 }
 
 impl<A: Unify, B: Unify> OneOfTwo<A, B> {
-    /**
-    Attempt to resolve a [`OneOfTwo`] enum from a [`State`].
-
-    Examples:
-    If neither var is resolved, you'll get back an [`Err<LVarList>`](crate::LVarList)
-    suitable for returning from a [`Constraint::attempt()`].
-    ```
-    use canrun::{State, Value, LVarList};
-    use canrun::constraints::OneOfTwo;
-
-    let state = State::new();
-    let a: Value<usize> = Value::var();
-    let b: Value<usize> = Value::var();
-    let resolved = OneOfTwo::resolve(&a, &b, &state);
-    assert!(resolved.is_err());
-    ```
-    If one of the vars is able to be resolved from the [`State`], the return value will
-    be an `Ok` containing the unresolved [`Value::Var`] and the resolved value in an `Rc`.
-    ```
-    # use std::rc::Rc;
-    # use canrun::{State, Value, LVarList};
-    # use canrun::constraints::OneOfTwo;
-
-    # let state = State::new();
-    # let a: Value<usize> = Value::var();
-    # let b: Value<usize> = Value::var();
-    let state = state.unify(&b, &Value::new(1)).unwrap();
-    let resolved = OneOfTwo::resolve(&a, &b, &state);
-    match resolved {
-        Ok(OneOfTwo::B(var, b)) => assert_eq!(*b, 1),
-        # _ => panic!(),
-    }
-    ```
-    */
+    /// Attempt to resolve a [`OneOfTwo`] enum from a [`State`].
+    ///
+    /// Examples:
+    /// If neither var is resolved, you'll get back an [`Err<LVarList>`](crate::LVarList)
+    /// suitable for returning from a [`Constraint::attempt()`].
+    /// ```
+    /// use canrun::{State, Value, LVarList};
+    /// use canrun::constraints::OneOfTwo;
+    ///
+    /// let state = State::new();
+    /// let a: Value<usize> = Value::var();
+    /// let b: Value<usize> = Value::var();
+    /// let resolved = OneOfTwo::resolve(&a, &b, &state);
+    /// assert!(resolved.is_err());
+    /// ```
+    /// If one of the vars is able to be resolved from the [`State`], the return value will
+    /// be an `Ok` containing the unresolved [`Value::Var`] and the resolved value in an `Rc`.
+    /// ```
+    /// # use std::rc::Rc;
+    /// # use canrun::{State, Value, LVarList};
+    /// # use canrun::constraints::OneOfTwo;
+    ///
+    /// # let state = State::new();
+    /// # let a: Value<usize> = Value::var();
+    /// # let b: Value<usize> = Value::var();
+    /// let state = state.unify(&b, &Value::new(1)).unwrap();
+    /// let resolved = OneOfTwo::resolve(&a, &b, &state);
+    /// match resolved {
+    /// Ok(OneOfTwo::B(var, b)) => assert_eq!(*b, 1),
+    /// # _ => panic!(),
+    /// }
+    /// ```
+    ///
+    /// # Errors
+    /// Returns a list with either or both [`LVar`]s if they are still unresolved.
     pub fn resolve(a: &Value<A>, b: &Value<B>, state: &State) -> Result<OneOfTwo<A, B>, LVarList> {
         let a = state.resolve(a);
         let b = state.resolve(b);
         match (a, b) {
             (Resolved(a), b) => Ok(OneOfTwo::A(a, b)),
             (a, Resolved(b)) => Ok(OneOfTwo::B(a, b)),
-            (Var(a), Var(b)) => Err(LVarList::two(a, b)),
+            (Var(a), Var(b)) => Err(LVarList::two(&a, &b)),
         }
     }
 }
@@ -164,46 +178,46 @@ pub enum TwoOfThree<A: Unify, B: Unify, C: Unify> {
 }
 
 impl<A: Unify, B: Unify, C: Unify> TwoOfThree<A, B, C> {
-    /**
-    Attempt to resolve a [`TwoOfThree`] enum from a [`State`].
-
-    Examples:
-    If no vars are resolved, you'll get back an [`Err<LVarList>`](crate::LVarList)
-    suitable for returning from a [`Constraint::attempt()`].
-    ```
-    use canrun::{State, Value, LVarList};
-    use canrun::constraints::TwoOfThree;
-
-    let state = State::new();
-    let a: Value<usize> = Value::var();
-    let b: Value<usize> = Value::var();
-    let c: Value<usize> = Value::var();
-    let resolved = TwoOfThree::resolve(&a, &b, &c, &state);
-    assert!(resolved.is_err());
-    ```
-    If two of the vars is able to be resolved from the [`State`], the return value will
-    be an `Ok` containing the unresolved [`Value::Var`] and the resolved value in an `Rc`.
-    ```
-    # use std::rc::Rc;
-    # use canrun::{State, Value, LVarList};
-    # use canrun::constraints::TwoOfThree;
-
-    # let state = State::new();
-    # let a: Value<usize> = Value::var();
-    # let b: Value<usize> = Value::var();
-    # let c: Value<usize> = Value::var();
-    let state = state.unify(&a, &Value::new(1)).unwrap();
-    let state = state.unify(&b, &Value::new(2)).unwrap();
-    let resolved = TwoOfThree::resolve(&a, &b, &c, &state);
-    match resolved {
-        Ok(TwoOfThree::AB(a, b, var)) => {
-            assert_eq!(*a, 1);
-            assert_eq!(*b, 2);
-        },
-        # _ => panic!(),
-    }
-    ```
-    */
+    /// Attempt to resolve a [`TwoOfThree`] enum from a [`State`].
+    ///
+    /// Examples:
+    /// If no vars are resolved, you'll get back an [`Err<LVarList>`](crate::LVarList)
+    /// suitable for returning from a [`Constraint::attempt()`].
+    /// ```
+    /// use canrun::{State, Value, LVarList};
+    /// use canrun::constraints::TwoOfThree;
+    ///
+    /// let state = State::new();
+    /// let a: Value<usize> = Value::var();
+    /// let b: Value<usize> = Value::var();
+    /// let c: Value<usize> = Value::var();
+    /// let resolved = TwoOfThree::resolve(&a, &b, &c, &state);
+    /// assert!(resolved.is_err());
+    /// ```
+    /// If two of the vars is able to be resolved from the [`State`], the return value will
+    /// be an `Ok` containing the unresolved [`Value::Var`] and the resolved value in an `Rc`.
+    /// ```
+    /// # use std::rc::Rc;
+    /// # use canrun::{State, Value, LVarList};
+    /// # use canrun::constraints::TwoOfThree;
+    ///
+    /// # let state = State::new();
+    /// # let a: Value<usize> = Value::var();
+    /// # let b: Value<usize> = Value::var();
+    /// # let c: Value<usize> = Value::var();
+    /// let state = state.unify(&a, &Value::new(1)).unwrap();
+    /// let state = state.unify(&b, &Value::new(2)).unwrap();
+    /// let resolved = TwoOfThree::resolve(&a, &b, &c, &state);
+    /// match resolved {
+    /// Ok(TwoOfThree::AB(a, b, var)) => {
+    /// assert_eq!(*a, 1);
+    /// assert_eq!(*b, 2);
+    /// },
+    /// # _ => panic!(),
+    /// }
+    /// ```
+    /// # Errors
+    /// Returns a list with any [`LVar`]s that are still unresolved.
     pub fn resolve(
         a: &Value<A>,
         b: &Value<B>,
@@ -217,9 +231,9 @@ impl<A: Unify, B: Unify, C: Unify> TwoOfThree<A, B, C> {
             (Resolved(a), Resolved(b), c) => Ok(TwoOfThree::AB(a, b, c)),
             (a, Resolved(b), Resolved(c)) => Ok(TwoOfThree::BC(a, b, c)),
             (Resolved(a), b, Resolved(c)) => Ok(TwoOfThree::AC(a, b, c)),
-            (Var(a), Var(b), _) => Err(LVarList::two(a, b)),
-            (Var(a), _, Var(c)) => Err(LVarList::two(a, c)),
-            (_, Var(b), Var(c)) => Err(LVarList::two(b, c)),
+            (Var(a), Var(b), _) => Err(LVarList::two(&a, &b)),
+            (Var(a), _, Var(c)) => Err(LVarList::two(&a, &c)),
+            (_, Var(b), Var(c)) => Err(LVarList::two(&b, &c)),
         }
     }
 }

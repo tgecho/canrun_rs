@@ -26,12 +26,12 @@ pub struct LVec<T: Unify> {
 }
 
 impl<T: Unify> LVec<T> {
-    /// Returns the number of elements in the LVec.
+    /// Returns the number of elements in the [`LVec`].
     pub fn len(&self) -> usize {
         self.vec.len()
     }
 
-    /// Returns true if the LVec contains no elements.
+    /// Returns true if the [`LVec`] contains no elements.
 
     pub fn is_empty(&self) -> bool {
         self.vec.is_empty()

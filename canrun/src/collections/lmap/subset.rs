@@ -31,9 +31,7 @@ where
     B: Into<Value<LMap<K, V>>>,
 {
     project_2(a, b, |a, b| {
-        Box::new(custom(move |state| {
-            unify_entries(state, a.clone(), b.clone())
-        }))
+        Box::new(custom(move |state| unify_entries(state, &a, &b)))
     })
 }
 

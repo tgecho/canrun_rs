@@ -21,7 +21,7 @@ Given a `Vec<Rc<dyn Goal>>`, it will ensure each permutation of the goals
  */
 pub fn assert_permutations_resolve_to<Q>(
     goals: Vec<Rc<dyn Goal>>,
-    query: Q,
+    query: &Q,
     expected: Vec<Q::Reified>,
 ) where
     Q: Reify + Clone,
@@ -33,16 +33,16 @@ pub fn assert_permutations_resolve_to<Q>(
             .map(|g| Box::new(g.clone()) as Box<dyn Goal>);
         let all_goals: All = dbg!(perm_goals.collect());
         let results: Vec<Q::Reified> = all_goals.query(query.clone()).collect();
-        if !expected
+        if expected
             .clone()
             .into_iter()
             .permutations(expected.len())
             .any(|e: Vec<Q::Reified>| e == results)
         {
+            println!("Passed!");
+        } else {
             dbg!(results, expected);
             panic!("The permutation of the goals printed above failed!");
-        } else {
-            println!("Passed!")
         }
     }
 }
@@ -50,7 +50,7 @@ pub fn assert_permutations_resolve_to<Q>(
 pub struct GoalVec(pub Vec<Rc<dyn Goal>>);
 
 impl GoalVec {
-    pub fn assert_permutations_resolve_to<Q>(self, query: Q, expected: Vec<Q::Reified>)
+    pub fn assert_permutations_resolve_to<Q>(self, query: &Q, expected: Vec<Q::Reified>)
     where
         Q: Reify + Clone,
         Q::Reified: PartialEq + Clone + Debug,

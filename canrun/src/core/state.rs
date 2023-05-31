@@ -255,15 +255,15 @@ pub(crate) fn resolve_any<'a>(
     val: &'a AnyVal,
 ) -> &'a AnyVal {
     match val {
-        AnyVal::Var(var) => {
-            let resolved = values.get(var);
+        AnyVal::Var(unresolved) => {
+            let resolved = values.get(unresolved);
             match resolved {
-                Some(AnyVal::Var(found_var)) if found_var == var => val,
+                Some(AnyVal::Var(found_var)) if found_var == unresolved => val,
                 Some(found) => resolve_any(values, found),
                 None => val,
             }
         }
-        value => value,
+        value @ AnyVal::Resolved(_) => value,
     }
 }
 
@@ -276,7 +276,7 @@ impl Default for State {
 #[cfg(test)]
 mod test {
     use crate::{
-        core::*,
+        core::{LVar, Query, StateIter, StateIterator, Value},
         goals::{assert_1, Goal},
     };
 

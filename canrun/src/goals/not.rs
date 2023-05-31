@@ -157,42 +157,42 @@ mod test {
     fn succeeds_with_unify() {
         let x = LVar::new();
         let goals = goal_vec![not(unify(x, 2)), unify(x, 1)];
-        goals.assert_permutations_resolve_to(x, vec![1])
+        goals.assert_permutations_resolve_to(&x, vec![1]);
     }
 
     #[test]
     fn succeeds_with_constraints() {
         let x = LVar::new();
         let goals = goal_vec![not(assert_1(x, |x| *x == 2)), unify(x, 1)];
-        goals.assert_permutations_resolve_to(x, vec![1])
+        goals.assert_permutations_resolve_to(&x, vec![1]);
     }
 
     #[test]
     fn fails_with_unify() {
         let x = LVar::new();
         let goals = goal_vec![not(unify(x, 1)), unify(x, 1)];
-        goals.assert_permutations_resolve_to(x, vec![])
+        goals.assert_permutations_resolve_to(&x, vec![]);
     }
 
     #[test]
     fn fails_with_constraints() {
         let x = LVar::new();
         let goals = goal_vec![not(assert_1(x, |x| *x == 1)), unify(x, 1)];
-        goals.assert_permutations_resolve_to(x, vec![])
+        goals.assert_permutations_resolve_to(&x, vec![]);
     }
 
     #[test]
     fn succeeds_with_forking_goals() {
         let x = LVar::new();
         let goals = goal_vec![unify(x, 1), not(any![unify(x, 2), unify(x, 3)])];
-        goals.assert_permutations_resolve_to(x, vec![1])
+        goals.assert_permutations_resolve_to(&x, vec![1]);
     }
 
     #[test]
     fn fails_with_forking_goals() {
         let x = LVar::new();
         let goals = goal_vec![not(any![unify(x, 1), unify(x, 2)]), unify(x, 1)];
-        goals.assert_permutations_resolve_to(1, vec![])
+        goals.assert_permutations_resolve_to(&1, vec![]);
     }
 
     #[test]
@@ -202,7 +202,7 @@ mod test {
             any![unify(x, 1), unify(x, 2)],
             not(any![unify(x, 1), unify(x, 3)])
         ];
-        goals.assert_permutations_resolve_to(x, vec![2])
+        goals.assert_permutations_resolve_to(&x, vec![2]);
     }
 
     #[test]
@@ -214,6 +214,6 @@ mod test {
             any![unify(x, 1), unify(x, 1)],
             unify(y, 1)
         ];
-        goals.assert_permutations_resolve_to(x, vec![])
+        goals.assert_permutations_resolve_to(&x, vec![]);
     }
 }

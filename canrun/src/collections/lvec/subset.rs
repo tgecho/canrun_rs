@@ -97,14 +97,14 @@ mod tests {
     fn basic_subset() {
         let x = LVar::new();
         let goals = goal_vec![lvec::subset(lvec![x, 2], lvec![1, 2, 3])];
-        goals.assert_permutations_resolve_to(x, vec![1]);
+        goals.assert_permutations_resolve_to(&x, vec![1]);
     }
 
     #[test]
     fn subset_with_conditions() {
         let x = LVar::new();
         let goals = goal_vec![unify(x, 3), lvec::subset(lvec![2, x], lvec![1, 2, 3])];
-        goals.assert_permutations_resolve_to(x, vec![3]);
+        goals.assert_permutations_resolve_to(&x, vec![3]);
     }
 
     #[test]
@@ -116,7 +116,7 @@ mod tests {
             lvec::subset(lvec![2], &x),
             unify(&x, list),
         ];
-        goals.assert_permutations_resolve_to(x, vec![vec![1, 2, 3]]);
+        goals.assert_permutations_resolve_to(&x, vec![vec![1, 2, 3]]);
     }
 
     #[test]
@@ -128,7 +128,7 @@ mod tests {
             lvec::subset(lvec![2], &x),
             unify(&x, list),
         ];
-        goals.assert_permutations_resolve_to(x, vec![vec![1, 2, 3]]);
+        goals.assert_permutations_resolve_to(&x, vec![vec![1, 2, 3]]);
     }
 
     #[test]
@@ -140,7 +140,7 @@ mod tests {
             lvec::subset(lvec![2, 3], &x),
             unify(&x, list),
         ];
-        goals.assert_permutations_resolve_to(x, vec![vec![1, 2, 3]]);
+        goals.assert_permutations_resolve_to(&x, vec![vec![1, 2, 3]]);
     }
 
     #[test]
@@ -153,19 +153,19 @@ mod tests {
             unify(&x, list),
         ];
 
-        goals.assert_permutations_resolve_to(x, vec![]);
+        goals.assert_permutations_resolve_to(&x, vec![]);
     }
 
     #[test]
     fn subset_against_smaller() {
         let x = LVar::new();
         let goals = goal_vec![lvec::subset(lvec![x, 2], lvec![1])];
-        goals.assert_permutations_resolve_to(x, vec![]);
+        goals.assert_permutations_resolve_to(&x, vec![]);
     }
 
     #[test]
     fn debug_impl() {
         let goal = lvec::subset(lvec![1], lvec![1, 2]);
-        assert_ne!(format!("{goal:?}"), "")
+        assert_ne!(format!("{goal:?}"), "");
     }
 }
