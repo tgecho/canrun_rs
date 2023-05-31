@@ -10,6 +10,7 @@ categories = ["algorithms", "mathematics"]
 keywords = ["logic", "dsl", "kanren"]
 license = "MIT/Apache-2.0"
 edition = "2021"
+rust-version = "1.64.0"
 
 [dependencies]
 im-rc = "15.1.0"
@@ -18,7 +19,7 @@ itertools = "0.10.5"
 [dev-dependencies]
 log = "0.4.17"
 env_logger = "0.10.0"
-criterion = "0.4.0"
+criterion = "0.5.1"
 
 [[bench]]
 name = "main"
