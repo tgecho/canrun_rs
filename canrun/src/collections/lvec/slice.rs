@@ -7,7 +7,7 @@ use std::ops::Range;
 use std::rc::Rc;
 
 /// Create a [`Goal`] that attempts to unify an `LVec<T>` with
-/// a slice from another `LVec<T>` defined by a ['Range'].
+/// a slice from another `LVec<T>` defined by a [`Range`].
 ///
 /// # Examples:
 /// ```
@@ -40,7 +40,7 @@ where
 }
 
 /// A [`Goal`] that attempts to unify an `LVec<T>` with
-/// a slice from another `LVec<T>` defined by a ['Range']. Create with [`slice()`].
+/// a slice from another `LVec<T>` defined by a [`Range`]. Create with [`slice()`].
 #[derive(Debug)]
 pub struct Slice<T: Unify> {
     slice: Value<LVec<T>>,
@@ -92,21 +92,21 @@ mod tests {
     fn basic_slice() {
         let x = LVar::new();
         let goals = goal_vec![lvec::slice(lvec![x], 0..1, lvec![1, 2, 3])];
-        goals.assert_permutations_resolve_to(x, vec![1]);
+        goals.assert_permutations_resolve_to(&x, vec![1]);
     }
 
     #[test]
     fn slice_with_lh_var() {
         let x = LVar::new();
         let goals = goal_vec![unify(x, 3), lvec::slice(lvec![2, x], 1..3, lvec![1, 2, 3])];
-        goals.assert_permutations_resolve_to(x, vec![3]);
+        goals.assert_permutations_resolve_to(&x, vec![3]);
     }
 
     #[test]
     fn slice_with_rh_var() {
         let x = LVar::new();
         let goals = goal_vec![unify(x, 3), lvec::slice(lvec![2, 3], 1..3, lvec![1, 2, x])];
-        goals.assert_permutations_resolve_to(x, vec![3]);
+        goals.assert_permutations_resolve_to(&x, vec![3]);
     }
 
     #[test]
@@ -114,7 +114,7 @@ mod tests {
         let x = LVar::new();
         let goals = goal_vec![unify(x, 3), lvec::slice(lvec![2, 3], 1..4, lvec![1, 2, x])];
         // Is simply failing the goal what we want here?
-        goals.assert_permutations_resolve_to(x, vec![]);
+        goals.assert_permutations_resolve_to(&x, vec![]);
     }
 
     #[test]

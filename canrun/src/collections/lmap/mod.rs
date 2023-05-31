@@ -59,7 +59,7 @@ impl<K: Unify + Eq + Hash + Debug, V: Unify + Debug> LMap<K, V> {
     fn resolve_in(&self, state: State) -> Option<(State, Rc<Self>)> {
         let mut state = state;
         let mut resolved: HashMap<Value<K>, Value<V>> = HashMap::new();
-        for (key, value) in self.map.iter() {
+        for (key, value) in &self.map {
             let resolved_key = state.resolve(key).clone();
             let resolved_value = state.resolve(value).clone();
             let existing = resolved.insert(resolved_key, resolved_value);
@@ -77,18 +77,18 @@ impl<K: Unify + Eq + Hash + Debug, V: Unify + Debug> Unify for LMap<K, V> {
     fn unify(state: State, a: Rc<Self>, b: Rc<Self>) -> Option<State> {
         let (state, a) = a.resolve_in(state)?;
         let (state, b) = b.resolve_in(state)?;
-        let state = unify_entries(state, a.clone(), b.clone())?;
-        let state = unify_entries(state, b, a)?;
+        let state = unify_entries(state, &a, &b)?;
+        let state = unify_entries(state, &b, &a)?;
         Some(state)
     }
 }
 
 fn unify_entries<K: Unify + Eq + Hash + Debug, V: Unify + Debug>(
     mut state: State,
-    a: Rc<LMap<K, V>>,
-    b: Rc<LMap<K, V>>,
+    a: &Rc<LMap<K, V>>,
+    b: &Rc<LMap<K, V>>,
 ) -> Option<State> {
-    for (a_key, a_value) in a.map.iter() {
+    for (a_key, a_value) in &a.map {
         // In the best case, all of the keys in `a` exist in both maps
         if let Some(b_value) = b.map.get(a_key) {
             // So we can unify directly and continue or bail
@@ -142,8 +142,8 @@ where
         let LMap { map } = self;
         let init = HashMap::with_capacity(map.len());
         map.iter().try_fold(init, |mut map, (k, v)| {
-            let key = state.reify(k.clone())?;
-            let value = state.reify(v.clone())?;
+            let key = state.reify(k)?;
+            let value = state.reify(v)?;
             map.insert(key, value);
             Some(map)
         })
@@ -255,7 +255,7 @@ mod tests {
             unify(&m, lmap! {w => 2, x => 1, 3 => x, z => x}),
         ];
         goals.assert_permutations_resolve_to(
-            (m, w, x, y, z),
+            &(m, w, x, y, z),
             vec![
                 (hash_map!(1 => 2, 2 => 1, 3 => 2, 4 => 2), 1, 2, 3, 4),
                 (hash_map!(2 => 2, 1 => 1, 3 => 1, 4 => 1), 2, 1, 3, 4),
@@ -269,7 +269,7 @@ mod tests {
         let x = LVar::new();
 
         let goals = goal_vec![unify(&m, lmap!(x => 1, 1 => 1)), unify(&m, lmap!(1 => 1)),];
-        goals.assert_permutations_resolve_to((m, x), vec![(hash_map!(1 => 1), 1)]);
+        goals.assert_permutations_resolve_to(&(m, x), vec![(hash_map!(1 => 1), 1)]);
     }
 
     #[test]
@@ -278,7 +278,7 @@ mod tests {
         let x = LVar::new();
 
         let goals = goal_vec![unify(&m, lmap!(x => 1, 1 => 2)), unify(&m, lmap!(1 => 2)),];
-        goals.assert_permutations_resolve_to((m, x), vec![]);
+        goals.assert_permutations_resolve_to(&(m, x), vec![]);
     }
 
     #[test]
@@ -287,6 +287,6 @@ mod tests {
         let x = LVar::new();
 
         let goal = unify(m, lmap!(x => 1, 1 => 2));
-        assert_ne!(format!("{goal:?}"), "")
+        assert_ne!(format!("{goal:?}"), "");
     }
 }

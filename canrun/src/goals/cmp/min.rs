@@ -47,19 +47,19 @@ mod tests {
     fn succeeds_lt() {
         let (x, y, z) = (LVar::new(), LVar::new(), LVar::new());
         let goals = goal_vec![unify(x, 1), unify(y, 2), unify(z, 1), min(x, y, z)];
-        goals.assert_permutations_resolve_to((x, y, z), vec![(1, 2, 1)]);
+        goals.assert_permutations_resolve_to(&(x, y, z), vec![(1, 2, 1)]);
     }
     #[test]
     fn succeeds_lte() {
         let (x, y, z) = (LVar::new(), LVar::new(), LVar::new());
         let goals = goal_vec![unify(x, 1), unify(y, 1), unify(z, 1), min(x, y, z)];
-        goals.assert_permutations_resolve_to((x, y, z), vec![(1, 1, 1)]);
+        goals.assert_permutations_resolve_to(&(x, y, z), vec![(1, 1, 1)]);
     }
 
     #[test]
     fn fails() {
         let (x, y, z) = (LVar::new(), LVar::new(), LVar::new());
         let goals = goal_vec![unify(x, 2), unify(y, 1), unify(z, 2), min(x, y, z)];
-        goals.assert_permutations_resolve_to((x, y), vec![]);
+        goals.assert_permutations_resolve_to(&(x, y), vec![]);
     }
 }

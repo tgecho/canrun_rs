@@ -44,13 +44,13 @@ impl ReadyState {
 
     let results: Vec<_> = state.into_states()
         .filter_map(|s| s.ready())
-        .map(|resolved| resolved.reify(x))
+        .map(|resolved| resolved.reify(&x))
         .collect();
 
     assert_eq!(results, vec![Some(1)]);
     ```
     */
-    pub fn reify<T, R>(&self, value: T) -> Option<R>
+    pub fn reify<T, R>(&self, value: &T) -> Option<R>
     where
         T: Reify<Reified = R>,
     {

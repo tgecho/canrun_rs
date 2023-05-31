@@ -41,13 +41,13 @@ mod tests {
     fn succeeds() {
         let (x, y, z) = (LVar::new(), LVar::new(), LVar::new());
         let goals = goal_vec![unify(x, 2), unify(y, 1), unify(z, 1), gte(x, y), gte(y, z)];
-        goals.assert_permutations_resolve_to((x, y, z), vec![(2, 1, 1)]);
+        goals.assert_permutations_resolve_to(&(x, y, z), vec![(2, 1, 1)]);
     }
 
     #[test]
     fn fails() {
         let (x, y) = (LVar::new(), LVar::new());
         let goals = goal_vec![unify(x, 1), unify(y, 2), gte(x, y)];
-        goals.assert_permutations_resolve_to((x, y), vec![]);
+        goals.assert_permutations_resolve_to(&(x, y), vec![]);
     }
 }

@@ -8,7 +8,7 @@ use super::{subset, LMap};
 Assert that the a given key and value combination can be found in an
 [`LMap`]
 
-This is essentially a single key case of [`subset`](crate::lmap::subset).
+This is essentially a single key case of [`subset`](crate::lmap::subset::subset).
 
 # Example:
 ```

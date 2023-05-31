@@ -101,7 +101,7 @@ pub(crate) trait DirtyImmutable<T> {
 }
 impl<T: Clone> DirtyImmutable<T> for Vec<T> {
     fn clone_and_push(&self, t: T) -> Self {
-        let mut cloned = self.to_vec();
+        let mut cloned = self.clone();
         cloned.push(t);
         cloned
     }

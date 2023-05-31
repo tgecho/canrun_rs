@@ -1,5 +1,9 @@
 #![warn(missing_docs)]
 #![warn(rustdoc::missing_crate_level_docs)]
+#![warn(clippy::pedantic)]
+#![allow(clippy::must_use_candidate)]
+#![allow(clippy::many_single_char_names)]
+#![allow(clippy::module_name_repetitions)]
 #![doc = include_str!("../README.md")]
 //! What's next? Go read a breakdown of this example in the deeper [Quick Start
 //! explanation](crate::docs::quickstart).
