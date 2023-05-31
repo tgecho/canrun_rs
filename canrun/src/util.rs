@@ -67,3 +67,16 @@ macro_rules! goal_vec {
     };
 }
 pub use goal_vec;
+
+#[cfg(test)]
+mod test {
+    use crate::{unify, LVar};
+
+    #[test]
+    #[should_panic]
+    fn test_assert_permutations_resolve_to_failure() {
+        let x = LVar::new();
+        let goals = goal_vec![unify(x, 1)];
+        goals.assert_permutations_resolve_to(&x, vec![2]);
+    }
+}

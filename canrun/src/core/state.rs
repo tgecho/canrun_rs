@@ -283,6 +283,12 @@ mod test {
     use super::*;
 
     #[test]
+    fn state_default() {
+        let state = State::default();
+        assert!(state.is_ready());
+    }
+
+    #[test]
     fn basic_unify() {
         let x = Value::var();
         let state = State::new();
@@ -294,12 +300,13 @@ mod test {
     fn basic_fork() {
         let x = LVar::new();
         let state: State = State::new();
-        let results = state
-            .fork(move |s: &State| -> StateIter {
-                let s1 = s.clone().unify(&x.into(), &Value::new(1));
-                let s2 = s.clone().unify(&x.into(), &Value::new(2));
-                Box::new(s1.into_iter().chain(s2.into_iter()))
-            })
+        let forked = state.fork(move |s: &State| -> StateIter {
+            let s1 = s.clone().unify(&x.into(), &Value::new(1));
+            let s2 = s.clone().unify(&x.into(), &Value::new(2));
+            Box::new(s1.into_iter().chain(s2.into_iter()))
+        });
+        assert!(forked.clone().unwrap().ready().is_none());
+        let results = forked
             .into_states()
             .map(|s| s.resolve(&x.into()))
             .collect::<Vec<_>>();

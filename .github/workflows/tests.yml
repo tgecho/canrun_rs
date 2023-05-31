@@ -60,8 +60,8 @@ jobs:
       - name: Build and test
         env:
           CARGO_INCREMENTAL: "0"
-          RUSTFLAGS: "-Zinstrument-coverage -Clink-dead-code"
-          RUSTDOCFLAGS: "-Zinstrument-coverage -Clink-dead-code"
+          RUSTFLAGS: "-Cinstrument-coverage -Clink-dead-code"
+          RUSTDOCFLAGS: "-Cinstrument-coverage -Clink-dead-code"
           LLVM_PROFILE_FILE: "%p-%m.profraw"
         run: |
           cargo build --verbose

@@ -7,8 +7,8 @@ export CARGO_TARGET_DIR=./target/coverage
 
 # From https://github.com/mozilla/grcov
 export CARGO_INCREMENTAL=0
-export RUSTFLAGS="-Zinstrument-coverage -Clink-dead-code"
-export RUSTDOCFLAGS="-Zinstrument-coverage -Clink-dead-code"
+export RUSTFLAGS="-Cinstrument-coverage -Clink-dead-code"
+export RUSTDOCFLAGS="-Cinstrument-coverage -Clink-dead-code"
 export LLVM_PROFILE_FILE="%p-%m.profraw"
 
 rm -f ./*.profraw

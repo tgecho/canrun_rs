@@ -64,3 +64,14 @@ impl LVarList {
         LVarList(lists.flat_map(|list| list.0.into_iter()).unique().collect())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_lvarlist_len() {
+        assert_eq!(LVarList(vec![]).len(), 0);
+        assert_eq!(LVarList(vec![1]).len(), 1);
+    }
+}
