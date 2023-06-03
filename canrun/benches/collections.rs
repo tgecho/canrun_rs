@@ -25,8 +25,8 @@ pub fn unify_lmaps(c: &mut Criterion) {
                 bench.iter(|| {
                     let x = LVar::new();
                     let goal = both(
-                        unify(&x, range_lmap(0..*size)),
-                        unify(&x, range_lmap(0..*size)),
+                        unify(x, range_lmap(0..*size)),
+                        unify(x, range_lmap(0..*size)),
                     );
                     goal.query(x).next()
                 });
@@ -40,8 +40,8 @@ pub fn unify_lmaps(c: &mut Criterion) {
                 bench.iter(|| {
                     let x = LVar::new();
                     let goal = both(
-                        unify(&x, range_lmap(0..*size)),
-                        unify(&x, range_lmap(0..*size)),
+                        unify(x, range_lmap(0..*size)),
+                        unify(x, range_lmap(0..*size)),
                     );
                     let results: Vec<_> = goal.query(x).collect();
                     results
@@ -56,8 +56,8 @@ pub fn unify_lmaps(c: &mut Criterion) {
                 bench.iter(|| {
                     let x = LVar::new();
                     let goal = both(
-                        unify(&x, range_lmap(0..*size)),
-                        unify(&x, range_lmap(*size..(size + size))),
+                        unify(x, range_lmap(0..*size)),
+                        unify(x, range_lmap(*size..(size + size))),
                     );
                     goal.query(x).next()
                 });
@@ -71,8 +71,8 @@ pub fn unify_lmaps(c: &mut Criterion) {
                 bench.iter(|| {
                     let x = LVar::new();
                     let goal = both(
-                        unify(&x, range_lmap(0..*size)),
-                        unify(&x, range_lmap(*size..(size + size))),
+                        unify(x, range_lmap(0..*size)),
+                        unify(x, range_lmap(*size..(size + size))),
                     );
                     let results: Vec<_> = goal.query(x).collect();
                     results

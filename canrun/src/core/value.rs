@@ -178,7 +178,7 @@ impl<T: Unify> From<LVar<T>> for Value<T> {
 
 impl<T: Unify> From<&LVar<T>> for Value<T> {
     fn from(var: &LVar<T>) -> Self {
-        Value::Var(var.clone())
+        Value::Var(*var)
     }
 }
 
@@ -211,7 +211,7 @@ impl<T> Clone for LVar<T> {
 impl<T: Unify> Clone for Value<T> {
     fn clone(&self) -> Self {
         match self {
-            Self::Var(v) => Self::Var(v.clone()),
+            Self::Var(v) => Self::Var(*v),
             Self::Resolved(v) => Self::Resolved(v.clone()),
         }
     }

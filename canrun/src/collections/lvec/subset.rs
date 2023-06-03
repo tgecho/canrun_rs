@@ -112,9 +112,9 @@ mod tests {
         let x = LVar::new();
         let list = lvec![1, 2, 3];
         let goals = goal_vec![
-            lvec::subset(lvec![1], &x),
-            lvec::subset(lvec![2], &x),
-            unify(&x, list),
+            lvec::subset(lvec![1], x),
+            lvec::subset(lvec![2], x),
+            unify(x, list),
         ];
         goals.assert_permutations_resolve_to(&x, vec![vec![1, 2, 3]]);
     }
@@ -124,9 +124,9 @@ mod tests {
         let x = LVar::new();
         let list = lvec![1, 2, 3];
         let goals = goal_vec![
-            lvec::subset(lvec![1], &x),
-            lvec::subset(lvec![2], &x),
-            unify(&x, list),
+            lvec::subset(lvec![1], x),
+            lvec::subset(lvec![2], x),
+            unify(x, list),
         ];
         goals.assert_permutations_resolve_to(&x, vec![vec![1, 2, 3]]);
     }
@@ -136,9 +136,9 @@ mod tests {
         let x = LVar::new();
         let list = lvec![1, 2, 3];
         let goals = goal_vec![
-            either(lvec::subset(lvec![1, 2], &x), lvec::subset(lvec![4], &x)),
-            lvec::subset(lvec![2, 3], &x),
-            unify(&x, list),
+            either(lvec::subset(lvec![1, 2], x), lvec::subset(lvec![4], x)),
+            lvec::subset(lvec![2, 3], x),
+            unify(x, list),
         ];
         goals.assert_permutations_resolve_to(&x, vec![vec![1, 2, 3]]);
     }
@@ -148,9 +148,9 @@ mod tests {
         let x = LVar::new();
         let list = lvec![1, 2, 3];
         let goals = goal_vec![
-            lvec::subset(lvec![1, 2], &x),
-            lvec::subset(lvec![4], &x),
-            unify(&x, list),
+            lvec::subset(lvec![1, 2], x),
+            lvec::subset(lvec![4], x),
+            unify(x, list),
         ];
 
         goals.assert_permutations_resolve_to(&x, vec![]);

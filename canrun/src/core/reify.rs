@@ -120,7 +120,7 @@ impl_reify_clone!(String);
 
 #[cfg(test)]
 mod tests {
-    use crate::{goals::assert_1, Goal, LVar, LVarList, Reify, State, Value};
+    use crate::{LVar, LVarList, Reify, State, Value};
 
     #[test]
     fn reify_copy() {

@@ -251,8 +251,8 @@ mod tests {
         let z = LVar::new();
 
         let goals = goal_vec![
-            unify(&m, lmap! {1 => x, 2 => w, y => x, 4 => x}),
-            unify(&m, lmap! {w => 2, x => 1, 3 => x, z => x}),
+            unify(m, lmap! {1 => x, 2 => w, y => x, 4 => x}),
+            unify(m, lmap! {w => 2, x => 1, 3 => x, z => x}),
         ];
         goals.assert_permutations_resolve_to(
             &(m, w, x, y, z),
@@ -268,7 +268,7 @@ mod tests {
         let m = LVar::new();
         let x = LVar::new();
 
-        let goals = goal_vec![unify(&m, lmap!(x => 1, 1 => 1)), unify(&m, lmap!(1 => 1)),];
+        let goals = goal_vec![unify(m, lmap!(x => 1, 1 => 1)), unify(m, lmap!(1 => 1)),];
         goals.assert_permutations_resolve_to(&(m, x), vec![(hash_map!(1 => 1), 1)]);
     }
 
@@ -277,7 +277,7 @@ mod tests {
         let m = LVar::new();
         let x = LVar::new();
 
-        let goals = goal_vec![unify(&m, lmap!(x => 1, 1 => 2)), unify(&m, lmap!(1 => 2)),];
+        let goals = goal_vec![unify(m, lmap!(x => 1, 1 => 2)), unify(m, lmap!(1 => 2)),];
         goals.assert_permutations_resolve_to(&(m, x), vec![]);
     }
 

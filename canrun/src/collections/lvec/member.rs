@@ -121,7 +121,7 @@ mod tests {
     fn unify_two_contains_1() {
         let x = LVar::new();
         let list = lvec![1, 2, 3];
-        let goals = goal_vec![member(1, &x), member(1, &x), unify(&x, list)];
+        let goals = goal_vec![member(1, x), member(1, x), unify(x, list)];
         goals.assert_permutations_resolve_to(&x, vec![vec![1, 2, 3]]);
     }
 
@@ -129,7 +129,7 @@ mod tests {
     fn unify_two_contains_2() {
         let x = LVar::new();
         let list = lvec![1, 2, 3];
-        let goals = goal_vec![member(1, &x), member(2, &x), unify(&x, list)];
+        let goals = goal_vec![member(1, x), member(2, x), unify(x, list)];
         goals.assert_permutations_resolve_to(&x, vec![vec![1, 2, 3]]);
     }
 
@@ -138,9 +138,9 @@ mod tests {
         let x = LVar::new();
         let list = lvec![1, 2, 3];
         let goals = goal_vec![
-            either(member(1, &x), member(4, &x)),
-            member(2, &x),
-            unify(&x, list),
+            either(member(1, x), member(4, x)),
+            member(2, x),
+            unify(x, list),
         ];
         goals.assert_permutations_resolve_to(&x, vec![vec![1, 2, 3]]);
     }
@@ -149,7 +149,7 @@ mod tests {
     fn unify_two_contains_4() {
         let x = LVar::new();
         let list = lvec![1, 2, 3];
-        let goals = goal_vec![member(1, &x), member(4, &x), unify(&x, list)];
+        let goals = goal_vec![member(1, x), member(4, x), unify(x, list)];
 
         goals.assert_permutations_resolve_to(&x, vec![]);
     }
