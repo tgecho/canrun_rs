@@ -15,6 +15,7 @@ mod map_1;
 mod map_2;
 mod project_1;
 mod project_2;
+mod reified;
 
 pub use assert_1::*;
 pub use assert_2::*;
@@ -22,3 +23,4 @@ pub use map_1::*;
 pub use map_2::*;
 pub use project_1::*;
 pub use project_2::*;
+pub use reified::*;

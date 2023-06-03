@@ -17,7 +17,7 @@ An alias for the function that should be returned by a successful
 */
 pub type ResolveFn = Box<dyn FnOnce(State) -> Option<State>>;
 
-/** Update a [`State`] whenever one or more [`crate::LVar`]s are resolved.
+/** Update a [`State`] whenever one or more [`LVars`](crate::LVar) are resolved.
 
 The [`Constraint::attempt`] function will be run when it is initially added.
 Returning a [`Err([LVarList])`](LVarList) signals that the constraint is not
@@ -83,7 +83,7 @@ pub trait Constraint {
 /// [`Constraint`].
 ///
 /// # Errors
-/// Returns a list containing the single [`LVar`] if it is still unresolved.
+/// Returns a list containing the single [`LVar`](crate::LVar) if it is still unresolved.
 pub fn resolve_1<A: Unify>(val: &Value<A>, state: &State) -> Result<Rc<A>, LVarList> {
     match state.resolve(val) {
         Resolved(a) => Ok(a),
@@ -95,7 +95,7 @@ pub fn resolve_1<A: Unify>(val: &Value<A>, state: &State) -> Result<Rc<A>, LVarL
 /// [`Constraint`].
 ///
 /// # Errors
-/// Returns a list with either or both [`LVar`]s if they are still unresolved.
+/// Returns a list with either or both [`LVar`s](crate::LVar) if they are still unresolved.
 pub fn resolve_2<A: Unify, B: Unify>(
     a: &Value<A>,
     b: &Value<B>,
@@ -154,7 +154,7 @@ impl<A: Unify, B: Unify> OneOfTwo<A, B> {
     /// ```
     ///
     /// # Errors
-    /// Returns a list with either or both [`LVar`]s if they are still unresolved.
+    /// Returns a list with either or both [`LVar`s](crate::LVar) if they are still unresolved.
     pub fn resolve(a: &Value<A>, b: &Value<B>, state: &State) -> Result<OneOfTwo<A, B>, LVarList> {
         let a = state.resolve(a);
         let b = state.resolve(b);
@@ -217,7 +217,7 @@ impl<A: Unify, B: Unify, C: Unify> TwoOfThree<A, B, C> {
     /// }
     /// ```
     /// # Errors
-    /// Returns a list with any [`LVar`]s that are still unresolved.
+    /// Returns a list with any [`LVar`s](crate::LVar) that are still unresolved.
     pub fn resolve(
         a: &Value<A>,
         b: &Value<B>,

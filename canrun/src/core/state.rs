@@ -42,7 +42,7 @@ assert!(my_fn().is_some());
 pub struct State {
     pub(crate) values: im_rc::HashMap<VarId, AnyVal>,
     pub(crate) forks: im_rc::Vector<Rc<dyn Fork>>,
-    constraints: MKMVMap<VarId, Rc<dyn Constraint>>,
+    pub(crate) constraints: MKMVMap<VarId, Rc<dyn Constraint>>,
 }
 
 impl State {
