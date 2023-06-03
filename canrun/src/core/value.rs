@@ -1,4 +1,5 @@
 use crate::core::Unify;
+use crate::LVarList;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -23,11 +24,13 @@ debugging purposes as no guarantees are made about the type or generation of
 the id value. Also, these ids are only valid within the context of a single
 execution. They cannot be safely persisted or shared between processes.
 */
-#[derive(Debug, Copy, Eq)]
+#[derive(Debug, Eq)]
 pub struct LVar<T> {
     pub(crate) id: VarId,
     t: PhantomData<T>,
 }
+
+impl<T> Copy for LVar<T> {}
 
 impl<T> PartialEq for LVar<T> {
     fn eq(&self, other: &LVar<T>) -> bool {
@@ -123,20 +126,21 @@ impl<T: Unify> Value<T> {
         }
     }
 
-    /** Return `T` if the `Value` is a resolved.
-
-    Example:
-    ```
-    use canrun::Value;
-
-    let x: Value<i32> = Value::new(1);
-    assert_eq!(x.resolved(), Some(&1));
-    ```
-    */
-    pub fn resolved(&self) -> Option<&T> {
+    /// Return `T` if the `Value` is a resolved.
+    ///
+    /// Example:
+    /// ```
+    /// use canrun::Value;
+    ///
+    /// let x: Value<i32> = Value::new(1);
+    /// assert_eq!(x.resolved(), Ok(&1));
+    /// ```
+    /// # Errors
+    /// Will return an `Err(LVarList)` with the first unresolveable `Value<T>` encountered.
+    pub fn resolved(&self) -> Result<&T, LVarList> {
         match self {
-            Value::Var(_) => None,
-            Value::Resolved(val) => Some(val.as_ref()),
+            Value::Var(var) => Err(LVarList::one(var)),
+            Value::Resolved(val) => Ok(val.as_ref()),
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::{
     core::{AnyVal, Unify, Value, VarId},
-    resolve_any, Reify,
+    resolve_any, LVarList, Reify,
 };
 
 /**
@@ -30,27 +30,29 @@ impl ReadyState {
             .expect("AnyVal resolved to unexpected Value<T>")
     }
 
-    /** Attempt to [reify](crate::core::Reify) the value of a [logic
-    variable](crate::core::LVar) in a [`ReadyState`].
-
-    # Example:
-    ```
-    use canrun::{State, StateIterator, Value, LVar};
-
-    let x = LVar::new();
-
-    let state = State::new()
-        .unify(&x.into(), &Value::new(1));
-
-    let results: Vec<_> = state.into_states()
-        .filter_map(|s| s.ready())
-        .map(|resolved| resolved.reify(&x))
-        .collect();
-
-    assert_eq!(results, vec![Some(1)]);
-    ```
-    */
-    pub fn reify<T, R>(&self, value: &T) -> Option<R>
+    /// Attempt to [reify](crate::core::Reify) the value of a [logic
+    /// variable](crate::core::LVar) in a [`ReadyState`].
+    ///
+    /// # Errors
+    /// Will return an `Err(LVarList)` with the first unresolveable `Value<T>` encountered.
+    ///
+    /// # Example:
+    /// ```
+    /// use canrun::{State, StateIterator, Value, LVar};
+    ///
+    /// let x = LVar::new();
+    ///
+    /// let state = State::new()
+    /// .unify(&x.into(), &Value::new(1));
+    ///
+    /// let results: Vec<_> = state.into_states()
+    /// .filter_map(|s| s.ready())
+    /// .map(|resolved| resolved.reify(&x))
+    /// .collect();
+    ///
+    /// assert_eq!(results, vec![Ok(1)]);
+    /// ```
+    pub fn reify<T, R>(&self, value: &T) -> Result<R, LVarList>
     where
         T: Reify<Reified = R>,
     {

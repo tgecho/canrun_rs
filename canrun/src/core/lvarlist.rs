@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{collections::HashSet, fmt::Debug};
 
 use itertools::Itertools;
 
@@ -15,10 +15,22 @@ This is usually used to set up a watch on behalf of a [`Constraint`](crate::cons
 Consider generating this with the [`resolve_1`](crate::constraints::resolve_1), [`resolve_2`](crate::constraints::resolve_2), [`OneOfTwo`](crate::constraints::OneOfTwo)
 or [`TwoOfThree`](crate::constraints::TwoOfThree) helpers.
 
+It has to be opaque because each [`LVar`] might have a different type parameter, making it impossible to store them all in a `Vec<LVar<T>>`.
+
 It is also the return value of [`State::vars()`].
 */
 #[derive(Debug)]
 pub struct LVarList(pub(crate) Vec<VarId>);
+
+impl PartialEq for LVarList {
+    fn eq(&self, other: &Self) -> bool {
+        if self.0.len() != other.0.len() {
+            return false;
+        }
+        let lookup: HashSet<_> = self.0.iter().collect();
+        other.0.iter().all(|id| lookup.contains(id))
+    }
+}
 
 impl LVarList {
     /// Create an `LVarList` from a single [`LVar`].

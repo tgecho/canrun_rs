@@ -7,7 +7,7 @@ mod subset;
 
 use crate::{
     core::{Reify, State, Unify, Value},
-    ReadyState,
+    LVarList, ReadyState,
 };
 pub use get::{get, Get};
 pub use member::{member, Member};
@@ -68,7 +68,7 @@ impl<T: Unify> Unify for LVec<T> {
 
 impl<T: Unify + Reify> Reify for LVec<T> {
     type Reified = Vec<T::Reified>;
-    fn reify_in(&self, state: &ReadyState) -> Option<Vec<T::Reified>> {
+    fn reify_in(&self, state: &ReadyState) -> Result<Vec<T::Reified>, LVarList> {
         self.vec
             .iter()
             .map(|v: &Value<T>| v.reify_in(state))

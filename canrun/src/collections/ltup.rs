@@ -1,6 +1,6 @@
 /*! A helper macro and some blanket implementations to facilitate working with tuples of [`Value`]s. */
 
-use crate::core::{ReadyState, Reify, State, Unify, Value};
+use crate::core::{LVarList, ReadyState, Reify, State, Unify, Value};
 use std::rc::Rc;
 
 /** Create a tuple of [logical values](crate::Value) with automatic `Into<Value<T>>`
@@ -60,10 +60,10 @@ macro_rules! impl_reify_tuple {
 
         impl<$($t: Reify< Reified = $r>, $r,)*> Reify for ($($t),*) {
             type Reified = ($($t::Reified),*);
-            fn reify_in(&self, state: &ReadyState) -> Option<Self::Reified> {
+            fn reify_in(&self, state: &ReadyState) -> Result<Self::Reified, LVarList> {
                 #![allow(non_snake_case)]
                 let ($($t),*) = self;
-                Some(($($t.reify_in(state)?),*))
+                Ok(($($t.reify_in(state)?),*))
             }
         }
     };
