@@ -11,6 +11,7 @@ rust-version = "1.64.0"
 
 [dependencies]
 canrun = { path = "../canrun"}
+itertools = "0.10.5"
 
 [dev-dependencies]
 env_logger = "0.10.0"

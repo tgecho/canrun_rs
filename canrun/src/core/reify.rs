@@ -89,6 +89,16 @@ impl<T: Unify + Reify> Reify for LVar<T> {
     }
 }
 
+impl<T: Unify + Reify> Reify for Vec<Value<T>> {
+    type Reified = Vec<T::Reified>;
+    fn reify_in(&self, state: &ReadyState) -> Result<Self::Reified, LVarList> {
+        self.iter()
+            .map(|v| v.reify_in(state))
+            .collect::<Result<Vec<_>, _>>()
+        // state.resolve(&self.into()).resolved()?.reify_in(state)
+    }
+}
+
 macro_rules! impl_reify_copy {
     ($($type:ty),+) => {
         $(

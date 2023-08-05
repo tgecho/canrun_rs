@@ -58,6 +58,7 @@ impl Fork for Any {
     fn fork(&self, state: &State) -> StateIter {
         let goals = self.goals.clone().into_iter();
         let states = repeat(state.clone());
+        dbg!(self.goals.len());
         Box::new(goals.zip(states).flat_map(|(g, s)| g.apply(s).into_iter()))
     }
 }
