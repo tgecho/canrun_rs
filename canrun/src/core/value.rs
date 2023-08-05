@@ -56,7 +56,7 @@ impl<T: Unify> LVar<T> {
     pub fn new() -> Self {
         LVar {
             id: get_id(),
-            t: PhantomData::default(),
+            t: PhantomData,
         }
     }
 }
@@ -152,7 +152,7 @@ impl AnyVal {
         match self {
             AnyVal::Var(id) => Some(Value::Var(LVar {
                 id: *id,
-                t: PhantomData::default(),
+                t: PhantomData,
             })),
             AnyVal::Resolved(val) => {
                 let rc_t = val.clone().downcast::<T>().ok()?;
