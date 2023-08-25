@@ -7,7 +7,7 @@ repository = "https://github.com/tgecho/canrun_rs"
 documentation = "https://docs.rs/crate/canrun_collections"
 license = "MIT/Apache-2.0"
 edition = "2021"
-rust-version = "1.64.0"
+rust-version = "1.70.0"
 
 [dependencies]
 canrun = { path = "../canrun"}
