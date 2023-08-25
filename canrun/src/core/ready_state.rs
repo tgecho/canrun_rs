@@ -17,11 +17,16 @@ impl ReadyState {
         ReadyState { values }
     }
 
-    /** Recursively resolve a [`Value`] as far as the currently
-    known variable bindings allow.
-
-    See [`crate::State::resolve`] for more details.
-    */
+    /// * Recursively resolve a [`Value`] as far as the currently known variable
+    /// bindings allow.
+    ///
+    /// See [`crate::State::resolve`] for more details.
+    ///
+    /// # Panics
+    ///
+    /// This will panic if the stored [`Value`] resolves with a different `T`
+    /// than what is passed in. This shouldn't happen unless the `T` associated
+    /// with an [`LVar`] is somehow changed.
     pub fn resolve<T: Unify>(&self, val: &Value<T>) -> Value<T> {
         resolve_any(&self.values, &val.to_anyval())
             .to_value()

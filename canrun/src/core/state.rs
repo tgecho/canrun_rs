@@ -98,33 +98,38 @@ impl State {
         func(self)
     }
 
-    /** Recursively resolve a [`Value`] as far as the currently
-    known variable bindings allow.
-
-    This will return either the final [`Value::Resolved`] (if found) or the
-    last [`Value::Var`] it attempted to resolve. It will not force
-    [`forks`](State::fork()) to enumerate all potential states, so potential
-    bindings that may eventually become confirmed are not considered. Use
-    [`StateIterator::into_states`](super::state_iterator::StateIterator::into_states)
-    if you want to attempt resolving against all (known) possible states.
-
-    # Example:
-    ```
-    use canrun::{State, Query, Value};
-
-    # fn test() -> Option<()> {
-    let state = State::new();
-
-    let x = Value::var();
-    assert_eq!(state.resolve(&x), x);
-
-    let state = state.unify(&x, &Value::new(1))?;
-    assert_eq!(state.resolve(&x), Value::new(1));
-    # Some(())
-    # }
-    # test();
-    ```
-    */
+    /// Recursively resolve a [`Value`] as far as the currently
+    /// known variable bindings allow.
+    ///
+    /// This will return either the final [`Value::Resolved`] (if found) or the
+    /// last [`Value::Var`] it attempted to resolve. It will not force
+    /// [`forks`](State::fork()) to enumerate all potential states, so potential
+    /// bindings that may eventually become confirmed are not considered. Use
+    /// [`StateIterator::into_states`](super::state_iterator::StateIterator::into_states)
+    /// if you want to attempt resolving against all (known) possible states.
+    ///
+    /// # Example:
+    /// ```
+    /// use canrun::{State, Query, Value};
+    ///
+    /// # fn test() -> Option<()> {
+    /// let state = State::new();
+    ///
+    /// let x = Value::var();
+    /// assert_eq!(state.resolve(&x), x);
+    ///
+    /// let state = state.unify(&x, &Value::new(1))?;
+    /// assert_eq!(state.resolve(&x), Value::new(1));
+    /// # Some(())
+    /// # }
+    /// # test();
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// This will panic if the stored [`Value`] resolves with a different `T`
+    /// than what is passed in. This shouldn't happen unless the `T` associated
+    /// with an [`LVar`] is somehow changed.
     pub fn resolve<T: Unify>(&self, val: &Value<T>) -> Value<T> {
         resolve_any(&self.values, &val.to_anyval())
             .to_value()
@@ -303,7 +308,7 @@ mod test {
         let forked = state.fork(move |s: &State| -> StateIter {
             let s1 = s.clone().unify(&x.into(), &Value::new(1));
             let s2 = s.clone().unify(&x.into(), &Value::new(2));
-            Box::new(s1.into_iter().chain(s2.into_iter()))
+            Box::new(s1.into_iter().chain(s2))
         });
         assert!(forked.clone().unwrap().ready().is_none());
         let results = forked
