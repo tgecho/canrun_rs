@@ -20,13 +20,14 @@ let goal = get(1, x, lmap! {1 => 2});
 let results: Vec<_> = goal.query(x).collect();
 ```
 */
-pub fn get<K, KV, V, VV, B>(key: KV, value: VV, b: B) -> impl Goal
+pub fn get<K, V>(
+    key: impl Into<Value<K>>,
+    value: impl Into<Value<V>>,
+    b: impl Into<Value<LMap<K, V>>>,
+) -> impl Goal
 where
     K: Unify + Eq + Hash + Debug,
-    KV: Into<Value<K>>,
     V: Unify + Debug,
-    VV: Into<Value<V>>,
-    B: Into<Value<LMap<K, V>>>,
 {
     subset(lmap! {key => value}, b)
 }

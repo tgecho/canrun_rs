@@ -27,12 +27,13 @@ let results: Vec<_> = goal.query(needle).collect();
 assert_eq!(results, vec![vec![1]]);
 ```
 */
-pub fn subset<T, SV, CV>(subset: SV, collection: CV) -> Subset<T>
+pub fn subset<T>(
+    subset: impl Into<Value<LVec<T>>>,
+    collection: impl Into<Value<LVec<T>>>,
+) -> Subset<T>
 where
     T: Unify,
-    SV: Into<Value<LVec<T>>>,
     LVec<T>: Unify,
-    CV: Into<Value<LVec<T>>>,
 {
     Subset {
         subset: subset.into(),

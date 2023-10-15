@@ -20,12 +20,10 @@ let results: Vec<_> = goal.query((x, y)).collect();
 assert_eq!(results, vec![(1, 2)]);
 ```
 */
-pub fn lt<A, AV, B, BV>(a: AV, b: BV) -> impl Goal
+pub fn lt<A, B>(a: impl Into<Value<A>>, b: impl Into<Value<B>>) -> impl Goal
 where
     A: Unify + PartialOrd<B>,
     B: Unify,
-    AV: Into<Value<A>>,
-    BV: Into<Value<B>>,
 {
     assert_2(a, b, |a, b| a < b)
 }

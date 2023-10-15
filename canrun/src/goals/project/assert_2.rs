@@ -43,13 +43,14 @@ let result: Vec<_> = goal.query((x, y)).collect();
 assert_eq!(result, vec![(1, 2)])
 ```
 */
-pub fn assert_2<A, IA, B, IB, F>(a: IA, b: IB, func: F) -> Assert2<A, B>
+pub fn assert_2<A, B>(
+    a: impl Into<Value<A>>,
+    b: impl Into<Value<B>>,
+    func: impl (Fn(&A, &B) -> bool) + 'static,
+) -> Assert2<A, B>
 where
     A: Unify,
-    IA: Into<Value<A>>,
     B: Unify,
-    IB: Into<Value<B>>,
-    F: (Fn(&A, &B) -> bool) + 'static,
 {
     Assert2 {
         a: a.into(),

@@ -20,12 +20,9 @@ let results: Vec<_> = goal.query((x, y, z)).collect();
 assert_eq!(results, vec![(1, 2, 2)]);
 ```
 */
-pub fn max<T, A, B, C>(a: A, b: B, c: C) -> impl Goal
+pub fn max<T>(a: impl Into<Value<T>>, b: impl Into<Value<T>>, c: impl Into<Value<T>>) -> impl Goal
 where
     T: Unify + PartialOrd,
-    A: Into<Value<T>>,
-    B: Into<Value<T>>,
-    C: Into<Value<T>>,
 {
     let a = a.into();
     let b = b.into();

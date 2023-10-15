@@ -24,13 +24,14 @@ use std::rc::Rc;
 /// let results: Vec<_> = goal.query(needle).collect();
 /// assert_eq!(results, vec![vec![1, 2]]);
 /// ```
-pub fn slice<T, SV, RV, CV>(slice: SV, range: RV, collection: CV) -> Slice<T>
+pub fn slice<T>(
+    slice: impl Into<Value<LVec<T>>>,
+    range: impl Into<Value<Range<usize>>>,
+    collection: impl Into<Value<LVec<T>>>,
+) -> Slice<T>
 where
     T: Unify,
     LVec<T>: Unify,
-    SV: Into<Value<LVec<T>>>,
-    RV: Into<Value<Range<usize>>>,
-    CV: Into<Value<LVec<T>>>,
 {
     Slice {
         slice: slice.into(),

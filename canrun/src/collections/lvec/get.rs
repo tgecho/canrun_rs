@@ -48,12 +48,13 @@ let results: Vec<_> = goal.query(needle).collect();
 assert_eq!(results, vec![1]);
 ```
 */
-pub fn get<T, IntoT, Index, Collection>(item: IntoT, index: Index, collection: Collection) -> Get<T>
+pub fn get<T>(
+    item: impl Into<Value<T>>,
+    index: impl Into<Value<usize>>,
+    collection: impl Into<Value<LVec<T>>>,
+) -> Get<T>
 where
     T: Unify,
-    IntoT: Into<Value<T>>,
-    Index: Into<Value<usize>>,
-    Collection: Into<Value<LVec<T>>>,
 {
     Get {
         item: item.into(),

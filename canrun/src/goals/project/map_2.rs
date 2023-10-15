@@ -27,24 +27,18 @@ let result: Vec<_> = goal.query(z).collect();
 assert_eq!(result, vec![3])
 ```
 */
-pub fn map_2<A, IA, B, IB, C, IC, ABtoC, ACtoB, BCtoA>(
-    a: IA,
-    b: IB,
-    c: IC,
-    ab_to_c: ABtoC,
-    ac_to_b: ACtoB,
-    bc_to_a: BCtoA,
+pub fn map_2<A, B, C>(
+    a: impl Into<Value<A>>,
+    b: impl Into<Value<B>>,
+    c: impl Into<Value<C>>,
+    ab_to_c: impl Fn(&A, &B) -> C + 'static,
+    ac_to_b: impl Fn(&A, &C) -> B + 'static,
+    bc_to_a: impl Fn(&B, &C) -> A + 'static,
 ) -> Map2<A, B, C>
 where
     A: Unify,
     B: Unify,
     C: Unify,
-    IA: Into<Value<A>>,
-    IB: Into<Value<B>>,
-    IC: Into<Value<C>>,
-    ABtoC: Fn(&A, &B) -> C + 'static,
-    ACtoB: Fn(&A, &C) -> B + 'static,
-    BCtoA: Fn(&B, &C) -> A + 'static,
 {
     Map2 {
         a: a.into(),

@@ -23,12 +23,10 @@ let results: Vec<_> = goal.query(x).collect();
 assert_eq!(results, vec![1]);
 ```
 */
-pub fn subset<K, V, A, B>(a: A, b: B) -> impl Goal
+pub fn subset<K, V>(a: impl Into<Value<LMap<K, V>>>, b: impl Into<Value<LMap<K, V>>>) -> impl Goal
 where
     K: Unify + Eq + Hash + Debug,
     V: Unify + Debug,
-    A: Into<Value<LMap<K, V>>>,
-    B: Into<Value<LMap<K, V>>>,
 {
     project_2(a, b, |a, b| {
         Box::new(custom(move |state| unify_entries(state, &a, &b)))

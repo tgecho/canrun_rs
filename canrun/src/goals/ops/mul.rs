@@ -17,12 +17,9 @@ let results: Vec<_> = goal.query(x).collect();
 assert_eq!(results, vec![6]);
 ```
 */
-pub fn mul<T, A, B, C>(a: A, b: B, c: C) -> impl Goal
+pub fn mul<T>(a: impl Into<Value<T>>, b: impl Into<Value<T>>, c: impl Into<Value<T>>) -> impl Goal
 where
     T: Unify + Mul<Output = T> + Div<Output = T> + Copy,
-    A: Into<Value<T>>,
-    B: Into<Value<T>>,
-    C: Into<Value<T>>,
 {
     map_2(a, b, c, |a, b| *a * *b, |a, c| *c / *a, |b, c| *c / *b)
 }
