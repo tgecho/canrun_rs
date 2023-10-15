@@ -50,11 +50,9 @@ let result: Vec<_> = goal.query(x).collect();
 assert_eq!(result, vec![])
 ```
 */
-pub fn unify<T, A, B>(a: A, b: B) -> Unify<T>
+pub fn unify<T>(a: impl Into<Value<T>>, b: impl Into<Value<T>>) -> Unify<T>
 where
     T: core::Unify,
-    A: Into<Value<T>>,
-    B: Into<Value<T>>,
 {
     Unify {
         a: a.into(),

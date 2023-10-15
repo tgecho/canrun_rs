@@ -41,11 +41,9 @@ let results: Vec<_> = goal.query(x).collect();
 assert_eq!(results, vec![1, 2, 3]);
 ```
 */
-pub fn member<T, IntoT, IntoLVecT>(item: IntoT, collection: IntoLVecT) -> Member<T>
+pub fn member<T>(item: impl Into<Value<T>>, collection: impl Into<Value<LVec<T>>>) -> Member<T>
 where
     T: Unify,
-    IntoT: Into<Value<T>>,
-    IntoLVecT: Into<Value<LVec<T>>>,
 {
     Member {
         item: item.into(),

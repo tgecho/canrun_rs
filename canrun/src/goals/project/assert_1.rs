@@ -36,11 +36,9 @@ let result: Vec<_> = goal.query(x).collect();
 assert_eq!(result, vec![1])
 ```
 */
-pub fn assert_1<T, A, F>(a: A, func: F) -> Assert1<T>
+pub fn assert_1<T>(a: impl Into<Value<T>>, func: impl (Fn(&T) -> bool) + 'static) -> Assert1<T>
 where
     T: Unify,
-    A: Into<Value<T>>,
-    F: (Fn(&T) -> bool) + 'static,
 {
     Assert1 {
         a: a.into(),

@@ -48,11 +48,7 @@ impl<K: Unify + Eq + Hash + Debug, V: Unify + Debug> LMap<K, V> {
     map.insert(1, 2);
     ```
     */
-    pub fn insert<Ki, Vi>(&mut self, key: Ki, value: Vi)
-    where
-        Ki: Into<Value<K>>,
-        Vi: Into<Value<V>>,
-    {
+    pub fn insert(&mut self, key: impl Into<Value<K>>, value: impl Into<Value<V>>) {
         self.map.insert(key.into(), value.into());
     }
 

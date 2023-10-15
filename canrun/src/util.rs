@@ -73,7 +73,7 @@ mod test {
     use crate::{unify, LVar};
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "The permutation of the goals printed above failed!")]
     fn test_assert_permutations_resolve_to_failure() {
         let x = LVar::new();
         let goals = goal_vec![unify(x, 1)];

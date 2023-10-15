@@ -26,14 +26,15 @@ let result: Vec<_> = goal.query(y).collect();
 assert_eq!(result, vec![2])
 ```
 */
-pub fn map_1<A, AV, B, BV, AtoB, BtoA>(a: AV, b: BV, a_to_b: AtoB, b_to_a: BtoA) -> Map1<A, B>
+pub fn map_1<A, B>(
+    a: impl Into<Value<A>>,
+    b: impl Into<Value<B>>,
+    a_to_b: impl Fn(&A) -> B + 'static,
+    b_to_a: impl Fn(&B) -> A + 'static,
+) -> Map1<A, B>
 where
     A: Unify,
     B: Unify,
-    AV: Into<Value<A>>,
-    BV: Into<Value<B>>,
-    AtoB: Fn(&A) -> B + 'static,
-    BtoA: Fn(&B) -> A + 'static,
 {
     Map1 {
         a: a.into(),
