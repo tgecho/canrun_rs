@@ -177,9 +177,7 @@ impl State {
 
                 // check constraints matching newly assigned lvar
                 if let Some(constraints) = self.constraints.extract(&key.id) {
-                    constraints
-                        .into_iter()
-                        .try_fold(self, |state, func| state.constrain(func))
+                    constraints.into_iter().try_fold(self, State::constrain)
                 } else {
                     Some(self)
                 }
