@@ -12,13 +12,13 @@ pub struct MKMVMap<K: Eq + Hash + Clone + fmt::Debug, V: Clone> {
 #[derive(Clone)]
 pub(crate) struct Value<K, V> {
     id: usize,
-    pub keys: Vec<K>,
-    pub value: V,
+    keys: Vec<K>,
+    data: V,
 }
 
 impl<K: Eq, V: PartialEq> PartialEq for Value<K, V> {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && self.keys == other.keys && self.value == other.value
+        self.id == other.id && self.keys == other.keys && self.data == other.data
     }
 }
 
@@ -39,7 +39,7 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
         }
     }
 
-    pub fn add(&mut self, keys: Vec<K>, value: V) {
+    pub fn add(&mut self, keys: Vec<K>, data: V) {
         let id = self.current_id;
         self.current_id += 1;
         self.keys = keys.iter().fold(self.keys.clone(), |keys, key| {
@@ -48,7 +48,7 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
                 key.clone(),
             )
         });
-        self.values = self.values.update(id, Value { id, keys, value });
+        self.values = self.values.update(id, Value { id, keys, data });
     }
 
     pub fn extract(&mut self, key: &K) -> Option<Vec<V>> {
@@ -75,7 +75,7 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V: Clone> MKMVMap<K, V> {
                     },
                     key.clone(),
                 );
-                values.push(value.value);
+                values.push(value.data);
             }
         }
         Some(values)
