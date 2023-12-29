@@ -82,3 +82,15 @@ impl Goal for Rc<dyn Goal> {
         self.as_ref().apply(state)
     }
 }
+
+impl<G: Goal> Goal for Rc<G> {
+    fn apply(&self, state: State) -> Option<State> {
+        self.as_ref().apply(state)
+    }
+}
+
+impl<G: Goal> Goal for Box<G> {
+    fn apply(&self, state: State) -> Option<State> {
+        self.as_ref().apply(state)
+    }
+}

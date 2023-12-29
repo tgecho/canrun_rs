@@ -5,20 +5,18 @@ use crate::core::State;
 
 use super::Goal;
 
-type LazyFun = dyn Fn() -> Box<dyn Goal>;
-
 /**
 A [Goal](crate::goals::Goal) that is generated via callback just as
 it is about to be evaluated. Create with [`lazy`].
  */
-pub struct Lazy {
-    fun: Rc<LazyFun>,
+pub struct Lazy<G: Goal> {
+    fun: Rc<dyn Fn() -> G>,
 }
 
-impl Debug for Lazy {
+impl<G: Goal> Debug for Lazy<G> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Lazy")
-            .field("fun", &"Rc<dyn Fn() -> Box<dyn Goal>>")
+            .field("fun", &"Rc<dyn Fn() -> impl Goal>")
             .finish()
     }
 }
@@ -44,14 +42,15 @@ let result: Vec<_> = goal.query(x).collect();
 assert_eq!(result, vec![1])
 ```
 */
-pub fn lazy<F>(fun: F) -> Lazy
+pub fn lazy<F, G>(fun: F) -> Lazy<G>
 where
-    F: (Fn() -> Box<dyn Goal>) + 'static,
+    G: Goal,
+    F: (Fn() -> G) + 'static,
 {
     Lazy { fun: Rc::new(fun) }
 }
 
-impl Goal for Lazy {
+impl<G: Goal> Goal for Lazy<G> {
     fn apply(&self, state: State) -> Option<State> {
         let fun = &self.fun;
         let goal = fun();

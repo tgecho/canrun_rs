@@ -5,9 +5,9 @@ use crate::core::State;
 A [Goal](crate::goals::Goal) that only succeeds if both sub-goals succeed. Create with [`both`].
  */
 #[derive(Debug)]
-pub struct Both {
-    a: Box<dyn Goal>,
-    b: Box<dyn Goal>,
+pub struct Both<A: Goal, B: Goal> {
+    a: A,
+    b: B,
 }
 
 /**
@@ -41,14 +41,11 @@ let result: Vec<_> = goal.query(x).collect();
 assert_eq!(result, vec![]) // Empty result
 ```
 */
-pub fn both(a: impl Goal, b: impl Goal) -> Both {
-    Both {
-        a: Box::new(a),
-        b: Box::new(b),
-    }
+pub fn both<A: Goal, B: Goal>(a: A, b: B) -> Both<A, B> {
+    Both { a, b }
 }
 
-impl Goal for Both {
+impl<A: Goal, B: Goal> Goal for Both<A, B> {
     fn apply(&self, state: State) -> Option<State> {
         self.a.apply(state).and_then(|s| self.b.apply(s))
     }
