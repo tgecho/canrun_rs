@@ -24,7 +24,7 @@ A blanket impl covers anything that implements [`StateIterator`], so many
 types including [`Goal`](crate::goals) and [`State`](crate::State) are
 queryable.
 */
-pub trait Query<'a> {
+pub trait Query {
     /**
     Get [reified](crate::core::Reify) results from things that can produce
     [`StateIter`](crate::core::StateIter)s.
@@ -57,11 +57,11 @@ pub trait Query<'a> {
     assert_eq!(result, vec![1])
     ```
     */
-    fn query<Q: Reify + 'a>(self, query: Q) -> Box<dyn Iterator<Item = Q::Reified> + 'a>;
+    fn query<Q: Reify>(self, query: Q) -> impl Iterator<Item = Q::Reified>;
 }
 
-impl<'a, S: StateIterator + 'a> Query<'a> for S {
-    fn query<Q: Reify + 'a>(self, query: Q) -> Box<dyn Iterator<Item = Q::Reified> + 'a> {
+impl<S: StateIterator> Query for S {
+    fn query<Q: Reify>(self, query: Q) -> impl Iterator<Item = Q::Reified> {
         Box::new(
             self.into_states()
                 .filter_map(move |s| query.reify_in(&s.ready()?)),

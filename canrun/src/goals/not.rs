@@ -12,11 +12,11 @@ A [Goal](crate::goals::Goal) that only succeeds if the sub-goal is proved to alw
 See [`not()`] for more details.
 */
 #[derive(Debug)]
-pub enum Not {
+pub enum Not<G: Goal> {
     /// A `Not` with a sub-goal that failed quickly at creation time
     Fail,
     /// A `Not` goal that needs further evaluation to see if it will succeed.
-    Maybe(Rc<NotConstraint>),
+    Maybe(Rc<NotConstraint<G>>),
 }
 
 /**
@@ -61,7 +61,7 @@ is able to conclusively prove or disprove the sub-goal.
 All of this is not to discourage usage, but just to say that you should try to keep them
 relatively simple and as precise as possible.
 */
-pub fn not(goal: impl Goal) -> Not {
+pub fn not<G: Goal>(goal: G) -> Not<G> {
     // We run the subgoal in isolation right up front for two reasons...
     let mut inner_states = goal.apply(State::new()).into_states().peekable();
     if inner_states.peek().is_none() {
@@ -81,7 +81,7 @@ pub fn not(goal: impl Goal) -> Not {
     }
 }
 
-impl Goal for Not {
+impl<G: Goal> Goal for Not<G> {
     fn apply(&self, state: State) -> Option<State> {
         match self {
             Not::Fail => Some(state),
@@ -96,10 +96,11 @@ impl Goal for Not {
     }
 }
 
-/** A [`Not`] goal that needs to keep evaluating the state as variables are resolved. */
+/** A [`Not`] goal that needs to keep evaluating the state as variables are
+ * resolved. */
 #[derive(Debug)]
-pub struct NotConstraint {
-    goal: Rc<dyn Goal>,
+pub struct NotConstraint<G: Goal> {
+    goal: Rc<G>,
     vars: LVarList,
 }
 
@@ -107,7 +108,7 @@ fn any_succeed(state: Option<State>) -> bool {
     state.into_states().next().is_some()
 }
 
-impl Constraint for NotConstraint {
+impl<G: Goal> Constraint for NotConstraint<G> {
     fn attempt(&self, state: &State) -> Result<ResolveFn, LVarList> {
         // If the internal goal succeeded...
         if any_succeed(self.goal.apply(state.clone())) {
