@@ -17,7 +17,7 @@ impl ReadyState {
         ReadyState { values }
     }
 
-    /// * Recursively resolve a [`Value`] as far as the currently known variable
+    /// Recursively resolve a [`Value`] as far as the currently known variable
     /// bindings allow.
     ///
     /// See [`crate::State::resolve`] for more details.

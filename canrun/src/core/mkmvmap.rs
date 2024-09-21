@@ -96,17 +96,6 @@ impl<K: Eq + Hash + Clone + fmt::Debug, V> fmt::Debug for Value<K, V> {
     }
 }
 
-pub(crate) trait DirtyImmutable<T> {
-    fn clone_and_push(&self, t: T) -> Self;
-}
-impl<T: Clone> DirtyImmutable<T> for Vec<T> {
-    fn clone_and_push(&self, t: T) -> Self {
-        let mut cloned = self.clone();
-        cloned.push(t);
-        cloned
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::MKMVMap;
