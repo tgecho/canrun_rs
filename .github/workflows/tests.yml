@@ -12,11 +12,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Update stable
-        uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
           components: rustfmt
       - name: Run fmt
         run: cargo fmt --all -- --check
@@ -26,45 +23,28 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Update stable
-        uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
           components: clippy
-      - name: Run clippy
-        run: cargo clippy -- --deny clippy::all
+      - run: cargo clippy -- --deny clippy::all
 
   stable:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
-      - name: Update stable
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-      - name: Build
-        run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --verbose
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --verbose
+      - run: cargo test --verbose
 
   minimum:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install minimum supported version
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: 1.75.0
-          override: true
-      - name: Build
-        run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --verbose
+      - uses: dtolnay/rust-toolchain@1.75.0
+      - run: cargo build --verbose
+      - run: cargo test --verbose
 
   nightly:
     runs-on: ubuntu-latest
@@ -74,12 +54,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@nightly
         with:
-          profile: minimal
-          toolchain: nightly
-          override: true
           components: llvm-tools-preview
 
       - name: Install grcov
