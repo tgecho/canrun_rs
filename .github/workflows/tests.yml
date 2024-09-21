@@ -58,9 +58,6 @@ jobs:
         with:
           components: llvm-tools-preview
 
-      - name: Install grcov
-        run: cargo install grcov
-
       - name: Build and test
         env:
           CARGO_INCREMENTAL: "0"
@@ -71,7 +68,12 @@ jobs:
           cargo build --verbose
           cargo test --verbose
 
+      - name: Install grcov
+        if: github.repository == 'tgecho/canrun_rs'
+        run: cargo install grcov
+
       - name: Collect coverage
+        if: github.repository == 'tgecho/canrun_rs'
         run: |
           grcov . -s . \
             -t cobertura \
@@ -82,6 +84,7 @@ jobs:
 
       - name: Send to codecov
         uses: codecov/codecov-action@v4
+        if: github.repository == 'tgecho/canrun_rs'
         with:
           files: ./coverage.xml
           fail_ci_if_error: true
