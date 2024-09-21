@@ -105,8 +105,9 @@ jobs:
             --excl-line '// *coverage-ignore'
 
       - name: Send to codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           fail_ci_if_error: true
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
