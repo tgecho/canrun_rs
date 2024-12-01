@@ -43,6 +43,34 @@ impl<T> Hash for LVar<T> {
     }
 }
 
+impl<T> LVar<T> {
+    /// Retrieves the internal `VarId` associated with this `LVar`.
+    ///
+    /// # Safety
+    ///
+    /// The internal `VarId`/`usize` is currently generated from an atomic
+    /// counter. I consider this an implementation detail and make no stability
+    /// guarantees. A given `VarId` is only valid for the lifetime of the
+    /// program. If it is persisted or otherwise incorrectly used then you're in
+    /// undefined territory.
+    pub unsafe fn to_raw(&self) -> VarId {
+        self.id
+    }
+
+    /// Creates a new `LVar` instance from a given `VarId`.
+    ///
+    /// # Safety
+    ///
+    /// The internal `VarId`/`usize` is currently generated from an atomic
+    /// counter. I consider this an implementation detail and make no stability
+    /// guarantees. A given `VarId` is only valid for the lifetime of the
+    /// program. If it is persisted or otherwise incorrectly used then you're in
+    /// undefined territory.
+    pub unsafe fn from_raw(id: VarId) -> Self {
+        LVar { id, t: PhantomData }
+    }
+}
+
 fn get_id() -> VarId {
     static COUNTER: AtomicUsize = AtomicUsize::new(1);
     COUNTER.fetch_add(1, Ordering::Relaxed)
@@ -222,4 +250,18 @@ mod test {
     #[allow(dead_code)]
     trait ImplsEq: Eq {}
     impl ImplsEq for LVar<f32> {}
+
+    #[test]
+    fn test_lvar_to_raw() {
+        let var: LVar<i32> = LVar::new();
+        let raw_id = unsafe { var.to_raw() };
+        assert_eq!(var.id, raw_id);
+    }
+
+    #[test]
+    fn test_lvar_from_raw() {
+        let raw_id = 42;
+        let var: LVar<i32> = unsafe { LVar::from_raw(raw_id) };
+        assert_eq!(var.id, raw_id);
+    }
 }
