@@ -23,11 +23,13 @@ debugging purposes as no guarantees are made about the type or generation of
 the id value. Also, these ids are only valid within the context of a single
 execution. They cannot be safely persisted or shared between processes.
 */
-#[derive(Debug, Copy, Eq)]
+#[derive(Debug, Copy)]
 pub struct LVar<T> {
     pub(crate) id: VarId,
     t: PhantomData<T>,
 }
+
+impl<T> Eq for LVar<T> {}
 
 impl<T> PartialEq for LVar<T> {
     fn eq(&self, other: &LVar<T>) -> bool {
@@ -211,4 +213,13 @@ impl<T: Unify> Clone for Value<T> {
             Self::Resolved(v) => Self::Resolved(v.clone()),
         }
     }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::LVar;
+
+    #[allow(dead_code)]
+    trait ImplsEq: Eq {}
+    impl ImplsEq for LVar<f32> {}
 }
