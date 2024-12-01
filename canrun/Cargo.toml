@@ -24,3 +24,6 @@ criterion = "0.5.1"
 [[bench]]
 name = "main"
 harness = false
+
+[lints]
+workspace = true

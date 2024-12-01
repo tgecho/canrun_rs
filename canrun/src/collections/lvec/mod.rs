@@ -32,7 +32,6 @@ impl<T: Unify> LVec<T> {
     }
 
     /// Returns true if the [`LVec`] contains no elements.
-
     pub fn is_empty(&self) -> bool {
         self.vec.is_empty()
     }
