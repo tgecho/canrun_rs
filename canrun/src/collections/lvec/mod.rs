@@ -20,7 +20,7 @@ use std::rc::Rc;
 ///
 /// Construct with the [`lvec!`](crate::lvec!) macro, or you can use the
 /// `From<Vec<Value<T>>>` or `FromIterator<Value<T>>` trait implementations.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LVec<T: Unify> {
     vec: Vec<Value<T>>,
 }
