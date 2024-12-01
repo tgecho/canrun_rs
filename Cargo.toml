@@ -9,3 +9,9 @@ resolver = "2"
 # This doesn't work on windows. Not sure if we still need it in macOS or can make it conditional.
 # [profile.dev]
 # split-debuginfo = "unpacked"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+
+cast-sign-loss = "allow"
+many-single-char-names = "allow"

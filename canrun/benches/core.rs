@@ -30,6 +30,7 @@ macro_rules! goal_bench {
     }
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn benches(c: &mut Criterion) {
     goal_bench! {c "one" (x) {
         unify(x, 1)
