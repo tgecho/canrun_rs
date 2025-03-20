@@ -43,7 +43,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@1.75.0
+      - uses: dtolnay/rust-toolchain@1.81.0
       - run: cargo build --verbose
       - run: cargo test --verbose
 
